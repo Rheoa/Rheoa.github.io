@@ -6,23 +6,32 @@
 
   <title>World Discovery — Amazing Places, Hidden Gems & Fascinating Facts</title>
 
+  <!-- Favicon (Globe emoji as SVG) -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌍</text></svg>" />
+
   <meta
     name="description"
     content="Discover amazing places, hidden destinations, fascinating facts, world maps and unforgettable travel ideas."
   />
 
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <style>
+    /* ========================================================
+       COLOR SCHEME: Yellow #ffdb10 + complementary dark tones
+       ======================================================== */
     :root {
-      --bg: #f7f9fc;
+      --bg: #fef9e7;          /* very light yellow */
       --surface: #ffffff;
-      --surface-soft: #f0f4f8;
-      --text: #15202b;
-      --muted: #64748b;
-      --primary: #1769aa;
-      --primary-dark: #0d4f82;
-      --accent: #14a3a3;
-      --border: #e2e8f0;
-      --shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+      --surface-soft: #fff8e1;
+      --text: #1e1e2a;
+      --muted: #4a4a5a;
+      --primary: #ffdb10;     /* main yellow */
+      --primary-dark: #d4b800;
+      --primary-darker: #b39b00;
+      --primary-light: #fff3a0;
+      --border: #e6dbb5;
+      --shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
       --radius: 18px;
       --max-width: 1240px;
     }
@@ -84,9 +93,9 @@
       position: sticky;
       top: 0;
       z-index: 1000;
-      background: rgba(255, 255, 255, 0.96);
+      background: rgba(255, 255, 240, 0.96);
       backdrop-filter: blur(14px);
-      border-bottom: 1px solid var(--border);
+      border-bottom: 2px solid var(--primary);
     }
 
     .nav {
@@ -98,9 +107,9 @@
     }
 
     .logo {
-      font-size: 1.3rem;
+      font-size: 1.4rem;
       font-weight: 800;
-      color: var(--primary);
+      color: var(--primary-dark);
       white-space: nowrap;
     }
 
@@ -117,7 +126,7 @@
     }
 
     .nav-links a:hover {
-      color: var(--primary);
+      color: var(--primary-dark);
     }
 
     .nav-actions {
@@ -147,6 +156,7 @@
 
     .hero {
       padding: 70px 0 40px;
+      background: linear-gradient(135deg, #fff8e1 0%, #ffdb10 100%);
     }
 
     .hero-grid {
@@ -162,8 +172,8 @@
       gap: 8px;
       padding: 7px 12px;
       border-radius: 999px;
-      background: #e8f4fb;
-      color: var(--primary-dark);
+      background: rgba(0,0,0,0.08);
+      color: var(--primary-darker);
       font-size: 0.78rem;
       font-weight: 700;
       margin-bottom: 18px;
@@ -177,7 +187,7 @@
     }
 
     .hero h1 span {
-      color: var(--primary);
+      color: var(--primary-darker);
     }
 
     .hero p {
@@ -187,11 +197,37 @@
       max-width: 620px;
     }
 
-    .hero-actions {
+    /* Search bar inside hero */
+    .search-wrapper {
       margin-top: 28px;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .search-wrapper input {
+      flex: 1;
+      min-width: 200px;
+      padding: 13px 18px;
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      background: white;
+      font-size: 1rem;
+      transition: 0.2s;
+    }
+
+    .search-wrapper input:focus {
+      outline: none;
+      border-color: var(--primary-dark);
+      box-shadow: 0 0 0 3px rgba(212, 184, 0, 0.2);
+    }
+
+    .hero-actions {
       display: flex;
       gap: 12px;
       flex-wrap: wrap;
+      margin-top: 10px;
     }
 
     .btn {
@@ -203,12 +239,12 @@
     }
 
     .btn-primary {
-      background: var(--primary);
+      background: var(--primary-dark);
       color: white;
     }
 
     .btn-primary:hover {
-      background: var(--primary-dark);
+      background: var(--primary-darker);
       transform: translateY(-1px);
     }
 
@@ -219,12 +255,11 @@
     }
 
     .btn-secondary:hover {
-      border-color: var(--primary);
-      color: var(--primary);
+      border-color: var(--primary-dark);
+      color: var(--primary-dark);
     }
 
     /* Hero visual */
-
     .hero-visual {
       min-height: 460px;
       border-radius: 28px;
@@ -247,9 +282,10 @@
       right: 22px;
       bottom: 22px;
       padding: 20px;
-      background: rgba(255, 255, 255, 0.94);
+      background: rgba(255, 255, 240, 0.94);
       border-radius: 18px;
       backdrop-filter: blur(10px);
+      border: 1px solid var(--primary);
     }
 
     .hero-overlay-card small {
@@ -281,6 +317,7 @@
     .section-header h2 {
       font-size: clamp(1.7rem, 3vw, 2.5rem);
       letter-spacing: -0.03em;
+      color: var(--primary-darker);
     }
 
     .section-header p {
@@ -290,7 +327,7 @@
     }
 
     .view-all {
-      color: var(--primary);
+      color: var(--primary-dark);
       font-weight: 700;
       white-space: nowrap;
     }
@@ -300,7 +337,7 @@
     ========================== */
 
     .map-section {
-      background: #eaf2f7;
+      background: #e8e0cc;
     }
 
     .map-container {
@@ -308,91 +345,26 @@
       height: 520px;
       border-radius: 24px;
       overflow: hidden;
-      background:
-        radial-gradient(circle at 20% 30%, rgba(20, 163, 163, 0.12), transparent 25%),
-        radial-gradient(circle at 75% 55%, rgba(23, 105, 170, 0.14), transparent 28%),
-        #dfeaf0;
-      border: 1px solid #d5e0e7;
+      border: 2px solid var(--primary);
     }
 
-    .map-grid {
-      position: absolute;
-      inset: 0;
-      opacity: 0.35;
-      background-image:
-        linear-gradient(#9db4c2 1px, transparent 1px),
-        linear-gradient(90deg, #9db4c2 1px, transparent 1px);
-      background-size: 55px 55px;
+    #worldmap {
+      width: 100%;
+      height: 100%;
     }
 
-    .map-label {
-      position: absolute;
-      font-size: 0.7rem;
-      color: #71808c;
+    /* Leaflet popup custom */
+    .leaflet-popup-content {
+      font-family: inherit;
+      font-size: 0.95rem;
+    }
+    .leaflet-popup-content strong {
+      color: var(--primary-dark);
+    }
+    .leaflet-popup-content a {
+      color: var(--primary-dark);
       font-weight: 700;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-    }
-
-    .map-label.europe {
-      top: 25%;
-      left: 48%;
-    }
-
-    .map-label.asia {
-      top: 35%;
-      left: 64%;
-    }
-
-    .map-label.africa {
-      top: 55%;
-      left: 48%;
-    }
-
-    .map-label.america {
-      top: 42%;
-      left: 20%;
-    }
-
-    .map-marker {
-      position: absolute;
-      width: 18px;
-      height: 18px;
-      background: var(--primary);
-      border: 4px solid white;
-      border-radius: 50%;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-      transition: 0.2s;
-    }
-
-    .map-marker:hover {
-      transform: scale(1.35);
-    }
-
-    .marker-card {
-      position: absolute;
-      width: 250px;
-      right: 24px;
-      top: 24px;
-      background: white;
-      padding: 20px;
-      border-radius: 18px;
-      box-shadow: var(--shadow);
-    }
-
-    .marker-card small {
-      color: var(--primary);
-      font-weight: 700;
-    }
-
-    .marker-card h3 {
-      margin-top: 5px;
-    }
-
-    .marker-card p {
-      color: var(--muted);
-      font-size: 0.9rem;
-      margin: 8px 0 15px;
+      text-decoration: underline;
     }
 
     /* =========================
@@ -440,7 +412,7 @@
       display: inline-block;
       font-size: 0.72rem;
       font-weight: 800;
-      color: var(--primary);
+      color: var(--primary-dark);
       margin-bottom: 7px;
       text-transform: uppercase;
       letter-spacing: 0.05em;
@@ -461,12 +433,12 @@
       display: inline-block;
       margin-top: 12px;
       font-weight: 700;
-      color: var(--primary);
+      color: var(--primary-dark);
       border-bottom: 2px solid transparent;
       transition: 0.2s;
     }
     .affiliate-link:hover {
-      border-bottom-color: var(--primary);
+      border-bottom-color: var(--primary-dark);
     }
 
     /* =========================
@@ -481,6 +453,7 @@
       border-radius: 24px;
       overflow: hidden;
       box-shadow: var(--shadow);
+      border: 1px solid var(--primary-light);
     }
 
     .feature-image {
@@ -494,12 +467,14 @@
       display: flex;
       flex-direction: column;
       justify-content: center;
+      background: #fffcf0;
     }
 
     .feature-content h2 {
       font-size: clamp(2rem, 4vw, 3.2rem);
       line-height: 1.05;
       letter-spacing: -0.04em;
+      color: var(--primary-darker);
     }
 
     .feature-content p {
@@ -529,9 +504,9 @@
     }
 
     .continent:hover {
-      background: #edf6fb;
-      border-color: #b9d9eb;
-      color: var(--primary);
+      background: #fff3a0;
+      border-color: var(--primary-dark);
+      color: var(--primary-darker);
     }
 
     /* =========================
@@ -554,7 +529,7 @@
     .fact-number {
       font-size: 2.2rem;
       font-weight: 900;
-      color: var(--primary);
+      color: var(--primary-dark);
     }
 
     .fact h3 {
@@ -569,11 +544,11 @@
     }
 
     /* =========================
-       EXPLORE / SURPRISE
+       SURPRISE
     ========================== */
 
     .surprise-section {
-      background: #142b3a;
+      background: #1a1a2a;
       color: white;
     }
 
@@ -591,16 +566,16 @@
     }
 
     .surprise-btn {
-      border: 1px solid rgba(255,255,255,0.25);
-      background: rgba(255,255,255,0.08);
-      color: white;
+      border: 1px solid rgba(255,215,0,0.4);
+      background: rgba(255,215,0,0.15);
+      color: var(--primary);
       padding: 15px 22px;
       border-radius: 12px;
       font-weight: 800;
     }
 
     .surprise-btn:hover {
-      background: rgba(255,255,255,0.15);
+      background: rgba(255,215,0,0.25);
     }
 
     /* =========================
@@ -628,6 +603,7 @@
 
     footer h4 {
       margin-bottom: 13px;
+      color: var(--primary);
     }
 
     footer li {
@@ -752,13 +728,6 @@
         height: 430px;
       }
 
-      .marker-card {
-        width: calc(100% - 30px);
-        left: 15px;
-        right: 15px;
-        top: 15px;
-      }
-
       .feature-content {
         padding: 30px 22px;
       }
@@ -801,8 +770,9 @@
       font-size: 1.2rem;
     }
   </style>
-</head>
 
+  <!-- Leaflet CSS (already included above) -->
+</head>
 <body>
 
   <!-- =========================
@@ -865,6 +835,16 @@
             the world.
           </p>
 
+          <!-- SEARCH BAR (real-time) -->
+          <div class="search-wrapper">
+            <input
+              type="text"
+              id="searchInput"
+              placeholder="Search articles… (e.g., 'island', 'Europe')"
+              oninput="filterCards()"
+            />
+          </div>
+
           <div class="hero-actions">
 
             <a href="#explore" class="btn btn-primary">
@@ -902,7 +882,7 @@
 
 
     <!-- =========================
-         MAP
+         MAP (Leaflet.js)
     ========================== -->
 
     <section class="map-section" id="maps">
@@ -913,77 +893,17 @@
 
           <div>
             <h2>Explore the World</h2>
-
-            <p>
-              Click a location and discover something fascinating.
-            </p>
+            <p>Click a marker to discover an article.</p>
           </div>
 
-          <a href="#" class="view-all">
+          <a href="#" class="view-all" onclick="return false;">
             Open full map →
           </a>
 
         </div>
 
-        <div class="map-container">
-
-          <div class="map-grid"></div>
-
-          <span class="map-label america">North America</span>
-          <span class="map-label europe">Europe</span>
-          <span class="map-label asia">Asia</span>
-          <span class="map-label africa">Africa</span>
-
-          <button
-            class="map-marker"
-            style="left:24%; top:39%;"
-            onclick="showLocation('Patagonia')">
-          </button>
-
-          <button
-            class="map-marker"
-            style="left:49%; top:31%;"
-            onclick="showLocation('Hallstatt')">
-          </button>
-
-          <button
-            class="map-marker"
-            style="left:64%; top:42%;"
-            onclick="showLocation('Socotra')">
-          </button>
-
-          <button
-            class="map-marker"
-            style="left:53%; top:65%;"
-            onclick="showLocation('Namib Desert')">
-          </button>
-
-          <button
-            class="map-marker"
-            style="left:76%; top:52%;"
-            onclick="showLocation('Bali')">
-          </button>
-
-
-          <div class="marker-card" id="markerCard">
-
-            <small>FEATURED DISCOVERY</small>
-
-            <h3 id="locationTitle">
-              Patagonia
-            </h3>
-
-            <p id="locationDescription">
-              A spectacular region of mountains, glaciers,
-              lakes and remote landscapes.
-            </p>
-
-            <button class="btn btn-primary" onclick="openDiscovery()">
-              Discover →
-            </button>
-
-          </div>
-
+        <div class="map-container" id="map-container">
+          <div id="worldmap"></div>
         </div>
 
       </div>
@@ -1003,10 +923,7 @@
 
           <div>
             <h2>Amazing Places</h2>
-
-            <p>
-              Destinations that deserve a place on your map.
-            </p>
+            <p>Destinations that deserve a place on your map.</p>
           </div>
 
           <a href="#" class="view-all">
@@ -1080,10 +997,7 @@
 
           <div>
             <h2>Hidden Travel Gems</h2>
-
-            <p>
-              Places most travelers haven't discovered yet.
-            </p>
+            <p>Places most travelers haven't discovered yet.</p>
           </div>
 
           <a href="#" class="view-all">
@@ -1114,10 +1028,7 @@
 
           <div>
             <h2>Explore by Region</h2>
-
-            <p>
-              Start your journey anywhere in the world.
-            </p>
+            <p>Start your journey anywhere in the world.</p>
           </div>
 
         </div>
@@ -1151,10 +1062,7 @@
 
           <div>
             <h2>World Facts</h2>
-
-            <p>
-              The world is stranger and more fascinating than you think.
-            </p>
+            <p>The world is stranger and more fascinating than you think.</p>
           </div>
 
           <a href="#" class="view-all">
@@ -1241,10 +1149,7 @@
 
           <div>
             <h2>Latest Discoveries</h2>
-
-            <p>
-              Fresh stories, destinations and fascinating places.
-            </p>
+            <p>Fresh stories, destinations and fascinating places.</p>
           </div>
 
           <a href="#" class="view-all">
@@ -1341,17 +1246,20 @@
 
 
   <!-- =========================
-       SUPABASE + JAVASCRIPT
+       SCRIPTS
   ========================== -->
 
-  <!-- Supabase client library -->
+  <!-- Supabase client -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
   <script>
 
-    /* =========================
+    /* ============================================================
        SUPABASE INIT
-    ========================== */
+    ============================================================ */
 
     const SUPABASE_URL = 'https://kabvjgnbxgwlltzrkxsj.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImthYnZqZ25ieGd3bGx0enJreHNqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYzMjQ2NTQsImV4cCI6MjEwMTkwMDY1NH0.lJdkSERv8dwhMvCMUWLRe6mpC66SzAi_jXFcWJJ_Qng';
@@ -1359,73 +1267,18 @@
     const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 
-    /* =========================
-       DISCOVERY DATA (for map)
-    ========================== */
+    /* ============================================================
+       GLOBAL STATE
+    ============================================================ */
 
-    const discoveries = {
-      Patagonia: {
-        title: "Patagonia",
-        description: "A spectacular region of mountains, glaciers, lakes and remote landscapes."
-      },
-      Hallstatt: {
-        title: "Hallstatt",
-        description: "A beautiful lakeside village surrounded by dramatic Austrian mountains."
-      },
-      Socotra: {
-        title: "Socotra",
-        description: "An isolated island famous for extraordinary landscapes and unusual plant life."
-      },
-      "Namib Desert": {
-        title: "Namib Desert",
-        description: "One of the world's oldest deserts, famous for towering dunes and surreal scenery."
-      },
-      Bali: {
-        title: "Bali",
-        description: "A tropical destination known for temples, beaches, rice terraces and culture."
-      }
-    };
+    let allArticles = [];          // will hold all articles fetched
+    let map = null;
+    let markerLayer = null;
 
 
-    /* =========================
-       MAP LOCATION
-    ========================== */
-
-    let currentLocation = "Patagonia";
-
-    function showLocation(name) {
-      const location = discoveries[name];
-      if (!location) return;
-      currentLocation = name;
-      document.getElementById("locationTitle").textContent = location.title;
-      document.getElementById("locationDescription").textContent = location.description;
-    }
-
-
-    /* =========================
-       OPEN DISCOVERY
-    ========================== */
-
-    function openDiscovery() {
-      alert("This will eventually open the full article for: " + currentLocation);
-    }
-
-
-    /* =========================
-       SURPRISE ME
-    ========================== */
-
-    function surpriseMe() {
-      const keys = Object.keys(discoveries);
-      const randomKey = keys[Math.floor(Math.random() * keys.length)];
-      showLocation(randomKey);
-      document.getElementById("maps").scrollIntoView({ behavior: "smooth" });
-    }
-
-
-    /* =========================
+    /* ============================================================
        MOBILE MENU
-    ========================== */
+    ============================================================ */
 
     function toggleMenu() {
       const nav = document.querySelector(".nav-links");
@@ -1445,43 +1298,35 @@
     }
 
 
-    /* =========================
-       SEARCH
-    ========================== */
+    /* ============================================================
+       SEARCH (legacy button)
+    ============================================================ */
 
     function openSearch() {
-      const query = prompt("What would you like to discover?");
-      if (!query) return;
-      alert("Search functionality will connect to your website database later.\n\nSearching for: " + query);
+      // Focus the search input instead
+      document.getElementById('searchInput').focus();
     }
 
 
-    /* =========================
-       IP GEOLOCATION (with caching & fallback)
-    ========================== */
+    /* ============================================================
+       IP GEOLOCATION (cached & fallback)
+    ============================================================ */
 
     async function getCountryCode() {
-      // Check cache first (valid for 1 hour)
       try {
         const cached = localStorage.getItem('userCountry');
         const cachedTime = localStorage.getItem('userCountryTimestamp');
         if (cached && cachedTime) {
           const age = Date.now() - parseInt(cachedTime, 10);
-          if (age < 3600000) { // 1 hour
-            return cached;
-          }
+          if (age < 3600000) return cached;
         }
-      } catch (e) {
-        // localStorage might be unavailable; ignore
-      }
+      } catch (e) { /* ignore */ }
 
-      // Try primary API (ipapi.co)
       try {
-        const response = await fetch('https://ipapi.co/json/');
-        const data = await response.json();
+        const res = await fetch('https://ipapi.co/json/');
+        const data = await res.json();
         if (data && data.country_code) {
           const country = data.country_code;
-          // Save to cache
           try {
             localStorage.setItem('userCountry', country);
             localStorage.setItem('userCountryTimestamp', String(Date.now()));
@@ -1492,10 +1337,9 @@
         console.warn('ipapi.co failed, trying fallback...');
       }
 
-      // Fallback to ip-api.com
       try {
-        const response = await fetch('https://ip-api.com/json/');
-        const data = await response.json();
+        const res = await fetch('https://ip-api.com/json/');
+        const data = await res.json();
         if (data && data.status === 'success' && data.countryCode) {
           const country = data.countryCode;
           try {
@@ -1505,20 +1349,20 @@
           return country;
         }
       } catch (e) {
-        console.warn('ip-api.com also failed, using default');
+        console.warn('ip-api.com failed, using default');
       }
 
       return 'default';
     }
 
 
-    /* =========================
-       RENDER CARDS
-    ========================== */
+    /* ============================================================
+       RENDER CARD
+    ============================================================ */
 
     function createCardHTML(article, linkUrl) {
       return `
-        <article class="card">
+        <article class="card" data-title="${article.title.toLowerCase()}" data-tag="${(article.tag||'').toLowerCase()}">
           <div class="card-image">
             <img src="${article.image_url}" alt="${article.title}" loading="lazy" />
           </div>
@@ -1535,19 +1379,17 @@
     }
 
 
-    /* =========================
-       LOAD ARTICLES FOR A SECTION (with try/catch)
-    ========================== */
+    /* ============================================================
+       LOAD ARTICLES FOR A SECTION
+    ============================================================ */
 
     async function loadArticlesForSection(gridId, tagFilter) {
       const grid = document.getElementById(gridId);
       if (!grid) return;
 
-      // Show loading state
       grid.innerHTML = `<div class="loading-spinner">Loading articles…</div>`;
 
       try {
-        // Build query
         let query = supabase
           .from('articles')
           .select('*')
@@ -1561,7 +1403,7 @@
 
         if (error) {
           console.error('Supabase error:', error);
-          grid.innerHTML = `<p style="color: var(--muted); padding: 20px;">⚠️ Error loading articles. Please refresh.</p>`;
+          grid.innerHTML = `<p style="color: var(--muted); padding: 20px;">⚠️ Error loading articles.</p>`;
           return;
         }
 
@@ -1570,35 +1412,34 @@
           return;
         }
 
-        // Get user's country (cached)
+        // Store all articles for search filtering (if not already stored)
+        if (allArticles.length === 0) {
+          // We'll store them later globally, but we need to merge all sections.
+          // We'll fetch all articles in a separate call for search/map.
+          // For now, we just render these.
+        }
+
         const country = await getCountryCode();
         const articleIds = articles.map(a => a.id);
 
-        // Fetch affiliate links
         const { data: linkData, error: linkError } = await supabase
           .from('affiliate_links')
           .select('article_id, link_url, country_code')
           .in('article_id', articleIds)
           .or(`country_code.eq.${country},country_code.eq.default`);
 
-        if (linkError) {
-          console.error('Error fetching affiliate links:', linkError);
-          // Continue without links – cards will show "Unavailable"
-        }
+        if (linkError) console.error('Affiliate link error:', linkError);
 
-        // Build link map: prefer country-specific over default
         const linkMap = {};
         if (linkData) {
           linkData.forEach(item => {
             const existing = linkMap[item.article_id];
-            // If no link yet, OR this one is country-specific (not default) while existing is default
             if (!existing || (item.country_code !== 'default' && existing === 'default')) {
               linkMap[item.article_id] = item.link_url;
             }
           });
         }
 
-        // Render cards
         let html = '';
         articles.forEach(article => {
           const link = linkMap[article.id] || null;
@@ -1607,28 +1448,189 @@
 
         grid.innerHTML = html;
 
+        // Also add to allArticles for search and map (avoid duplicates)
+        // We'll do this in a separate function after all sections loaded.
+
       } catch (err) {
-        console.error('Unexpected error in loadArticlesForSection:', err);
-        grid.innerHTML = `<p style="color: var(--muted); padding: 20px;">⚠️ Something went wrong. Please refresh the page.</p>`;
+        console.error('Unexpected error:', err);
+        grid.innerHTML = `<p style="color: var(--muted); padding: 20px;">⚠️ Something went wrong.</p>`;
       }
     }
 
 
-    /* =========================
-       LOAD ALL SECTIONS
-    ========================== */
+    /* ============================================================
+       LOAD ALL SECTIONS & GLOBAL DATA
+    ============================================================ */
 
     async function loadAllSections() {
-      // You can adjust these tag names to match your database
+      // Load the three sections
       await loadArticlesForSection('places-grid', 'Natural Wonder');
       await loadArticlesForSection('hidden-gems-grid', 'Hidden');
       await loadArticlesForSection('latest-discoveries-grid', 'Discovery');
+
+      // Now fetch all articles for the map and search (once)
+      await fetchAllArticles();
     }
 
 
-    /* =========================
+    /* ============================================================
+       FETCH ALL ARTICLES (for map & search)
+    ============================================================ */
+
+    async function fetchAllArticles() {
+      try {
+        const { data, error } = await supabase
+          .from('articles')
+          .select('*')
+          .order('created_at', { ascending: false });
+
+        if (error) throw error;
+        allArticles = data || [];
+
+        // Also fetch affiliate links for all (for map popups if needed)
+        // We'll just show article title and link to itself
+
+        // Initialize map after we have data
+        initMap(allArticles);
+
+        // Also store for search filtering (the search function will filter the existing card grids)
+        // We already have cards rendered, search will hide/show them.
+
+      } catch (err) {
+        console.error('Error fetching all articles:', err);
+      }
+    }
+
+
+    /* ============================================================
+       SEARCH FILTER (client-side)
+    ============================================================ */
+
+    function filterCards() {
+      const query = document.getElementById('searchInput').value.toLowerCase().trim();
+      // Get all card grids
+      const grids = document.querySelectorAll('.card-grid');
+      grids.forEach(grid => {
+        const cards = grid.querySelectorAll('.card');
+        cards.forEach(card => {
+          const title = card.dataset.title || '';
+          const tag = card.dataset.tag || '';
+          const match = title.includes(query) || tag.includes(query);
+          card.style.display = match ? '' : 'none';
+        });
+      });
+    }
+
+
+    /* ============================================================
+       MAP – Leaflet.js (dynamic markers from Supabase)
+    ============================================================ */
+
+    function initMap(articles) {
+      // Check if map container exists
+      const container = document.getElementById('worldmap');
+      if (!container) return;
+
+      // Destroy previous map if any
+      if (map) {
+        map.remove();
+        map = null;
+      }
+
+      // Center on average of all markers, or default (0,0)
+      let centerLat = 20, centerLng = 0;
+      const markers = [];
+
+      articles.forEach(article => {
+        if (article.latitude && article.longitude) {
+          markers.push({
+            lat: parseFloat(article.latitude),
+            lng: parseFloat(article.longitude),
+            title: article.title,
+            slug: article.slug,
+            id: article.id
+          });
+        }
+      });
+
+      if (markers.length === 0) {
+        // No markers – show a message
+        container.innerHTML = '<p style="padding:20px;text-align:center;">No map markers available. Add latitude/longitude to articles.</p>';
+        return;
+      }
+
+      // Compute center as average
+      const sumLat = markers.reduce((s, m) => s + m.lat, 0);
+      const sumLng = markers.reduce((s, m) => s + m.lng, 0);
+      centerLat = sumLat / markers.length;
+      centerLng = sumLng / markers.length;
+
+      // Create map
+      map = L.map('worldmap').setView([centerLat, centerLng], 3);
+
+      // Add tile layer (CartoDB Voyager – clean look)
+      L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>, &copy; CartoDB',
+        maxZoom: 19
+      }).addTo(map);
+
+      // Add markers
+      const markerGroup = L.layerGroup().addTo(map);
+
+      markers.forEach(m => {
+        const popupContent = `
+          <strong>${m.title}</strong><br />
+          <a href="#" onclick="alert('Article page for ${m.slug} will open soon.')">Read more →</a>
+        `;
+        const marker = L.marker([m.lat, m.lng])
+          .bindPopup(popupContent)
+          .addTo(markerGroup);
+      });
+
+      // Store markers for "Surprise Me"
+      window._mapMarkers = markers;
+      window._map = map;
+      window._markerGroup = markerGroup;
+    }
+
+
+    /* ============================================================
+       SURPRISE ME – random marker on map
+    ============================================================ */
+
+    function surpriseMe() {
+      const markers = window._mapMarkers || [];
+      if (markers.length === 0) {
+        alert('No destinations with coordinates yet!');
+        return;
+      }
+
+      const random = markers[Math.floor(Math.random() * markers.length)];
+      // Fly to marker
+      if (window._map) {
+        window._map.flyTo([random.lat, random.lng], 6, { duration: 1.5 });
+        // Open popup after fly
+        setTimeout(() => {
+          // Find the marker in the markerGroup
+          const group = window._markerGroup;
+          if (group) {
+            group.eachLayer(layer => {
+              if (layer.getLatLng && layer.getLatLng().lat === random.lat && layer.getLatLng().lng === random.lng) {
+                layer.openPopup();
+              }
+            });
+          }
+        }, 1600);
+      }
+
+      // Scroll to map
+      document.getElementById('maps').scrollIntoView({ behavior: 'smooth' });
+    }
+
+
+    /* ============================================================
        INIT ON PAGE LOAD
-    ========================== */
+    ============================================================ */
 
     document.addEventListener('DOMContentLoaded', () => {
       loadAllSections();
