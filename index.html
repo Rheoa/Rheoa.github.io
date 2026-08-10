@@ -252,6 +252,7 @@
       border: 1px solid var(--border);
       transition: 0.25s ease;
       box-shadow: var(--shadow);
+      cursor: pointer;
     }
     .card:hover {
       transform: translateY(-6px);
@@ -307,18 +308,155 @@
       border-bottom-color: var(--yellow-darker);
     }
 
-    /* Category Page Breadcrumb */
-    .breadcrumb {
-      font-size: 0.9rem;
-      color: var(--muted);
-      margin-bottom: 20px;
+    /* ============================================================
+       ARTICLE DETAIL PAGE
+       ============================================================ */
+    .article-page {
+      max-width: 820px;
+      margin: 0 auto;
     }
-    .breadcrumb a {
+
+    .article-page .article-header {
+      margin-bottom: 30px;
+    }
+
+    .article-page .article-header h1 {
+      font-size: clamp(2.2rem, 5vw, 3.4rem);
+      font-weight: 800;
+      line-height: 1.2;
+      margin-bottom: 8px;
+    }
+
+    .article-page .article-header .meta {
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+    .article-page .article-header .meta .tag {
+      display: inline-block;
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--yellow-darker);
+      background: var(--yellow-light);
+      padding: 2px 12px;
+      border-radius: 20px;
+    }
+
+    .article-page .article-header .hero-image {
+      margin-top: 16px;
+      border-radius: var(--radius);
+      overflow: hidden;
+      max-height: 500px;
+      border: 1px solid var(--border);
+    }
+    .article-page .article-header .hero-image img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      max-height: 500px;
+    }
+
+    /* Article content styling */
+    .article-content {
+      font-size: 1.08rem;
+      line-height: 1.8;
+      color: var(--text);
+    }
+
+    .article-content h2 {
+      font-size: 1.8rem;
+      font-weight: 700;
+      margin-top: 40px;
+      margin-bottom: 12px;
+    }
+
+    .article-content h3 {
+      font-size: 1.4rem;
+      font-weight: 700;
+      margin-top: 30px;
+      margin-bottom: 10px;
+    }
+
+    .article-content p {
+      margin-bottom: 18px;
+    }
+
+    .article-content img {
+      border-radius: 12px;
+      margin: 20px 0;
+      border: 1px solid var(--border);
+    }
+
+    .article-content ul,
+    .article-content ol {
+      margin: 16px 0 20px 24px;
+    }
+    .article-content li {
+      margin-bottom: 8px;
+    }
+
+    /* Affiliate links inside the article */
+    .article-content a:not(.btn) {
       color: var(--yellow-darker);
       font-weight: 600;
-    }
-    .breadcrumb a:hover {
       text-decoration: underline;
+      text-underline-offset: 2px;
+    }
+    .article-content a:not(.btn):hover {
+      color: var(--yellow-dark);
+    }
+
+    /* Buttons inside the article */
+    .article-content .btn {
+      display: inline-block;
+      padding: 12px 28px;
+      border-radius: 30px;
+      font-weight: 700;
+      transition: 0.2s ease;
+      text-decoration: none;
+      border: none;
+      cursor: pointer;
+    }
+
+    .article-content .btn-primary {
+      background: var(--yellow);
+      color: var(--text);
+      border: 2px solid var(--yellow);
+    }
+    .article-content .btn-primary:hover {
+      background: var(--yellow-dark);
+      border-color: var(--yellow-dark);
+    }
+
+    .article-content .btn-secondary {
+      background: transparent;
+      color: var(--text);
+      border: 2px solid var(--yellow);
+    }
+    .article-content .btn-secondary:hover {
+      background: var(--yellow-light);
+    }
+
+    .article-content .btn-group {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin: 20px 0;
+    }
+
+    .back-home {
+      display: inline-block;
+      margin-top: 30px;
+      padding: 10px 24px;
+      background: var(--yellow);
+      color: var(--text);
+      font-weight: 700;
+      border-radius: 30px;
+      transition: 0.2s;
+    }
+    .back-home:hover {
+      background: var(--yellow-dark);
     }
 
     /* ============================================================
@@ -424,6 +562,9 @@
       .footer-inner {
         flex-direction: column;
       }
+      .article-content .btn-group {
+        flex-direction: column;
+      }
     }
 
     @media (max-width: 480px) {
@@ -447,18 +588,17 @@
       color: var(--muted);
       font-size: 1.1rem;
     }
-    .back-home {
-      display: inline-block;
-      margin-top: 20px;
-      padding: 10px 24px;
-      background: var(--yellow);
-      color: var(--text);
-      font-weight: 700;
-      border-radius: 30px;
-      transition: 0.2s;
+    .breadcrumb {
+      font-size: 0.9rem;
+      color: var(--muted);
+      margin-bottom: 20px;
     }
-    .back-home:hover {
-      background: var(--yellow-dark);
+    .breadcrumb a {
+      color: var(--yellow-darker);
+      font-weight: 600;
+    }
+    .breadcrumb a:hover {
+      text-decoration: underline;
     }
   </style>
 </head>
@@ -616,6 +756,18 @@
           </div>
         `,
 
+      article: `
+          <div class="container article-page">
+            <div class="breadcrumb">
+              <a href="#" onclick="navigateTo('home'); return false;">← Home</a> / <span id="articleCategory">Category</span> / <span id="articleTitle">Article</span>
+            </div>
+            <div id="articleContent">
+              <div class="loading-spinner">Loading article…</div>
+            </div>
+            <a href="#" class="back-home" onclick="navigateTo('home'); return false;">← Back to Home</a>
+          </div>
+        `,
+
       about: `
           <div class="container page-content">
             <h2>About Us</h2>
@@ -648,12 +800,10 @@
       const main = document.getElementById('main-content');
       main.innerHTML = pages[pageKey];
 
-      // Update active nav link
       document.querySelectorAll('.nav-links a').forEach(link => {
         link.classList.toggle('active', link.dataset.page === pageKey);
       });
 
-      // Load appropriate content
       if (pageKey === 'home') {
         loadCategoryCounts();
         loadFeaturedArticles();
@@ -673,20 +823,32 @@
       const main = document.getElementById('main-content');
       main.innerHTML = pages.category;
 
-      // Update breadcrumb and title
       document.getElementById('categoryName').textContent = category.name;
       document.getElementById('categoryTitle').textContent = `${category.icon} ${category.name}`;
       document.getElementById('categoryDescription').textContent = `Articles tagged with "${category.name}".`;
 
-      // Load articles for this category
       loadCategoryArticles(category.tag);
 
-      // Update nav
       document.querySelectorAll('.nav-links a').forEach(link => {
         link.classList.toggle('active', link.dataset.page === 'home');
       });
 
       document.getElementById('navLinks').classList.remove('open');
+    }
+
+    function navigateToArticle(slug) {
+      currentPage = 'article';
+      const main = document.getElementById('main-content');
+      main.innerHTML = pages.article;
+
+      document.querySelectorAll('.nav-links a').forEach(link => {
+        link.classList.toggle('active', link.dataset.page === 'home');
+      });
+
+      document.getElementById('navLinks').classList.remove('open');
+
+      // Load the article
+      loadArticle(slug);
     }
 
     function toggleMobileMenu() {
@@ -740,7 +902,7 @@
     ============================================================ */
     function createCardHTML(article, linkUrl) {
       return `
-        <article class="card" data-title="${article.title.toLowerCase()}" data-tag="${(article.tag || '').toLowerCase()}">
+        <article class="card" data-title="${article.title.toLowerCase()}" data-tag="${(article.tag || '').toLowerCase()}" onclick="navigateToArticle('${article.slug}')">
           <div class="card-image">
             <img src="${article.image_url}" alt="${article.title}" loading="lazy" />
           </div>
@@ -748,7 +910,7 @@
             <span class="tag">${article.tag || 'Travel'}</span>
             <h3>${article.title}</h3>
             <p>${article.description}</p>
-            <a href="${linkUrl || '#'}" class="affiliate-link" target="_blank" rel="noopener">
+            <a href="${linkUrl || '#'}" class="affiliate-link" target="_blank" rel="noopener" onclick="event.stopPropagation();">
               ${linkUrl ? 'Check Price →' : 'Unavailable'}
             </a>
           </div>
@@ -757,7 +919,7 @@
     }
 
     /* ============================================================
-       LOAD CATEGORY COUNTS (for homepage category grid)
+       LOAD CATEGORY COUNTS
     ============================================================ */
     async function loadCategoryCounts() {
       try {
@@ -767,7 +929,6 @@
 
         if (error || !data) return;
 
-        // Count articles per tag
         const counts = {};
         data.forEach(article => {
           if (article.tag) {
@@ -775,7 +936,6 @@
           }
         });
 
-        // Update the UI
         categories.forEach(cat => {
           const el = document.getElementById(`count-${cat.id}`);
           if (el) {
@@ -790,7 +950,7 @@
     }
 
     /* ============================================================
-       LOAD FEATURED ARTICLES (homepage)
+       LOAD FEATURED ARTICLES
     ============================================================ */
     async function loadFeaturedArticles() {
       const grid = document.getElementById('featuredGrid');
@@ -802,12 +962,23 @@
         const { data: articles, error } = await supabaseClient
           .from('articles')
           .select('*')
+          .eq('featured', true)
           .order('created_at', { ascending: false })
           .limit(4);
 
         if (error || !articles || articles.length === 0) {
-          grid.innerHTML = `<p style="color: var(--muted); padding: 20px;">No featured articles yet.</p>`;
-          return;
+          // Fallback to latest if no featured
+          const { data: fallback, error: fallbackError } = await supabaseClient
+            .from('articles')
+            .select('*')
+            .order('created_at', { ascending: false })
+            .limit(4);
+
+          if (fallbackError || !fallback || fallback.length === 0) {
+            grid.innerHTML = `<p style="color: var(--muted); padding: 20px;">No articles yet.</p>`;
+            return;
+          }
+          articles = fallback;
         }
 
         const country = await getCountryCode();
@@ -844,7 +1015,7 @@
     }
 
     /* ============================================================
-       LOAD LATEST ARTICLES (homepage)
+       LOAD LATEST ARTICLES
     ============================================================ */
     async function loadLatestArticles() {
       const grid = document.getElementById('latestGrid');
@@ -898,7 +1069,7 @@
     }
 
     /* ============================================================
-       LOAD CATEGORY ARTICLES (category page)
+       LOAD CATEGORY ARTICLES
     ============================================================ */
     async function loadCategoryArticles(tag) {
       const grid = document.getElementById('categoryGrid');
@@ -948,6 +1119,62 @@
       } catch (err) {
         console.error('Error loading category:', err);
         grid.innerHTML = `<p style="color: var(--muted); padding: 20px;">⚠️ Could not load articles.</p>`;
+      }
+    }
+
+    /* ============================================================
+       LOAD SINGLE ARTICLE
+    ============================================================ */
+    async function loadArticle(slug) {
+      const container = document.getElementById('articleContent');
+      const titleSpan = document.getElementById('articleTitle');
+      const catSpan = document.getElementById('articleCategory');
+
+      if (!container) return;
+
+      container.innerHTML = '<div class="loading-spinner">Loading article…</div>';
+
+      try {
+        const { data: article, error } = await supabaseClient
+          .from('articles')
+          .select('*')
+          .eq('slug', slug)
+          .single();
+
+        if (error || !article) {
+          container.innerHTML = `<p style="color: var(--muted); padding: 20px;">⚠️ Article not found.</p>`;
+          return;
+        }
+
+        // Update breadcrumb
+        if (titleSpan) titleSpan.textContent = article.title;
+        if (catSpan) {
+          const category = categories.find(c => c.tag === article.tag);
+          catSpan.textContent = category ? category.name : article.tag || 'Travel';
+        }
+
+        // Build the article HTML
+        let html = `
+          <div class="article-header">
+            <h1>${article.title}</h1>
+            <div class="meta">
+              <span class="tag">${article.tag || 'Travel'}</span>
+              ${article.featured ? ' ⭐ Featured' : ''}
+            </div>
+            <div class="hero-image">
+              <img src="${article.image_url}" alt="${article.title}" />
+            </div>
+          </div>
+          <div class="article-content">
+            ${article.content || `<p>No full content available for this article yet.</p>`}
+          </div>
+        `;
+
+        container.innerHTML = html;
+
+      } catch (err) {
+        console.error('Error loading article:', err);
+        container.innerHTML = `<p style="color: var(--muted); padding: 20px;">⚠️ Could not load the article.</p>`;
       }
     }
 
