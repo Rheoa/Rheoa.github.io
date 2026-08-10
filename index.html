@@ -1364,37 +1364,26 @@
     ========================== */
 
     const discoveries = {
-
       Patagonia: {
         title: "Patagonia",
-        description:
-          "A spectacular region of mountains, glaciers, lakes and remote landscapes."
+        description: "A spectacular region of mountains, glaciers, lakes and remote landscapes."
       },
-
       Hallstatt: {
         title: "Hallstatt",
-        description:
-          "A beautiful lakeside village surrounded by dramatic Austrian mountains."
+        description: "A beautiful lakeside village surrounded by dramatic Austrian mountains."
       },
-
       Socotra: {
         title: "Socotra",
-        description:
-          "An isolated island famous for extraordinary landscapes and unusual plant life."
+        description: "An isolated island famous for extraordinary landscapes and unusual plant life."
       },
-
       "Namib Desert": {
         title: "Namib Desert",
-        description:
-          "One of the world's oldest deserts, famous for towering dunes and surreal scenery."
+        description: "One of the world's oldest deserts, famous for towering dunes and surreal scenery."
       },
-
       Bali: {
         title: "Bali",
-        description:
-          "A tropical destination known for temples, beaches, rice terraces and culture."
+        description: "A tropical destination known for temples, beaches, rice terraces and culture."
       }
-
     };
 
 
@@ -1405,19 +1394,11 @@
     let currentLocation = "Patagonia";
 
     function showLocation(name) {
-
       const location = discoveries[name];
-
       if (!location) return;
-
       currentLocation = name;
-
-      document.getElementById("locationTitle").textContent =
-        location.title;
-
-      document.getElementById("locationDescription").textContent =
-        location.description;
-
+      document.getElementById("locationTitle").textContent = location.title;
+      document.getElementById("locationDescription").textContent = location.description;
     }
 
 
@@ -1426,12 +1407,7 @@
     ========================== */
 
     function openDiscovery() {
-
-      alert(
-        "This will eventually open the full article for: " +
-        currentLocation
-      );
-
+      alert("This will eventually open the full article for: " + currentLocation);
     }
 
 
@@ -1440,20 +1416,10 @@
     ========================== */
 
     function surpriseMe() {
-
       const keys = Object.keys(discoveries);
-
-      const randomKey =
-        keys[Math.floor(Math.random() * keys.length)];
-
+      const randomKey = keys[Math.floor(Math.random() * keys.length)];
       showLocation(randomKey);
-
-      document
-        .getElementById("maps")
-        .scrollIntoView({
-          behavior: "smooth"
-        });
-
+      document.getElementById("maps").scrollIntoView({ behavior: "smooth" });
     }
 
 
@@ -1462,17 +1428,11 @@
     ========================== */
 
     function toggleMenu() {
-
       const nav = document.querySelector(".nav-links");
-
       if (nav.style.display === "flex") {
-
         nav.style.display = "";
-
       } else {
-
         nav.style.display = "flex";
-
         nav.style.position = "absolute";
         nav.style.top = "62px";
         nav.style.left = "0";
@@ -1481,9 +1441,7 @@
         nav.style.background = "white";
         nav.style.flexDirection = "column";
         nav.style.borderBottom = "1px solid #e2e8f0";
-
       }
-
     }
 
 
@@ -1492,35 +1450,64 @@
     ========================== */
 
     function openSearch() {
-
-      const query = prompt(
-        "What would you like to discover?"
-      );
-
+      const query = prompt("What would you like to discover?");
       if (!query) return;
-
-      alert(
-        "Search functionality will connect to your website database later.\n\nSearching for: " +
-        query
-      );
-
+      alert("Search functionality will connect to your website database later.\n\nSearching for: " + query);
     }
 
 
     /* =========================
-       IP GEOLOCATION
+       IP GEOLOCATION (with caching & fallback)
     ========================== */
 
     async function getCountryCode() {
+      // Check cache first (valid for 1 hour)
+      try {
+        const cached = localStorage.getItem('userCountry');
+        const cachedTime = localStorage.getItem('userCountryTimestamp');
+        if (cached && cachedTime) {
+          const age = Date.now() - parseInt(cachedTime, 10);
+          if (age < 3600000) { // 1 hour
+            return cached;
+          }
+        }
+      } catch (e) {
+        // localStorage might be unavailable; ignore
+      }
+
+      // Try primary API (ipapi.co)
       try {
         const response = await fetch('https://ipapi.co/json/');
         const data = await response.json();
         if (data && data.country_code) {
-          return data.country_code; // e.g., "US", "DE"
+          const country = data.country_code;
+          // Save to cache
+          try {
+            localStorage.setItem('userCountry', country);
+            localStorage.setItem('userCountryTimestamp', String(Date.now()));
+          } catch (e) { /* ignore */ }
+          return country;
         }
       } catch (e) {
-        console.warn('IP geolocation failed, using fallback');
+        console.warn('ipapi.co failed, trying fallback...');
       }
+
+      // Fallback to ip-api.com
+      try {
+        const response = await fetch('https://ip-api.com/json/');
+        const data = await response.json();
+        if (data && data.status === 'success' && data.countryCode) {
+          const country = data.countryCode;
+          try {
+            localStorage.setItem('userCountry', country);
+            localStorage.setItem('userCountryTimestamp', String(Date.now()));
+          } catch (e) { /* ignore */ }
+          return country;
+        }
+      } catch (e) {
+        console.warn('ip-api.com also failed, using default');
+      }
+
       return 'default';
     }
 
@@ -1549,72 +1536,81 @@
 
 
     /* =========================
-       LOAD ARTICLES FOR A SECTION
+       LOAD ARTICLES FOR A SECTION (with try/catch)
     ========================== */
 
     async function loadArticlesForSection(gridId, tagFilter) {
       const grid = document.getElementById(gridId);
       if (!grid) return;
 
-      // Show loading
+      // Show loading state
       grid.innerHTML = `<div class="loading-spinner">Loading articles…</div>`;
 
-      // Fetch articles with optional tag filter
-      let query = supabase
-        .from('articles')
-        .select('*')
-        .order('created_at', { ascending: false });
+      try {
+        // Build query
+        let query = supabase
+          .from('articles')
+          .select('*')
+          .order('created_at', { ascending: false });
 
-      if (tagFilter) {
-        query = query.eq('tag', tagFilter);
-      }
+        if (tagFilter) {
+          query = query.eq('tag', tagFilter);
+        }
 
-      const { data: articles, error } = await query;
+        const { data: articles, error } = await query;
 
-      if (error || !articles) {
-        console.error('Error fetching articles:', error);
-        grid.innerHTML = `<p style="color: var(--muted); padding: 20px;">No articles found.</p>`;
-        return;
-      }
+        if (error) {
+          console.error('Supabase error:', error);
+          grid.innerHTML = `<p style="color: var(--muted); padding: 20px;">⚠️ Error loading articles. Please refresh.</p>`;
+          return;
+        }
 
-      if (articles.length === 0) {
-        grid.innerHTML = `<p style="color: var(--muted); padding: 20px;">No articles in this category yet.</p>`;
-        return;
-      }
+        if (!articles || articles.length === 0) {
+          grid.innerHTML = `<p style="color: var(--muted); padding: 20px;">No articles in this category yet.</p>`;
+          return;
+        }
 
-      // Get affiliate links for these articles and the user's country
-      const country = await getCountryCode();
-      const articleIds = articles.map(a => a.id);
+        // Get user's country (cached)
+        const country = await getCountryCode();
+        const articleIds = articles.map(a => a.id);
 
-      const { data: linkData, error: linkError } = await supabase
-        .from('affiliate_links')
-        .select('article_id, link_url, country_code')
-        .in('article_id', articleIds)
-        .or(`country_code.eq.${country},country_code.eq.default`);
+        // Fetch affiliate links
+        const { data: linkData, error: linkError } = await supabase
+          .from('affiliate_links')
+          .select('article_id, link_url, country_code')
+          .in('article_id', articleIds)
+          .or(`country_code.eq.${country},country_code.eq.default`);
 
-      if (linkError) {
-        console.error('Error fetching affiliate links:', linkError);
-      }
+        if (linkError) {
+          console.error('Error fetching affiliate links:', linkError);
+          // Continue without links – cards will show "Unavailable"
+        }
 
-      // Build a map: article_id -> best link (country-specific over default)
-      const linkMap = {};
-      if (linkData) {
-        linkData.forEach(item => {
-          const existing = linkMap[item.article_id];
-          if (!existing || (item.country_code !== 'default' && existing.country_code === 'default')) {
-            linkMap[item.article_id] = item.link_url;
-          }
+        // Build link map: prefer country-specific over default
+        const linkMap = {};
+        if (linkData) {
+          linkData.forEach(item => {
+            const existing = linkMap[item.article_id];
+            // If no link yet, OR this one is country-specific (not default) while existing is default
+            if (!existing || (item.country_code !== 'default' && existing === 'default')) {
+              linkMap[item.article_id] = item.link_url;
+            }
+          });
+        }
+
+        // Render cards
+        let html = '';
+        articles.forEach(article => {
+          const link = linkMap[article.id] || null;
+          html += createCardHTML(article, link);
         });
+
+        grid.innerHTML = html;
+
+      } catch (err) {
+        console.error('Unexpected error in loadArticlesForSection:', err);
+        grid.innerHTML = `<p style="color: var(--muted); padding: 20px;">⚠️ Something went wrong. Please refresh the page.</p>`;
       }
-
-      // Render cards
-      let html = '';
-      articles.forEach(article => {
-        const link = linkMap[article.id] || null;
-        html += createCardHTML(article, link);
-      });
-
-      grid.innerHTML = html;
     }
 
 
@@ -1623,11 +1619,10 @@
     ========================== */
 
     async function loadAllSections() {
-      // We assign each section a specific tag filter.
-      // You can adjust these tags to match your database entries.
-      await loadArticlesForSection('places-grid', 'Natural Wonder');      // Amazing Places
-      await loadArticlesForSection('hidden-gems-grid', 'Hidden');        // Hidden Travel Gems
-      await loadArticlesForSection('latest-discoveries-grid', 'Discovery'); // Latest Discoveries
+      // You can adjust these tag names to match your database
+      await loadArticlesForSection('places-grid', 'Natural Wonder');
+      await loadArticlesForSection('hidden-gems-grid', 'Hidden');
+      await loadArticlesForSection('latest-discoveries-grid', 'Discovery');
     }
 
 
