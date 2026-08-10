@@ -13,14 +13,16 @@
     const SUPABASE_URL = 'https://kabvjgnbxgwlltzrkxsj.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImthYnZqZ25ieGd3bGx0enJreHNqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYzMjQ2NTQsImV4cCI6MjEwMTkwMDY1NH0.lJdkSERv8dwhMvCMUWLRe6mpC66SzAi_jXFcWJJ_Qng';
 
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    // Create the client with a unique variable name
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     async function testFetch() {
       const output = document.getElementById('output');
+      output.innerHTML = '⏳ Fetching data from Supabase...';
 
       try {
-        // 1. Try fetching all articles (no tag filter)
-        const { data, error } = await supabase
+        // 1. Try fetching all articles (no filters)
+        const { data, error } = await supabaseClient
           .from('articles')
           .select('*');
 
@@ -31,14 +33,14 @@
         }
 
         if (!data || data.length === 0) {
-          output.innerHTML = '✅ Connected, but no articles found in the table.';
+          output.innerHTML = '✅ Connected successfully, but your "articles" table is currently empty.';
           return;
         }
 
         // 2. Show articles as a simple list
-        let html = '<h2>Articles found:</h2><ul>';
+        let html = `<h2>✅ Connected! Found ${data.length} article(s):</h2><ul>`;
         data.forEach(article => {
-          html += `<li><strong>${article.title}</strong> (tag: ${article.tag || 'none'}) – ${article.description}</li>`;
+          html += `<li><strong>${article.title}</strong> (ID: ${article.id}, Tag: "${article.tag || 'none'}")</li>`;
         });
         html += '</ul>';
         output.innerHTML = html;
