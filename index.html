@@ -4,42 +4,40 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <title>World Discovery — Amazing Places, Hidden Gems & Fascinating Facts</title>
+  <title>World Discovery — Explore Amazing Places</title>
 
-  <!-- Favicon (Globe emoji as SVG) -->
+  <!-- Globe favicon (no more 404 errors) -->
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌍</text></svg>" />
 
-  <meta
-    name="description"
-    content="Discover amazing places, hidden destinations, fascinating facts, world maps and unforgettable travel ideas."
-  />
+  <meta name="description" content="Discover amazing places, hidden destinations, and fascinating travel facts." />
 
-  <!-- Leaflet CSS -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <!-- Google Font for a modern look -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,600;14..32,800&display=swap" rel="stylesheet" />
+
   <style>
-    /* ========================================================
-       COLOR SCHEME: Yellow #ffdb10 + complementary dark tones
-       ======================================================== */
+    /* ============================================================
+       COLOR SCHEME: Primary Yellow #ffdb10
+       ============================================================ */
     :root {
-      --bg: #fef9e7;          /* very light yellow */
+      --yellow: #ffdb10;
+      --yellow-dark: #e6c200;
+      --yellow-darker: #b39b00;
+      --yellow-light: #fff8e1;
+      --bg: #fdfdfc;
       --surface: #ffffff;
-      --surface-soft: #fff8e1;
-      --text: #1e1e2a;
-      --muted: #4a4a5a;
-      --primary: #ffdb10;     /* main yellow */
-      --primary-dark: #d4b800;
-      --primary-darker: #b39b00;
-      --primary-light: #fff3a0;
-      --border: #e6dbb5;
-      --shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
-      --radius: 18px;
-      --max-width: 1240px;
+      --text: #1a1a2e;
+      --muted: #5a5a72;
+      --border: #eaeaea;
+      --shadow: 0 8px 30px rgba(0, 0, 0, 0.06);
+      --radius: 16px;
+      --max-width: 1200px;
+      --nav-height: 68px;
     }
 
     * {
-      box-sizing: border-box;
       margin: 0;
       padding: 0;
+      box-sizing: border-box;
     }
 
     html {
@@ -47,14 +45,7 @@
     }
 
     body {
-      font-family:
-        Inter,
-        ui-sans-serif,
-        system-ui,
-        -apple-system,
-        BlinkMacSystemFont,
-        "Segoe UI",
-        sans-serif;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
       background: var(--bg);
       color: var(--text);
       line-height: 1.6;
@@ -71,1247 +62,491 @@
       object-fit: cover;
     }
 
-    button,
-    input {
-      font: inherit;
-    }
-
-    button {
-      cursor: pointer;
-    }
-
     .container {
-      width: min(var(--max-width), calc(100% - 32px));
-      margin: auto;
+      max-width: var(--max-width);
+      margin: 0 auto;
+      padding: 0 24px;
     }
 
-    /* =========================
-       HEADER
-    ========================== */
-
+    /* ============================================================
+       HEADER / NAVIGATION
+       ============================================================ */
     header {
       position: sticky;
       top: 0;
-      z-index: 1000;
-      background: rgba(255, 255, 240, 0.96);
-      backdrop-filter: blur(14px);
-      border-bottom: 2px solid var(--primary);
+      z-index: 100;
+      background: rgba(255, 255, 255, 0.92);
+      backdrop-filter: blur(12px);
+      border-bottom: 2px solid var(--yellow);
+      height: var(--nav-height);
+      display: flex;
+      align-items: center;
     }
 
     .nav {
-      height: 70px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 20px;
+      width: 100%;
     }
 
     .logo {
       font-size: 1.4rem;
       font-weight: 800;
-      color: var(--primary-dark);
-      white-space: nowrap;
+      color: var(--yellow-darker);
     }
-
     .logo span {
       color: var(--text);
     }
 
     .nav-links {
       display: flex;
-      align-items: center;
-      gap: 24px;
-      font-size: 0.9rem;
+      gap: 28px;
       font-weight: 600;
+      font-size: 0.95rem;
     }
 
-    .nav-links a:hover {
-      color: var(--primary-dark);
-    }
-
-    .nav-actions {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .search-btn,
-    .menu-btn {
-      border: 1px solid var(--border);
-      background: var(--surface);
-      width: 42px;
-      height: 42px;
-      border-radius: 12px;
-      display: grid;
-      place-items: center;
-    }
-
-    .menu-btn {
-      display: none;
-    }
-
-    /* =========================
-       HERO
-    ========================== */
-
-    .hero {
-      padding: 70px 0 40px;
-      background: linear-gradient(135deg, #fff8e1 0%, #ffdb10 100%);
-    }
-
-    .hero-grid {
-      display: grid;
-      grid-template-columns: 1.05fr 0.95fr;
-      gap: 40px;
-      align-items: center;
-    }
-
-    .eyebrow {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 7px 12px;
-      border-radius: 999px;
-      background: rgba(0,0,0,0.08);
-      color: var(--primary-darker);
-      font-size: 0.78rem;
-      font-weight: 700;
-      margin-bottom: 18px;
-    }
-
-    .hero h1 {
-      font-size: clamp(2.5rem, 5vw, 4.8rem);
-      line-height: 1.03;
-      letter-spacing: -0.045em;
-      max-width: 720px;
-    }
-
-    .hero h1 span {
-      color: var(--primary-darker);
-    }
-
-    .hero p {
-      margin-top: 22px;
-      font-size: 1.08rem;
-      color: var(--muted);
-      max-width: 620px;
-    }
-
-    /* Search bar inside hero */
-    .search-wrapper {
-      margin-top: 28px;
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      align-items: center;
-    }
-
-    .search-wrapper input {
-      flex: 1;
-      min-width: 200px;
-      padding: 13px 18px;
-      border: 2px solid var(--border);
-      border-radius: 12px;
-      background: white;
-      font-size: 1rem;
+    .nav-links a {
+      padding: 4px 0;
+      border-bottom: 3px solid transparent;
       transition: 0.2s;
     }
 
+    .nav-links a:hover,
+    .nav-links a.active {
+      border-bottom-color: var(--yellow);
+      color: var(--yellow-darker);
+    }
+
+    .nav-links a.active {
+      border-bottom-color: var(--yellow-dark);
+    }
+
+    /* Mobile menu toggle */
+    .menu-toggle {
+      display: none;
+      font-size: 1.6rem;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 4px 8px;
+    }
+
+    /* ============================================================
+       MAIN CONTENT (pages are injected here)
+       ============================================================ */
+    #main-content {
+      min-height: 60vh;
+      padding: 40px 0 60px;
+    }
+
+    /* ============================================================
+       PAGE: HOME
+       ============================================================ */
+    .hero {
+      text-align: center;
+      padding: 20px 0 30px;
+    }
+
+    .hero h1 {
+      font-size: clamp(2.6rem, 6vw, 4.2rem);
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      line-height: 1.1;
+      margin-bottom: 12px;
+    }
+    .hero h1 span {
+      color: var(--yellow-darker);
+      background: var(--yellow-light);
+      padding: 0 12px;
+      border-radius: 12px;
+      display: inline-block;
+    }
+
+    .hero p {
+      font-size: 1.15rem;
+      color: var(--muted);
+      max-width: 640px;
+      margin: 0 auto 24px;
+    }
+
+    /* Search bar */
+    .search-wrapper {
+      max-width: 500px;
+      margin: 0 auto 20px;
+    }
+    .search-wrapper input {
+      width: 100%;
+      padding: 14px 20px;
+      border: 2px solid var(--border);
+      border-radius: 50px;
+      font-size: 1rem;
+      background: white;
+      transition: 0.2s;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+    }
     .search-wrapper input:focus {
       outline: none;
-      border-color: var(--primary-dark);
-      box-shadow: 0 0 0 3px rgba(212, 184, 0, 0.2);
+      border-color: var(--yellow-dark);
+      box-shadow: 0 0 0 4px rgba(255, 219, 16, 0.2);
     }
 
-    .hero-actions {
-      display: flex;
-      gap: 12px;
-      flex-wrap: wrap;
-      margin-top: 10px;
-    }
-
-    .btn {
-      border: none;
-      border-radius: 12px;
-      padding: 13px 20px;
+    /* Article Grid */
+    .section-title {
+      font-size: 1.8rem;
       font-weight: 700;
-      transition: 0.2s ease;
-    }
-
-    .btn-primary {
-      background: var(--primary-dark);
-      color: white;
-    }
-
-    .btn-primary:hover {
-      background: var(--primary-darker);
-      transform: translateY(-1px);
-    }
-
-    .btn-secondary {
-      background: white;
+      margin: 40px 0 20px;
       color: var(--text);
-      border: 1px solid var(--border);
     }
-
-    .btn-secondary:hover {
-      border-color: var(--primary-dark);
-      color: var(--primary-dark);
-    }
-
-    /* Hero visual */
-    .hero-visual {
-      min-height: 460px;
-      border-radius: 28px;
-      overflow: hidden;
-      position: relative;
-      box-shadow: var(--shadow);
-      background:
-        linear-gradient(
-          145deg,
-          rgba(12, 78, 110, 0.18),
-          rgba(12, 78, 110, 0.04)
-        ),
-        url("https://images.unsplash.com/photo-1500534623283-312aade485b7?auto=format&fit=crop&w=1400&q=85")
-        center / cover;
-    }
-
-    .hero-overlay-card {
-      position: absolute;
-      left: 22px;
-      right: 22px;
-      bottom: 22px;
-      padding: 20px;
-      background: rgba(255, 255, 240, 0.94);
-      border-radius: 18px;
-      backdrop-filter: blur(10px);
-      border: 1px solid var(--primary);
-    }
-
-    .hero-overlay-card small {
+    .section-title small {
+      font-weight: 400;
       color: var(--muted);
-      font-weight: 700;
+      font-size: 1rem;
+      margin-left: 12px;
     }
-
-    .hero-overlay-card h3 {
-      margin-top: 4px;
-      font-size: 1.3rem;
-    }
-
-    /* =========================
-       SECTION
-    ========================== */
-
-    section {
-      padding: 65px 0;
-    }
-
-    .section-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: end;
-      gap: 20px;
-      margin-bottom: 24px;
-    }
-
-    .section-header h2 {
-      font-size: clamp(1.7rem, 3vw, 2.5rem);
-      letter-spacing: -0.03em;
-      color: var(--primary-darker);
-    }
-
-    .section-header p {
-      color: var(--muted);
-      max-width: 600px;
-      margin-top: 6px;
-    }
-
-    .view-all {
-      color: var(--primary-dark);
-      font-weight: 700;
-      white-space: nowrap;
-    }
-
-    /* =========================
-       MAP
-    ========================== */
-
-    .map-section {
-      background: #e8e0cc;
-    }
-
-    .map-container {
-      position: relative;
-      height: 520px;
-      border-radius: 24px;
-      overflow: hidden;
-      border: 2px solid var(--primary);
-    }
-
-    #worldmap {
-      width: 100%;
-      height: 100%;
-    }
-
-    /* Leaflet popup custom */
-    .leaflet-popup-content {
-      font-family: inherit;
-      font-size: 0.95rem;
-    }
-    .leaflet-popup-content strong {
-      color: var(--primary-dark);
-    }
-    .leaflet-popup-content a {
-      color: var(--primary-dark);
-      font-weight: 700;
-      text-decoration: underline;
-    }
-
-    /* =========================
-       CARDS
-    ========================== */
 
     .card-grid {
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 18px;
+      grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+      gap: 24px;
     }
 
     .card {
       background: var(--surface);
-      border: 1px solid var(--border);
       border-radius: var(--radius);
       overflow: hidden;
+      border: 1px solid var(--border);
       transition: 0.25s ease;
-    }
-
-    .card:hover {
-      transform: translateY(-4px);
       box-shadow: var(--shadow);
+    }
+    .card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.08);
     }
 
     .card-image {
-      height: 190px;
+      height: 180px;
       overflow: hidden;
+      background: #f0f0f0;
     }
-
     .card-image img {
       height: 100%;
-      transition: transform 0.4s ease;
+      transition: transform 0.5s ease;
     }
-
     .card:hover .card-image img {
-      transform: scale(1.05);
+      transform: scale(1.04);
     }
 
     .card-body {
-      padding: 16px;
+      padding: 18px 20px 22px;
     }
-
-    .tag {
+    .card-body .tag {
       display: inline-block;
-      font-size: 0.72rem;
-      font-weight: 800;
-      color: var(--primary-dark);
-      margin-bottom: 7px;
+      font-size: 0.7rem;
+      font-weight: 700;
       text-transform: uppercase;
-      letter-spacing: 0.05em;
+      letter-spacing: 0.06em;
+      color: var(--yellow-darker);
+      background: var(--yellow-light);
+      padding: 2px 12px;
+      border-radius: 20px;
+      margin-bottom: 8px;
     }
-
-    .card h3 {
-      font-size: 1.08rem;
+    .card-body h3 {
+      font-size: 1.15rem;
+      font-weight: 700;
+      margin-bottom: 6px;
       line-height: 1.3;
     }
-
-    .card p {
+    .card-body p {
       color: var(--muted);
-      font-size: 0.88rem;
-      margin-top: 7px;
+      font-size: 0.92rem;
+      margin-bottom: 14px;
     }
-
-    .affiliate-link {
-      display: inline-block;
-      margin-top: 12px;
+    .card-body .affiliate-link {
       font-weight: 700;
-      color: var(--primary-dark);
+      color: var(--yellow-darker);
       border-bottom: 2px solid transparent;
-      transition: 0.2s;
+      transition: 0.15s;
     }
-    .affiliate-link:hover {
-      border-bottom-color: var(--primary-dark);
-    }
-
-    /* =========================
-       FEATURE
-    ========================== */
-
-    .feature {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      min-height: 470px;
-      background: var(--surface);
-      border-radius: 24px;
-      overflow: hidden;
-      box-shadow: var(--shadow);
-      border: 1px solid var(--primary-light);
+    .card-body .affiliate-link:hover {
+      border-bottom-color: var(--yellow-darker);
     }
 
-    .feature-image {
-      background:
-        url("https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1400&q=85")
-        center / cover;
+    /* ============================================================
+       PAGE: ABOUT / CONTACT (demo pages)
+       ============================================================ */
+    .page-content {
+      max-width: 720px;
+      margin: 0 auto;
     }
-
-    .feature-content {
-      padding: 55px;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      background: #fffcf0;
-    }
-
-    .feature-content h2 {
-      font-size: clamp(2rem, 4vw, 3.2rem);
-      line-height: 1.05;
-      letter-spacing: -0.04em;
-      color: var(--primary-darker);
-    }
-
-    .feature-content p {
-      color: var(--muted);
-      margin: 18px 0 25px;
-    }
-
-    /* =========================
-       CONTINENTS
-    ========================== */
-
-    .continent-grid {
-      display: grid;
-      grid-template-columns: repeat(7, 1fr);
-      gap: 12px;
-    }
-
-    .continent {
-      padding: 18px 10px;
-      border-radius: 14px;
-      background: white;
-      border: 1px solid var(--border);
-      text-align: center;
-      font-weight: 700;
-      font-size: 0.85rem;
-      transition: 0.2s;
-    }
-
-    .continent:hover {
-      background: #fff3a0;
-      border-color: var(--primary-dark);
-      color: var(--primary-darker);
-    }
-
-    /* =========================
-       FACTS
-    ========================== */
-
-    .facts {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 18px;
-    }
-
-    .fact {
-      padding: 25px;
-      border-radius: var(--radius);
-      background: var(--surface);
-      border: 1px solid var(--border);
-    }
-
-    .fact-number {
-      font-size: 2.2rem;
-      font-weight: 900;
-      color: var(--primary-dark);
-    }
-
-    .fact h3 {
-      margin-top: 8px;
-      font-size: 1rem;
-    }
-
-    .fact p {
-      margin-top: 6px;
-      color: var(--muted);
-      font-size: 0.87rem;
-    }
-
-    /* =========================
-       SURPRISE
-    ========================== */
-
-    .surprise-section {
-      background: #1a1a2a;
-      color: white;
-    }
-
-    .surprise-box {
-      display: grid;
-      grid-template-columns: 1fr auto;
-      gap: 30px;
-      align-items: center;
-    }
-
-    .surprise-box p {
-      color: #b8c9d3;
-      max-width: 650px;
-      margin-top: 8px;
-    }
-
-    .surprise-btn {
-      border: 1px solid rgba(255,215,0,0.4);
-      background: rgba(255,215,0,0.15);
-      color: var(--primary);
-      padding: 15px 22px;
-      border-radius: 12px;
+    .page-content h2 {
+      font-size: 2.4rem;
       font-weight: 800;
+      margin-bottom: 16px;
+    }
+    .page-content p {
+      font-size: 1.1rem;
+      color: var(--muted);
+      margin-bottom: 16px;
     }
 
-    .surprise-btn:hover {
-      background: rgba(255,215,0,0.25);
-    }
-
-    /* =========================
+    /* ============================================================
        FOOTER
-    ========================== */
-
+       ============================================================ */
     footer {
       background: #0d1c26;
+      color: #b0c4d0;
+      padding: 48px 0 28px;
+      margin-top: 20px;
+    }
+    .footer-inner {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 30px;
+    }
+    .footer-brand .logo {
+      color: var(--yellow);
+    }
+    .footer-brand .logo span {
       color: white;
-      padding: 55px 0 25px;
     }
-
-    .footer-grid {
-      display: grid;
-      grid-template-columns: 1.5fr repeat(3, 1fr);
-      gap: 40px;
-    }
-
     .footer-brand p {
-      color: #a7b7c0;
-      margin-top: 12px;
-      max-width: 360px;
+      max-width: 340px;
+      margin-top: 8px;
       font-size: 0.9rem;
     }
-
-    footer h4 {
-      margin-bottom: 13px;
-      color: var(--primary);
+    .footer-links {
+      display: flex;
+      gap: 48px;
+      flex-wrap: wrap;
     }
-
-    footer li {
+    .footer-links h4 {
+      color: white;
+      margin-bottom: 8px;
+    }
+    .footer-links ul {
       list-style: none;
-      margin: 7px 0;
-      color: #a7b7c0;
-      font-size: 0.87rem;
     }
-
-    footer li:hover {
+    .footer-links li {
+      margin: 4px 0;
+      font-size: 0.9rem;
+    }
+    .footer-links a:hover {
       color: white;
     }
-
     .copyright {
-      border-top: 1px solid rgba(255,255,255,0.1);
-      margin-top: 40px;
+      border-top: 1px solid rgba(255,255,255,0.06);
+      margin-top: 32px;
       padding-top: 20px;
-      color: #82939d;
       font-size: 0.8rem;
+      text-align: center;
     }
 
-    /* =========================
-       MOBILE
-    ========================== */
-
-    @media (max-width: 900px) {
+    /* ============================================================
+       RESPONSIVE
+       ============================================================ */
+    @media (max-width: 700px) {
+      .menu-toggle {
+        display: block;
+      }
       .nav-links {
         display: none;
-      }
-
-      .menu-btn {
-        display: grid;
-      }
-
-      .hero-grid,
-      .feature {
-        grid-template-columns: 1fr;
-      }
-
-      .hero {
-        padding-top: 40px;
-      }
-
-      .hero-visual {
-        min-height: 380px;
-      }
-
-      .card-grid {
-        grid-template-columns: repeat(2, 1fr);
-      }
-
-      .continent-grid {
-        grid-template-columns: repeat(4, 1fr);
-      }
-
-      .facts {
-        grid-template-columns: repeat(2, 1fr);
-      }
-
-      .feature-image {
-        min-height: 300px;
-      }
-
-      .footer-grid {
-        grid-template-columns: 1fr 1fr;
-      }
-    }
-
-    @media (max-width: 600px) {
-      .container {
-        width: min(100% - 22px, var(--max-width));
-      }
-
-      .nav {
-        height: 62px;
-      }
-
-      .hero {
-        padding: 35px 0 20px;
-      }
-
-      .hero h1 {
-        font-size: 2.55rem;
-      }
-
-      .hero p {
-        font-size: 0.97rem;
-      }
-
-      section {
-        padding: 45px 0;
-      }
-
-      .section-header {
-        align-items: start;
         flex-direction: column;
-        gap: 8px;
+        position: absolute;
+        top: var(--nav-height);
+        left: 0;
+        right: 0;
+        background: white;
+        padding: 24px;
+        border-bottom: 2px solid var(--yellow);
+        gap: 16px;
+        box-shadow: 0 12px 30px rgba(0,0,0,0.06);
       }
-
+      .nav-links.open {
+        display: flex;
+      }
       .card-grid {
         grid-template-columns: 1fr 1fr;
-        gap: 10px;
       }
-
-      .card-image {
-        height: 145px;
-      }
-
-      .card-body {
-        padding: 12px;
-      }
-
-      .card h3 {
-        font-size: 0.95rem;
-      }
-
-      .card p {
-        font-size: 0.78rem;
-      }
-
-      .map-container {
-        height: 430px;
-      }
-
-      .feature-content {
-        padding: 30px 22px;
-      }
-
-      .feature-image {
-        min-height: 230px;
-      }
-
-      .continent-grid {
-        grid-template-columns: repeat(2, 1fr);
-      }
-
-      .facts {
-        grid-template-columns: 1fr 1fr;
-      }
-
-      .surprise-box {
-        grid-template-columns: 1fr;
-      }
-
-      .surprise-btn {
-        width: 100%;
-      }
-
-      .footer-grid {
-        grid-template-columns: 1fr 1fr;
-        gap: 25px;
-      }
-
-      .footer-brand {
-        grid-column: 1 / -1;
+      .footer-inner {
+        flex-direction: column;
       }
     }
 
-    /* Loading spinner */
+    @media (max-width: 480px) {
+      .card-grid {
+        grid-template-columns: 1fr;
+      }
+      .hero h1 {
+        font-size: 2rem;
+      }
+    }
+
+    /* Utilities */
+    .hidden {
+      display: none !important;
+    }
     .loading-spinner {
       text-align: center;
-      padding: 40px;
+      padding: 48px;
       color: var(--muted);
-      font-size: 1.2rem;
+      font-size: 1.1rem;
     }
   </style>
-
-  <!-- Leaflet CSS (already included above) -->
 </head>
+
 <body>
 
-  <!-- =========================
+  <!-- ============================================================
        HEADER
-  ========================== -->
-
+  ============================================================ -->
   <header>
     <div class="container nav">
-
-      <a href="#" class="logo">
+      <a href="#" class="logo" onclick="navigateTo('home'); return false;">
         WORLD<span>DISCOVERY</span>
       </a>
 
-      <nav class="nav-links">
-        <a href="#explore">Explore</a>
-        <a href="#places">Places</a>
-        <a href="#travel">Travel</a>
-        <a href="#world">World</a>
-        <a href="#maps">Maps</a>
+      <nav class="nav-links" id="navLinks">
+        <a href="#" class="active" data-page="home" onclick="navigateTo('home'); return false;">Home</a>
+        <a href="#" data-page="about" onclick="navigateTo('about'); return false;">About</a>
+        <a href="#" data-page="contact" onclick="navigateTo('contact'); return false;">Contact</a>
       </nav>
 
-      <div class="nav-actions">
-        <button class="search-btn" onclick="openSearch()" aria-label="Search">
-          🔍
-        </button>
-
-        <button class="menu-btn" onclick="toggleMenu()" aria-label="Menu">
-          ☰
-        </button>
-      </div>
-
+      <button class="menu-toggle" onclick="toggleMobileMenu()" aria-label="Toggle menu">
+        ☰
+      </button>
     </div>
   </header>
 
-
-  <!-- =========================
-       HERO
-  ========================== -->
-
-  <main>
-
-    <section class="hero">
-      <div class="container hero-grid">
-
-        <div>
-
-          <div class="eyebrow">
-            🌎 Explore something new
-          </div>
-
-          <h1>
-            Discover the
-            <span>world</span>
-            differently.
-          </h1>
-
-          <p>
-            Amazing places, hidden destinations, fascinating facts,
-            beautiful landscapes and unexpected discoveries from around
-            the world.
-          </p>
-
-          <!-- SEARCH BAR (real-time) -->
-          <div class="search-wrapper">
-            <input
-              type="text"
-              id="searchInput"
-              placeholder="Search articles… (e.g., 'island', 'Europe')"
-              oninput="filterCards()"
-            />
-          </div>
-
-          <div class="hero-actions">
-
-            <a href="#explore" class="btn btn-primary">
-              Explore the World
-            </a>
-
-            <button class="btn btn-secondary" onclick="surpriseMe()">
-              🎲 Surprise Me
-            </button>
-
-          </div>
-
-        </div>
-
-        <div class="hero-visual">
-
-          <div class="hero-overlay-card">
-
-            <small>DISCOVERY OF THE DAY</small>
-
-            <h3>
-              Places that look like another planet
-            </h3>
-
-            <p>
-              Explore some of Earth's most surreal landscapes.
-            </p>
-
-          </div>
-
-        </div>
-
-      </div>
-    </section>
-
-
-    <!-- =========================
-         MAP (Leaflet.js)
-    ========================== -->
-
-    <section class="map-section" id="maps">
-
-      <div class="container">
-
-        <div class="section-header">
-
-          <div>
-            <h2>Explore the World</h2>
-            <p>Click a marker to discover an article.</p>
-          </div>
-
-          <a href="#" class="view-all" onclick="return false;">
-            Open full map →
-          </a>
-
-        </div>
-
-        <div class="map-container" id="map-container">
-          <div id="worldmap"></div>
-        </div>
-
-      </div>
-
-    </section>
-
-
-    <!-- =========================
-         AMAZING PLACES
-    ========================== -->
-
-    <section id="places">
-
-      <div class="container">
-
-        <div class="section-header">
-
-          <div>
-            <h2>Amazing Places</h2>
-            <p>Destinations that deserve a place on your map.</p>
-          </div>
-
-          <a href="#" class="view-all">
-            See all places →
-          </a>
-
-        </div>
-
-
-        <div class="card-grid" id="places-grid">
-          <div class="loading-spinner">Loading amazing places…</div>
-        </div>
-
-      </div>
-
-    </section>
-
-
-    <!-- =========================
-         FEATURE
-    ========================== -->
-
-    <section>
-
-      <div class="container">
-
-        <div class="feature">
-
-          <div class="feature-image"></div>
-
-          <div class="feature-content">
-
-            <span class="tag">
-              Places That Look Unreal
-            </span>
-
-            <h2>
-              Some places look too strange to be real.
-            </h2>
-
-            <p>
-              From surreal deserts and impossible rock formations
-              to colorful lakes and landscapes that look like
-              another planet.
-            </p>
-
-            <div>
-              <a href="#" class="btn btn-primary">
-                Explore the collection →
-              </a>
-            </div>
-
-          </div>
-
-        </div>
-
-      </div>
-
-    </section>
-
-
-    <!-- =========================
-         HIDDEN GEMS
-    ========================== -->
-
-    <section id="hidden-gems">
-
-      <div class="container">
-
-        <div class="section-header">
-
-          <div>
-            <h2>Hidden Travel Gems</h2>
-            <p>Places most travelers haven't discovered yet.</p>
-          </div>
-
-          <a href="#" class="view-all">
-            Explore hidden gems →
-          </a>
-
-        </div>
-
-
-        <div class="card-grid" id="hidden-gems-grid">
-          <div class="loading-spinner">Loading hidden gems…</div>
-        </div>
-
-      </div>
-
-    </section>
-
-
-    <!-- =========================
-         CONTINENTS
-    ========================== -->
-
-    <section id="travel">
-
-      <div class="container">
-
-        <div class="section-header">
-
-          <div>
-            <h2>Explore by Region</h2>
-            <p>Start your journey anywhere in the world.</p>
-          </div>
-
-        </div>
-
-        <div class="continent-grid">
-
-          <a href="#" class="continent">Europe</a>
-          <a href="#" class="continent">Asia</a>
-          <a href="#" class="continent">Africa</a>
-          <a href="#" class="continent">N. America</a>
-          <a href="#" class="continent">S. America</a>
-          <a href="#" class="continent">Oceania</a>
-          <a href="#" class="continent">India</a>
-
-        </div>
-
-      </div>
-
-    </section>
-
-
-    <!-- =========================
-         WORLD FACTS
-    ========================== -->
-
-    <section id="world">
-
-      <div class="container">
-
-        <div class="section-header">
-
-          <div>
-            <h2>World Facts</h2>
-            <p>The world is stranger and more fascinating than you think.</p>
-          </div>
-
-          <a href="#" class="view-all">
-            Explore world facts →
-          </a>
-
-        </div>
-
-
-        <div class="facts">
-
-          <article class="fact">
-            <div class="fact-number">195+</div>
-            <h3>Countries</h3>
-            <p>Explore countries, cultures, geography and fascinating facts.</p>
-          </article>
-
-          <article class="fact">
-            <div class="fact-number">7</div>
-            <h3>Continents</h3>
-            <p>Discover incredible places across every part of the planet.</p>
-          </article>
-
-          <article class="fact">
-            <div class="fact-number">∞</div>
-            <h3>Discoveries</h3>
-            <p>There is always something new to discover.</p>
-          </article>
-
-          <article class="fact">
-            <div class="fact-number">1</div>
-            <h3>Planet</h3>
-            <p>And it is much more interesting than most people realize.</p>
-          </article>
-
-        </div>
-
-      </div>
-
-    </section>
-
-
-    <!-- =========================
-         SURPRISE ME
-    ========================== -->
-
-    <section class="surprise-section" id="explore">
-
-      <div class="container surprise-box">
-
-        <div>
-
-          <h2>
-            Don't know where to explore?
-          </h2>
-
-          <p>
-            Let us choose something fascinating for you.
-            Discover a random place, fact or destination.
-          </p>
-
-        </div>
-
-        <button
-          class="surprise-btn"
-          onclick="surpriseMe()">
-          🎲 Surprise Me
-        </button>
-
-      </div>
-
-    </section>
-
-
-    <!-- =========================
-         LATEST DISCOVERIES
-    ========================== -->
-
-    <section id="latest-discoveries">
-
-      <div class="container">
-
-        <div class="section-header">
-
-          <div>
-            <h2>Latest Discoveries</h2>
-            <p>Fresh stories, destinations and fascinating places.</p>
-          </div>
-
-          <a href="#" class="view-all">
-            View all →
-          </a>
-
-        </div>
-
-
-        <div class="card-grid" id="latest-discoveries-grid">
-          <div class="loading-spinner">Loading latest discoveries…</div>
-        </div>
-
-      </div>
-
-    </section>
-
+  <!-- ============================================================
+       MAIN CONTENT (pages are rendered here)
+  ============================================================ -->
+  <main id="main-content">
+    <!-- The homepage will be injected here by JavaScript -->
   </main>
 
-
-  <!-- =========================
+  <!-- ============================================================
        FOOTER
-  ========================== -->
-
+  ============================================================ -->
   <footer>
-
     <div class="container">
-
-      <div class="footer-grid">
-
+      <div class="footer-inner">
         <div class="footer-brand">
-
-          <div class="logo">
-            WORLD<span>DISCOVERY</span>
+          <div class="logo">WORLD<span>DISCOVERY</span></div>
+          <p>Explore amazing places, hidden gems, and fascinating travel stories from around the globe.</p>
+        </div>
+        <div class="footer-links">
+          <div>
+            <h4>Explore</h4>
+            <ul>
+              <li><a href="#" onclick="navigateTo('home'); return false;">Home</a></li>
+              <li><a href="#" onclick="navigateTo('about'); return false;">About</a></li>
+              <li><a href="#" onclick="navigateTo('contact'); return false;">Contact</a></li>
+            </ul>
           </div>
-
-          <p>
-            Discover amazing places, hidden destinations,
-            fascinating facts and unexpected stories from around
-            the world.
-          </p>
-
         </div>
-
-
-        <div>
-          <h4>Explore</h4>
-
-          <ul>
-            <li><a href="#">Amazing Places</a></li>
-            <li><a href="#">Hidden Places</a></li>
-            <li><a href="#">World Maps</a></li>
-            <li><a href="#">Country Facts</a></li>
-          </ul>
-
-        </div>
-
-
-        <div>
-          <h4>Travel</h4>
-
-          <ul>
-            <li><a href="#">Travel Inspiration</a></li>
-            <li><a href="#">Travel Guides</a></li>
-            <li><a href="#">Itineraries</a></li>
-            <li><a href="#">Bucket Lists</a></li>
-          </ul>
-
-        </div>
-
-
-        <div>
-          <h4>About</h4>
-
-          <ul>
-            <li><a href="#">About Us</a></li>
-            <li><a href="#">Contact</a></li>
-            <li><a href="#">Editorial Policy</a></li>
-            <li><a href="#">Privacy</a></li>
-          </ul>
-
-        </div>
-
       </div>
-
-
       <div class="copyright">
-        © 2026 World Discovery. Explore something new.
+        &copy; 2026 World Discovery. Explore something new.
       </div>
-
     </div>
-
   </footer>
 
-
-  <!-- =========================
+  <!-- ============================================================
        SCRIPTS
-  ========================== -->
-
+  ============================================================ -->
   <!-- Supabase client -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-  <!-- Leaflet JS -->
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2">
+  </script>
 
   <script>
-
     /* ============================================================
        SUPABASE INIT
     ============================================================ */
-
     const SUPABASE_URL = 'https://kabvjgnbxgwlltzrkxsj.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImthYnZqZ25ieGd3bGx0enJreHNqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYzMjQ2NTQsImV4cCI6MjEwMTkwMDY1NH0.lJdkSERv8dwhMvCMUWLRe6mpC66SzAi_jXFcWJJ_Qng';
+    const SUPABASE_ANON_KEY =
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImthYnZqZ25ieGd3bGx0enJreHNqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYzMjQ2NTQsImV4cCI6MjEwMTkwMDY1NH0.lJdkSERv8dwhMvCMUWLRe6mpC66SzAi_jXFcWJJ_Qng';
 
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-
-    /* ============================================================
-       GLOBAL STATE
-    ============================================================ */
-
-    let allArticles = [];          // will hold all articles fetched
-    let map = null;
-    let markerLayer = null;
-
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     /* ============================================================
-       MOBILE MENU
+       SIMPLE SPA ROUTER (provision for more pages)
     ============================================================ */
 
-    function toggleMenu() {
-      const nav = document.querySelector(".nav-links");
-      if (nav.style.display === "flex") {
-        nav.style.display = "";
-      } else {
-        nav.style.display = "flex";
-        nav.style.position = "absolute";
-        nav.style.top = "62px";
-        nav.style.left = "0";
-        nav.style.right = "0";
-        nav.style.padding = "20px";
-        nav.style.background = "white";
-        nav.style.flexDirection = "column";
-        nav.style.borderBottom = "1px solid #e2e8f0";
+    // Define your pages here. To add a new page, add a new key (e.g., 'gallery') 
+    // and write its HTML content as a string.
+    const pages = {
+      home: `
+          <div class="container">
+            <div class="hero">
+              <h1>Discover the <span>world</span> differently.</h1>
+              <p>Amazing places, hidden destinations, and fascinating facts — all in one place.</p>
+              <div class="search-wrapper">
+                <input type="text" id="searchInput" placeholder="Search articles… (e.g., 'island')" oninput="filterArticles()" />
+              </div>
+            </div>
+
+            <h2 class="section-title">Latest Articles <small>from our collection</small></h2>
+            <div class="card-grid" id="articlesGrid">
+              <div class="loading-spinner">Loading articles…</div>
+            </div>
+          </div>
+        `,
+
+      about: `
+          <div class="container page-content">
+            <h2>About Us</h2>
+            <p>World Discovery was born from a simple love for travel and curiosity about our planet. We share hidden gems, surreal landscapes, and fascinating facts that make our world so special.</p>
+            <p>Our mission is to inspire you to explore — whether from your armchair or on your next adventure. All content is carefully researched and written with passion.</p>
+            <p>📧 hello@worlddiscovery.com</p>
+          </div>
+        `,
+
+      contact: `
+          <div class="container page-content">
+            <h2>Contact</h2>
+            <p>We'd love to hear from you! Whether you have a question, a travel tip, or just want to say hello, feel free to reach out.</p>
+            <p>Email: <strong>hello@worlddiscovery.com</strong></p>
+            <p>Social: @worlddiscovery (coming soon)</p>
+          </div>
+        `
+    };
+
+    // Keep track of the current page
+    let currentPage = 'home';
+
+    // Navigate to a page by its key
+    function navigateTo(pageKey) {
+      if (!pages[pageKey]) return;
+
+      currentPage = pageKey;
+      const main = document.getElementById('main-content');
+      main.innerHTML = pages[pageKey];
+
+      // Update active nav link
+      document.querySelectorAll('.nav-links a').forEach(link => {
+        link.classList.toggle('active', link.dataset.page === pageKey);
+      });
+
+      // If we navigated to home, load the articles
+      if (pageKey === 'home') {
+        loadArticles();
       }
+
+      // Close mobile menu if open
+      document.getElementById('navLinks').classList.remove('open');
     }
 
-
-    /* ============================================================
-       SEARCH (legacy button)
-    ============================================================ */
-
-    function openSearch() {
-      // Focus the search input instead
-      document.getElementById('searchInput').focus();
+    // Toggle mobile menu
+    function toggleMobileMenu() {
+      document.getElementById('navLinks').classList.toggle('open');
     }
 
-
     /* ============================================================
-       IP GEOLOCATION (cached & fallback)
+       IP GEOLOCATION (cached)
     ============================================================ */
-
     async function getCountryCode() {
       try {
         const cached = localStorage.getItem('userCountry');
@@ -1320,7 +555,7 @@
           const age = Date.now() - parseInt(cachedTime, 10);
           if (age < 3600000) return cached;
         }
-      } catch (e) { /* ignore */ }
+      } catch (_) { /* ignore */ }
 
       try {
         const res = await fetch('https://ipapi.co/json/');
@@ -1330,12 +565,10 @@
           try {
             localStorage.setItem('userCountry', country);
             localStorage.setItem('userCountryTimestamp', String(Date.now()));
-          } catch (e) { /* ignore */ }
+          } catch (_) { /* ignore */ }
           return country;
         }
-      } catch (e) {
-        console.warn('ipapi.co failed, trying fallback...');
-      }
+      } catch (_) { /* ignore */ }
 
       try {
         const res = await fetch('https://ip-api.com/json/');
@@ -1345,91 +578,54 @@
           try {
             localStorage.setItem('userCountry', country);
             localStorage.setItem('userCountryTimestamp', String(Date.now()));
-          } catch (e) { /* ignore */ }
+          } catch (_) { /* ignore */ }
           return country;
         }
-      } catch (e) {
-        console.warn('ip-api.com failed, using default');
-      }
+      } catch (_) { /* ignore */ }
 
       return 'default';
     }
 
-
     /* ============================================================
-       RENDER CARD
+       LOAD ARTICLES FROM SUPABASE
     ============================================================ */
-
-    function createCardHTML(article, linkUrl) {
-      return `
-        <article class="card" data-title="${article.title.toLowerCase()}" data-tag="${(article.tag||'').toLowerCase()}">
-          <div class="card-image">
-            <img src="${article.image_url}" alt="${article.title}" loading="lazy" />
-          </div>
-          <div class="card-body">
-            <span class="tag">${article.tag || 'Travel'}</span>
-            <h3>${article.title}</h3>
-            <p>${article.description}</p>
-            <a href="${linkUrl || '#'}" class="affiliate-link" target="_blank" rel="noopener">
-              ${linkUrl ? 'Check Price' : 'Unavailable'}
-            </a>
-          </div>
-        </article>
-      `;
-    }
-
-
-    /* ============================================================
-       LOAD ARTICLES FOR A SECTION
-    ============================================================ */
-
-    async function loadArticlesForSection(gridId, tagFilter) {
-      const grid = document.getElementById(gridId);
+    async function loadArticles() {
+      const grid = document.getElementById('articlesGrid');
       if (!grid) return;
 
-      grid.innerHTML = `<div class="loading-spinner">Loading articles…</div>`;
+      grid.innerHTML = '<div class="loading-spinner">Loading articles…</div>';
 
       try {
-        let query = supabase
+        // 1. Fetch all articles, newest first
+        const { data: articles, error } = await supabaseClient
           .from('articles')
           .select('*')
           .order('created_at', { ascending: false });
 
-        if (tagFilter) {
-          query = query.eq('tag', tagFilter);
-        }
-
-        const { data: articles, error } = await query;
-
         if (error) {
+          grid.innerHTML = `<p style="color: var(--muted); padding: 20px;">⚠️ Could not load articles.</p>`;
           console.error('Supabase error:', error);
-          grid.innerHTML = `<p style="color: var(--muted); padding: 20px;">⚠️ Error loading articles.</p>`;
           return;
         }
 
         if (!articles || articles.length === 0) {
-          grid.innerHTML = `<p style="color: var(--muted); padding: 20px;">No articles in this category yet.</p>`;
+          grid.innerHTML = `<p style="color: var(--muted); padding: 20px;">No articles published yet. Check back soon!</p>`;
           return;
         }
 
-        // Store all articles for search filtering (if not already stored)
-        if (allArticles.length === 0) {
-          // We'll store them later globally, but we need to merge all sections.
-          // We'll fetch all articles in a separate call for search/map.
-          // For now, we just render these.
-        }
-
+        // 2. Fetch affiliate links for these articles based on user's country
         const country = await getCountryCode();
         const articleIds = articles.map(a => a.id);
 
-        const { data: linkData, error: linkError } = await supabase
+        const { data: linkData, error: linkError } = await supabaseClient
           .from('affiliate_links')
           .select('article_id, link_url, country_code')
           .in('article_id', articleIds)
           .or(`country_code.eq.${country},country_code.eq.default`);
 
-        if (linkError) console.error('Affiliate link error:', linkError);
+        if (linkError) console.warn('Affiliate link fetch error:', linkError);
 
+        // Build map: article_id -> best link (country-specific over default)
         const linkMap = {};
         if (linkData) {
           linkData.forEach(item => {
@@ -1440,202 +636,57 @@
           });
         }
 
+        // 3. Render cards
         let html = '';
         articles.forEach(article => {
           const link = linkMap[article.id] || null;
-          html += createCardHTML(article, link);
+          html += `
+              <article class="card" data-title="${article.title.toLowerCase()}" data-tag="${(article.tag || '').toLowerCase()}">
+                <div class="card-image">
+                  <img src="${article.image_url}" alt="${article.title}" loading="lazy" />
+                </div>
+                <div class="card-body">
+                  <span class="tag">${article.tag || 'Travel'}</span>
+                  <h3>${article.title}</h3>
+                  <p>${article.description}</p>
+                  <a href="${link || '#'}" class="affiliate-link" target="_blank" rel="noopener">
+                    ${link ? 'Check Price →' : 'Unavailable'}
+                  </a>
+                </div>
+              </article>
+            `;
         });
 
         grid.innerHTML = html;
 
-        // Also add to allArticles for search and map (avoid duplicates)
-        // We'll do this in a separate function after all sections loaded.
-
       } catch (err) {
         console.error('Unexpected error:', err);
-        grid.innerHTML = `<p style="color: var(--muted); padding: 20px;">⚠️ Something went wrong.</p>`;
+        grid.innerHTML = `<p style="color: var(--muted); padding: 20px;">⚠️ Something went wrong. Please refresh.</p>`;
       }
     }
 
-
     /* ============================================================
-       LOAD ALL SECTIONS & GLOBAL DATA
+       SEARCH FILTER (client‑side)
     ============================================================ */
-
-    async function loadAllSections() {
-      // Load the three sections
-      await loadArticlesForSection('places-grid', 'Natural Wonder');
-      await loadArticlesForSection('hidden-gems-grid', 'Hidden');
-      await loadArticlesForSection('latest-discoveries-grid', 'Discovery');
-
-      // Now fetch all articles for the map and search (once)
-      await fetchAllArticles();
-    }
-
-
-    /* ============================================================
-       FETCH ALL ARTICLES (for map & search)
-    ============================================================ */
-
-    async function fetchAllArticles() {
-      try {
-        const { data, error } = await supabase
-          .from('articles')
-          .select('*')
-          .order('created_at', { ascending: false });
-
-        if (error) throw error;
-        allArticles = data || [];
-
-        // Also fetch affiliate links for all (for map popups if needed)
-        // We'll just show article title and link to itself
-
-        // Initialize map after we have data
-        initMap(allArticles);
-
-        // Also store for search filtering (the search function will filter the existing card grids)
-        // We already have cards rendered, search will hide/show them.
-
-      } catch (err) {
-        console.error('Error fetching all articles:', err);
-      }
-    }
-
-
-    /* ============================================================
-       SEARCH FILTER (client-side)
-    ============================================================ */
-
-    function filterCards() {
-      const query = document.getElementById('searchInput').value.toLowerCase().trim();
-      // Get all card grids
-      const grids = document.querySelectorAll('.card-grid');
-      grids.forEach(grid => {
-        const cards = grid.querySelectorAll('.card');
-        cards.forEach(card => {
-          const title = card.dataset.title || '';
-          const tag = card.dataset.tag || '';
-          const match = title.includes(query) || tag.includes(query);
-          card.style.display = match ? '' : 'none';
-        });
+    function filterArticles() {
+      const query = document.getElementById('searchInput')?.value.toLowerCase().trim() || '';
+      const cards = document.querySelectorAll('#articlesGrid .card');
+      cards.forEach(card => {
+        const title = card.dataset.title || '';
+        const tag = card.dataset.tag || '';
+        const match = title.includes(query) || tag.includes(query);
+        card.style.display = match ? '' : 'none';
       });
     }
 
-
     /* ============================================================
-       MAP – Leaflet.js (dynamic markers from Supabase)
+       START THE APP
     ============================================================ */
 
-    function initMap(articles) {
-      // Check if map container exists
-      const container = document.getElementById('worldmap');
-      if (!container) return;
-
-      // Destroy previous map if any
-      if (map) {
-        map.remove();
-        map = null;
-      }
-
-      // Center on average of all markers, or default (0,0)
-      let centerLat = 20, centerLng = 0;
-      const markers = [];
-
-      articles.forEach(article => {
-        if (article.latitude && article.longitude) {
-          markers.push({
-            lat: parseFloat(article.latitude),
-            lng: parseFloat(article.longitude),
-            title: article.title,
-            slug: article.slug,
-            id: article.id
-          });
-        }
-      });
-
-      if (markers.length === 0) {
-        // No markers – show a message
-        container.innerHTML = '<p style="padding:20px;text-align:center;">No map markers available. Add latitude/longitude to articles.</p>';
-        return;
-      }
-
-      // Compute center as average
-      const sumLat = markers.reduce((s, m) => s + m.lat, 0);
-      const sumLng = markers.reduce((s, m) => s + m.lng, 0);
-      centerLat = sumLat / markers.length;
-      centerLng = sumLng / markers.length;
-
-      // Create map
-      map = L.map('worldmap').setView([centerLat, centerLng], 3);
-
-      // Add tile layer (CartoDB Voyager – clean look)
-      L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>, &copy; CartoDB',
-        maxZoom: 19
-      }).addTo(map);
-
-      // Add markers
-      const markerGroup = L.layerGroup().addTo(map);
-
-      markers.forEach(m => {
-        const popupContent = `
-          <strong>${m.title}</strong><br />
-          <a href="#" onclick="alert('Article page for ${m.slug} will open soon.')">Read more →</a>
-        `;
-        const marker = L.marker([m.lat, m.lng])
-          .bindPopup(popupContent)
-          .addTo(markerGroup);
-      });
-
-      // Store markers for "Surprise Me"
-      window._mapMarkers = markers;
-      window._map = map;
-      window._markerGroup = markerGroup;
-    }
-
-
-    /* ============================================================
-       SURPRISE ME – random marker on map
-    ============================================================ */
-
-    function surpriseMe() {
-      const markers = window._mapMarkers || [];
-      if (markers.length === 0) {
-        alert('No destinations with coordinates yet!');
-        return;
-      }
-
-      const random = markers[Math.floor(Math.random() * markers.length)];
-      // Fly to marker
-      if (window._map) {
-        window._map.flyTo([random.lat, random.lng], 6, { duration: 1.5 });
-        // Open popup after fly
-        setTimeout(() => {
-          // Find the marker in the markerGroup
-          const group = window._markerGroup;
-          if (group) {
-            group.eachLayer(layer => {
-              if (layer.getLatLng && layer.getLatLng().lat === random.lat && layer.getLatLng().lng === random.lng) {
-                layer.openPopup();
-              }
-            });
-          }
-        }, 1600);
-      }
-
-      // Scroll to map
-      document.getElementById('maps').scrollIntoView({ behavior: 'smooth' });
-    }
-
-
-    /* ============================================================
-       INIT ON PAGE LOAD
-    ============================================================ */
-
+    // Load the home page by default when the DOM is ready
     document.addEventListener('DOMContentLoaded', () => {
-      loadAllSections();
+      navigateTo('home');
     });
-
   </script>
 
 </body>
