@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Supabase Test</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+  <h1>Testing Supabase Connection</h1>
+  <div id="output">Loading...</div>
+
+  <script>
+    // === YOUR SUPABASE CREDENTIALS ===
+    const SUPABASE_URL = 'https://kabvjgnbxgwlltzrkxsj.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImthYnZqZ25ieGd3bGx0enJreHNqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYzMjQ2NTQsImV4cCI6MjEwMTkwMDY1NH0.lJdkSERv8dwhMvCMUWLRe6mpC66SzAi_jXFcWJJ_Qng';
+
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    async function testFetch() {
+      const output = document.getElementById('output');
+
+      try {
+        // 1. Try fetching all articles (no tag filter)
+        const { data, error } = await supabase
+          .from('articles')
+          .select('*');
+
+        if (error) {
+          output.innerHTML = `❌ Supabase error: ${error.message}`;
+          console.error('Supabase error:', error);
+          return;
+        }
+
+        if (!data || data.length === 0) {
+          output.innerHTML = '✅ Connected, but no articles found in the table.';
+          return;
+        }
+
+        // 2. Show articles as a simple list
+        let html = '<h2>Articles found:</h2><ul>';
+        data.forEach(article => {
+          html += `<li><strong>${article.title}</strong> (tag: ${article.tag || 'none'}) – ${article.description}</li>`;
+        });
+        html += '</ul>';
+        output.innerHTML = html;
+
+      } catch (err) {
+        output.innerHTML = `❌ JavaScript error: ${err.message}`;
+        console.error('Unexpected error:', err);
+      }
+    }
+
+    // Run the test when page loads
+    testFetch();
+  </script>
+</body>
+</html>
