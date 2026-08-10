@@ -6,17 +6,15 @@
 
   <title>World Discovery — Explore Amazing Places</title>
 
-  <!-- Globe favicon (no more 404 errors) -->
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌍</text></svg>" />
 
   <meta name="description" content="Discover amazing places, hidden destinations, and fascinating travel facts." />
 
-  <!-- Google Font for a modern look -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,600;14..32,800&display=swap" rel="stylesheet" />
 
   <style>
     /* ============================================================
-       COLOR SCHEME: Primary Yellow #ffdb10
+       COLOR SCHEME
        ============================================================ */
     :root {
       --yellow: #ffdb10;
@@ -69,7 +67,7 @@
     }
 
     /* ============================================================
-       HEADER / NAVIGATION
+       HEADER
        ============================================================ */
     header {
       position: sticky;
@@ -122,7 +120,6 @@
       border-bottom-color: var(--yellow-dark);
     }
 
-    /* Mobile menu toggle */
     .menu-toggle {
       display: none;
       font-size: 1.6rem;
@@ -133,7 +130,7 @@
     }
 
     /* ============================================================
-       MAIN CONTENT (pages are injected here)
+       MAIN CONTENT
        ============================================================ */
     #main-content {
       min-height: 60vh;
@@ -141,7 +138,7 @@
     }
 
     /* ============================================================
-       PAGE: HOME
+       HOME PAGE
        ============================================================ */
     .hero {
       text-align: center;
@@ -170,7 +167,7 @@
       margin: 0 auto 24px;
     }
 
-    /* Search bar */
+    /* Search */
     .search-wrapper {
       max-width: 500px;
       margin: 0 auto 20px;
@@ -183,7 +180,6 @@
       font-size: 1rem;
       background: white;
       transition: 0.2s;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.02);
     }
     .search-wrapper input:focus {
       outline: none;
@@ -191,7 +187,7 @@
       box-shadow: 0 0 0 4px rgba(255, 219, 16, 0.2);
     }
 
-    /* Article Grid */
+    /* Section Titles */
     .section-title {
       font-size: 1.8rem;
       font-weight: 700;
@@ -205,6 +201,44 @@
       margin-left: 12px;
     }
 
+    /* Category Grid */
+    .category-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 16px;
+      margin-bottom: 30px;
+    }
+
+    .category-card {
+      background: var(--surface);
+      border: 2px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px 16px;
+      text-align: center;
+      transition: 0.2s ease;
+      cursor: pointer;
+      box-shadow: var(--shadow);
+    }
+    .category-card:hover {
+      border-color: var(--yellow);
+      transform: translateY(-4px);
+      box-shadow: 0 12px 30px rgba(255, 219, 16, 0.15);
+    }
+    .category-card .icon {
+      font-size: 2.2rem;
+      display: block;
+      margin-bottom: 8px;
+    }
+    .category-card .name {
+      font-weight: 700;
+      font-size: 0.95rem;
+    }
+    .category-card .count {
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+
+    /* Article Grid */
     .card-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
@@ -273,8 +307,22 @@
       border-bottom-color: var(--yellow-darker);
     }
 
+    /* Category Page Breadcrumb */
+    .breadcrumb {
+      font-size: 0.9rem;
+      color: var(--muted);
+      margin-bottom: 20px;
+    }
+    .breadcrumb a {
+      color: var(--yellow-darker);
+      font-weight: 600;
+    }
+    .breadcrumb a:hover {
+      text-decoration: underline;
+    }
+
     /* ============================================================
-       PAGE: ABOUT / CONTACT (demo pages)
+       PAGE: ABOUT / CONTACT
        ============================================================ */
     .page-content {
       max-width: 720px;
@@ -337,7 +385,7 @@
       color: white;
     }
     .copyright {
-      border-top: 1px solid rgba(255,255,255,0.06);
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
       margin-top: 32px;
       padding-top: 20px;
       font-size: 0.8rem;
@@ -362,13 +410,16 @@
         padding: 24px;
         border-bottom: 2px solid var(--yellow);
         gap: 16px;
-        box-shadow: 0 12px 30px rgba(0,0,0,0.06);
+        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.06);
       }
       .nav-links.open {
         display: flex;
       }
       .card-grid {
         grid-template-columns: 1fr 1fr;
+      }
+      .category-grid {
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
       }
       .footer-inner {
         flex-direction: column;
@@ -382,9 +433,11 @@
       .hero h1 {
         font-size: 2rem;
       }
+      .category-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
     }
 
-    /* Utilities */
     .hidden {
       display: none !important;
     }
@@ -393,6 +446,19 @@
       padding: 48px;
       color: var(--muted);
       font-size: 1.1rem;
+    }
+    .back-home {
+      display: inline-block;
+      margin-top: 20px;
+      padding: 10px 24px;
+      background: var(--yellow);
+      color: var(--text);
+      font-weight: 700;
+      border-radius: 30px;
+      transition: 0.2s;
+    }
+    .back-home:hover {
+      background: var(--yellow-dark);
     }
   </style>
 </head>
@@ -421,10 +487,10 @@
   </header>
 
   <!-- ============================================================
-       MAIN CONTENT (pages are rendered here)
+       MAIN CONTENT
   ============================================================ -->
   <main id="main-content">
-    <!-- The homepage will be injected here by JavaScript -->
+    <!-- Pages are injected here by JavaScript -->
   </main>
 
   <!-- ============================================================
@@ -457,7 +523,6 @@
   <!-- ============================================================
        SCRIPTS
   ============================================================ -->
-  <!-- Supabase client -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2">
   </script>
 
@@ -472,11 +537,37 @@
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     /* ============================================================
-       SIMPLE SPA ROUTER (provision for more pages)
+       BOARD DEFINITIONS (20 Pinterest boards → category data)
     ============================================================ */
+    const categories = [
+      // Core Boards
+      { id: 'amazing-places', name: 'Amazing Places Around the World', icon: '🏔️', tag: 'amazing-places' },
+      { id: 'hidden-places', name: 'Hidden Places to Visit', icon: '🌿', tag: 'hidden-places' },
+      { id: 'beautiful-places', name: 'Beautiful Places on Earth', icon: '🌅', tag: 'beautiful-places' },
+      { id: 'bucket-list', name: 'Bucket List Destinations', icon: '✅', tag: 'bucket-list' },
+      { id: 'unusual-places', name: 'Unusual Places Around the World', icon: '🌀', tag: 'unusual-places' },
+      { id: 'dream-destinations', name: 'Dream Destinations', icon: '✨', tag: 'dream-destinations' },
+      { id: 'travel-inspiration', name: 'World Travel Inspiration', icon: '🌟', tag: 'travel-inspiration' },
+      { id: 'travel-tips', name: 'Travel Tips & Guides', icon: '📝', tag: 'travel-tips' },
+      // Geographic Boards
+      { id: 'europe', name: 'Europe Travel', icon: '🇪🇺', tag: 'europe' },
+      { id: 'asia', name: 'Asia Travel', icon: '🌏', tag: 'asia' },
+      { id: 'north-america', name: 'North America Travel', icon: '🇺🇸', tag: 'north-america' },
+      { id: 'south-america', name: 'South America Travel', icon: '🌎', tag: 'south-america' },
+      { id: 'africa', name: 'Africa Travel', icon: '🇿🇦', tag: 'africa' },
+      { id: 'oceania', name: 'Australia & Oceania Travel', icon: '🇦🇺', tag: 'oceania' },
+      { id: 'india', name: 'India Travel', icon: '🇮🇳', tag: 'india' },
+      // Specialized Boards
+      { id: 'world-maps', name: 'World Maps', icon: '🗺️', tag: 'world-maps' },
+      { id: 'country-facts', name: 'Interesting Facts About Countries', icon: '📊', tag: 'country-facts' },
+      { id: 'unreal-places', name: 'Places That Look Unreal', icon: '🌌', tag: 'unreal-places' },
+      { id: 'hidden-gems', name: 'Hidden Travel Gems', icon: '💎', tag: 'hidden-gems' },
+      { id: 'world-discovery', name: 'World Discovery', icon: '🌍', tag: 'world-discovery' }
+    ];
 
-    // Define your pages here. To add a new page, add a new key (e.g., 'gallery') 
-    // and write its HTML content as a string.
+    /* ============================================================
+       SPA ROUTER
+    ============================================================ */
     const pages = {
       home: `
           <div class="container">
@@ -488,10 +579,40 @@
               </div>
             </div>
 
-            <h2 class="section-title">Latest Articles <small>from our collection</small></h2>
-            <div class="card-grid" id="articlesGrid">
+            <h2 class="section-title">Explore by Category <small>20 boards to inspire you</small></h2>
+            <div class="category-grid" id="categoryGrid">
+              ${categories.map(cat => `
+                <div class="category-card" onclick="navigateToCategory('${cat.id}')">
+                  <span class="icon">${cat.icon}</span>
+                  <div class="name">${cat.name}</div>
+                  <div class="count" id="count-${cat.id}">Loading…</div>
+                </div>
+              `).join('')}
+            </div>
+
+            <h2 class="section-title">Featured Articles <small>handpicked for you</small></h2>
+            <div class="card-grid" id="featuredGrid">
+              <div class="loading-spinner">Loading featured articles…</div>
+            </div>
+
+            <h2 class="section-title">Latest from Our Boards <small>fresh discoveries</small></h2>
+            <div class="card-grid" id="latestGrid">
+              <div class="loading-spinner">Loading latest articles…</div>
+            </div>
+          </div>
+        `,
+
+      category: `
+          <div class="container">
+            <div class="breadcrumb">
+              <a href="#" onclick="navigateTo('home'); return false;">← Home</a> / <span id="categoryName">Category</span>
+            </div>
+            <h2 class="section-title" id="categoryTitle">Category</h2>
+            <p style="color: var(--muted); margin-bottom: 20px;" id="categoryDescription">Explore articles in this category.</p>
+            <div class="card-grid" id="categoryGrid">
               <div class="loading-spinner">Loading articles…</div>
             </div>
+            <a href="#" class="back-home" onclick="navigateTo('home'); return false;">← Back to Home</a>
           </div>
         `,
 
@@ -514,14 +635,16 @@
         `
     };
 
-    // Keep track of the current page
     let currentPage = 'home';
+    let currentCategoryId = null;
+    let allArticles = [];
 
-    // Navigate to a page by its key
     function navigateTo(pageKey) {
       if (!pages[pageKey]) return;
 
       currentPage = pageKey;
+      currentCategoryId = null;
+
       const main = document.getElementById('main-content');
       main.innerHTML = pages[pageKey];
 
@@ -530,22 +653,48 @@
         link.classList.toggle('active', link.dataset.page === pageKey);
       });
 
-      // If we navigated to home, load the articles
+      // Load appropriate content
       if (pageKey === 'home') {
-        loadArticles();
+        loadCategoryCounts();
+        loadFeaturedArticles();
+        loadLatestArticles();
       }
 
-      // Close mobile menu if open
       document.getElementById('navLinks').classList.remove('open');
     }
 
-    // Toggle mobile menu
+    function navigateToCategory(categoryId) {
+      const category = categories.find(c => c.id === categoryId);
+      if (!category) return;
+
+      currentCategoryId = categoryId;
+      currentPage = 'category';
+
+      const main = document.getElementById('main-content');
+      main.innerHTML = pages.category;
+
+      // Update breadcrumb and title
+      document.getElementById('categoryName').textContent = category.name;
+      document.getElementById('categoryTitle').textContent = `${category.icon} ${category.name}`;
+      document.getElementById('categoryDescription').textContent = `Articles tagged with "${category.name}".`;
+
+      // Load articles for this category
+      loadCategoryArticles(category.tag);
+
+      // Update nav
+      document.querySelectorAll('.nav-links a').forEach(link => {
+        link.classList.toggle('active', link.dataset.page === 'home');
+      });
+
+      document.getElementById('navLinks').classList.remove('open');
+    }
+
     function toggleMobileMenu() {
       document.getElementById('navLinks').classList.toggle('open');
     }
 
     /* ============================================================
-       IP GEOLOCATION (cached)
+       IP GEOLOCATION
     ============================================================ */
     async function getCountryCode() {
       try {
@@ -555,7 +704,7 @@
           const age = Date.now() - parseInt(cachedTime, 10);
           if (age < 3600000) return cached;
         }
-      } catch (_) { /* ignore */ }
+      } catch (_) {}
 
       try {
         const res = await fetch('https://ipapi.co/json/');
@@ -565,10 +714,10 @@
           try {
             localStorage.setItem('userCountry', country);
             localStorage.setItem('userCountryTimestamp', String(Date.now()));
-          } catch (_) { /* ignore */ }
+          } catch (_) {}
           return country;
         }
-      } catch (_) { /* ignore */ }
+      } catch (_) {}
 
       try {
         const res = await fetch('https://ip-api.com/json/');
@@ -578,54 +727,98 @@
           try {
             localStorage.setItem('userCountry', country);
             localStorage.setItem('userCountryTimestamp', String(Date.now()));
-          } catch (_) { /* ignore */ }
+          } catch (_) {}
           return country;
         }
-      } catch (_) { /* ignore */ }
+      } catch (_) {}
 
       return 'default';
     }
 
     /* ============================================================
-       LOAD ARTICLES FROM SUPABASE
+       RENDER CARDS
     ============================================================ */
-    async function loadArticles() {
-      const grid = document.getElementById('articlesGrid');
+    function createCardHTML(article, linkUrl) {
+      return `
+        <article class="card" data-title="${article.title.toLowerCase()}" data-tag="${(article.tag || '').toLowerCase()}">
+          <div class="card-image">
+            <img src="${article.image_url}" alt="${article.title}" loading="lazy" />
+          </div>
+          <div class="card-body">
+            <span class="tag">${article.tag || 'Travel'}</span>
+            <h3>${article.title}</h3>
+            <p>${article.description}</p>
+            <a href="${linkUrl || '#'}" class="affiliate-link" target="_blank" rel="noopener">
+              ${linkUrl ? 'Check Price →' : 'Unavailable'}
+            </a>
+          </div>
+        </article>
+      `;
+    }
+
+    /* ============================================================
+       LOAD CATEGORY COUNTS (for homepage category grid)
+    ============================================================ */
+    async function loadCategoryCounts() {
+      try {
+        const { data, error } = await supabaseClient
+          .from('articles')
+          .select('tag');
+
+        if (error || !data) return;
+
+        // Count articles per tag
+        const counts = {};
+        data.forEach(article => {
+          if (article.tag) {
+            counts[article.tag] = (counts[article.tag] || 0) + 1;
+          }
+        });
+
+        // Update the UI
+        categories.forEach(cat => {
+          const el = document.getElementById(`count-${cat.id}`);
+          if (el) {
+            const count = counts[cat.tag] || 0;
+            el.textContent = `${count} article${count !== 1 ? 's' : ''}`;
+          }
+        });
+
+      } catch (err) {
+        console.error('Error loading counts:', err);
+      }
+    }
+
+    /* ============================================================
+       LOAD FEATURED ARTICLES (homepage)
+    ============================================================ */
+    async function loadFeaturedArticles() {
+      const grid = document.getElementById('featuredGrid');
       if (!grid) return;
 
-      grid.innerHTML = '<div class="loading-spinner">Loading articles…</div>';
+      grid.innerHTML = '<div class="loading-spinner">Loading featured articles…</div>';
 
       try {
-        // 1. Fetch all articles, newest first
         const { data: articles, error } = await supabaseClient
           .from('articles')
           .select('*')
-          .order('created_at', { ascending: false });
+          .order('created_at', { ascending: false })
+          .limit(4);
 
-        if (error) {
-          grid.innerHTML = `<p style="color: var(--muted); padding: 20px;">⚠️ Could not load articles.</p>`;
-          console.error('Supabase error:', error);
+        if (error || !articles || articles.length === 0) {
+          grid.innerHTML = `<p style="color: var(--muted); padding: 20px;">No featured articles yet.</p>`;
           return;
         }
 
-        if (!articles || articles.length === 0) {
-          grid.innerHTML = `<p style="color: var(--muted); padding: 20px;">No articles published yet. Check back soon!</p>`;
-          return;
-        }
-
-        // 2. Fetch affiliate links for these articles based on user's country
         const country = await getCountryCode();
         const articleIds = articles.map(a => a.id);
 
-        const { data: linkData, error: linkError } = await supabaseClient
+        const { data: linkData } = await supabaseClient
           .from('affiliate_links')
           .select('article_id, link_url, country_code')
           .in('article_id', articleIds)
           .or(`country_code.eq.${country},country_code.eq.default`);
 
-        if (linkError) console.warn('Affiliate link fetch error:', linkError);
-
-        // Build map: article_id -> best link (country-specific over default)
         const linkMap = {};
         if (linkData) {
           linkData.forEach(item => {
@@ -636,41 +829,134 @@
           });
         }
 
-        // 3. Render cards
         let html = '';
         articles.forEach(article => {
           const link = linkMap[article.id] || null;
-          html += `
-              <article class="card" data-title="${article.title.toLowerCase()}" data-tag="${(article.tag || '').toLowerCase()}">
-                <div class="card-image">
-                  <img src="${article.image_url}" alt="${article.title}" loading="lazy" />
-                </div>
-                <div class="card-body">
-                  <span class="tag">${article.tag || 'Travel'}</span>
-                  <h3>${article.title}</h3>
-                  <p>${article.description}</p>
-                  <a href="${link || '#'}" class="affiliate-link" target="_blank" rel="noopener">
-                    ${link ? 'Check Price →' : 'Unavailable'}
-                  </a>
-                </div>
-              </article>
-            `;
+          html += createCardHTML(article, link);
         });
 
         grid.innerHTML = html;
 
       } catch (err) {
-        console.error('Unexpected error:', err);
-        grid.innerHTML = `<p style="color: var(--muted); padding: 20px;">⚠️ Something went wrong. Please refresh.</p>`;
+        console.error('Error loading featured:', err);
+        grid.innerHTML = `<p style="color: var(--muted); padding: 20px;">⚠️ Could not load featured articles.</p>`;
       }
     }
 
     /* ============================================================
-       SEARCH FILTER (client‑side)
+       LOAD LATEST ARTICLES (homepage)
+    ============================================================ */
+    async function loadLatestArticles() {
+      const grid = document.getElementById('latestGrid');
+      if (!grid) return;
+
+      grid.innerHTML = '<div class="loading-spinner">Loading latest articles…</div>';
+
+      try {
+        const { data: articles, error } = await supabaseClient
+          .from('articles')
+          .select('*')
+          .order('created_at', { ascending: false })
+          .limit(6);
+
+        if (error || !articles || articles.length === 0) {
+          grid.innerHTML = `<p style="color: var(--muted); padding: 20px;">No articles published yet.</p>`;
+          return;
+        }
+
+        const country = await getCountryCode();
+        const articleIds = articles.map(a => a.id);
+
+        const { data: linkData } = await supabaseClient
+          .from('affiliate_links')
+          .select('article_id, link_url, country_code')
+          .in('article_id', articleIds)
+          .or(`country_code.eq.${country},country_code.eq.default`);
+
+        const linkMap = {};
+        if (linkData) {
+          linkData.forEach(item => {
+            const existing = linkMap[item.article_id];
+            if (!existing || (item.country_code !== 'default' && existing === 'default')) {
+              linkMap[item.article_id] = item.link_url;
+            }
+          });
+        }
+
+        let html = '';
+        articles.forEach(article => {
+          const link = linkMap[article.id] || null;
+          html += createCardHTML(article, link);
+        });
+
+        grid.innerHTML = html;
+
+      } catch (err) {
+        console.error('Error loading latest:', err);
+        grid.innerHTML = `<p style="color: var(--muted); padding: 20px;">⚠️ Could not load latest articles.</p>`;
+      }
+    }
+
+    /* ============================================================
+       LOAD CATEGORY ARTICLES (category page)
+    ============================================================ */
+    async function loadCategoryArticles(tag) {
+      const grid = document.getElementById('categoryGrid');
+      if (!grid) return;
+
+      grid.innerHTML = '<div class="loading-spinner">Loading articles…</div>';
+
+      try {
+        const { data: articles, error } = await supabaseClient
+          .from('articles')
+          .select('*')
+          .eq('tag', tag)
+          .order('created_at', { ascending: false });
+
+        if (error || !articles || articles.length === 0) {
+          grid.innerHTML = `<p style="color: var(--muted); padding: 20px;">No articles in this category yet. Check back soon!</p>`;
+          return;
+        }
+
+        const country = await getCountryCode();
+        const articleIds = articles.map(a => a.id);
+
+        const { data: linkData } = await supabaseClient
+          .from('affiliate_links')
+          .select('article_id, link_url, country_code')
+          .in('article_id', articleIds)
+          .or(`country_code.eq.${country},country_code.eq.default`);
+
+        const linkMap = {};
+        if (linkData) {
+          linkData.forEach(item => {
+            const existing = linkMap[item.article_id];
+            if (!existing || (item.country_code !== 'default' && existing === 'default')) {
+              linkMap[item.article_id] = item.link_url;
+            }
+          });
+        }
+
+        let html = '';
+        articles.forEach(article => {
+          const link = linkMap[article.id] || null;
+          html += createCardHTML(article, link);
+        });
+
+        grid.innerHTML = html;
+
+      } catch (err) {
+        console.error('Error loading category:', err);
+        grid.innerHTML = `<p style="color: var(--muted); padding: 20px;">⚠️ Could not load articles.</p>`;
+      }
+    }
+
+    /* ============================================================
+       SEARCH FILTER
     ============================================================ */
     function filterArticles() {
       const query = document.getElementById('searchInput')?.value.toLowerCase().trim() || '';
-      const cards = document.querySelectorAll('#articlesGrid .card');
+      const cards = document.querySelectorAll('.card');
       cards.forEach(card => {
         const title = card.dataset.title || '';
         const tag = card.dataset.tag || '';
@@ -682,8 +968,6 @@
     /* ============================================================
        START THE APP
     ============================================================ */
-
-    // Load the home page by default when the DOM is ready
     document.addEventListener('DOMContentLoaded', () => {
       navigateTo('home');
     });
