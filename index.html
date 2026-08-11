@@ -675,10 +675,11 @@
   <!-- ============================================================
        VISUAL DEBUGGER (shows when ?debug=1 in URL)
   ============================================================ -->
-  <div id="debugPanel" style="display:none; position:fixed; bottom:10px; left:10px; background:#1a1a2e; color:#fff; padding:16px; border-radius:12px; font-size:12px; font-family:monospace; z-index:9999; max-width:300px; border:2px solid #ffdb10; box-shadow:0 4px 20px rgba(0,0,0,0.5);">
+  <div id="debugPanel" style="display:none; position:fixed; bottom:10px; left:10px; background:#1a1a2e; color:#fff; padding:16px; border-radius:12px; font-size:12px; font-family:monospace; z-index:9999; max-width:340px; border:2px solid #ffdb10; box-shadow:0 4px 20px rgba(0,0,0,0.5);">
     <div style="font-weight:bold; color:#ffdb10; margin-bottom:8px;">🐞 DEBUG</div>
     <div id="debugCountry">Country: Loading...</div>
     <div id="debugLinks" style="margin-top:8px; font-size:11px; word-break:break-all;"></div>
+    <div id="debugRawData" style="margin-top:8px; font-size:10px; color:#aaa; word-break:break-all; max-height:120px; overflow-y:auto; border-top:1px solid #333; padding-top:4px;">Raw data: waiting...</div>
     <button onclick="document.getElementById('debugPanel').style.display='none'" style="margin-top:8px; background:#ffdb10; color:#1a1a2e; border:none; padding:4px 12px; border-radius:6px; font-weight:bold;">Close</button>
   </div>
 
@@ -979,9 +980,10 @@
       }
     }
 
-    function updateDebugInfo(country, keyLinks) {
+    function updateDebugInfo(country, keyLinks, rawData) {
       const countryEl = document.getElementById('debugCountry');
       const linksEl = document.getElementById('debugLinks');
+      const rawEl = document.getElementById('debugRawData');
       
       if (countryEl) {
         countryEl.textContent = `🌍 Country: ${country || 'Unknown'}`;
@@ -997,6 +999,10 @@
           html += '<div>No dynamic links found on page.</div>';
         }
         linksEl.innerHTML = html;
+      }
+
+      if (rawEl) {
+        rawEl.textContent = 'Raw query result: ' + (rawData ? JSON.stringify(rawData, null, 2) : 'None');
       }
     }
 
@@ -1091,7 +1097,7 @@
           .from('affiliate_links')
           .select('article_id, link_url, country_code')
           .in('article_id', articleIds)
-          .or(`country_code.eq.${country},country_code.eq.default`);
+          .in('country_code', [country, 'default']);
 
         const linkMap = {};
         if (linkData) {
@@ -1145,7 +1151,7 @@
           .from('affiliate_links')
           .select('article_id, link_url, country_code')
           .in('article_id', articleIds)
-          .or(`country_code.eq.${country},country_code.eq.default`);
+          .in('country_code', [country, 'default']);
 
         const linkMap = {};
         if (linkData) {
@@ -1199,7 +1205,7 @@
           .from('affiliate_links')
           .select('article_id, link_url, country_code')
           .in('article_id', articleIds)
-          .or(`country_code.eq.${country},country_code.eq.default`);
+          .in('country_code', [country, 'default']);
 
         const linkMap = {};
         if (linkData) {
@@ -1226,7 +1232,7 @@
     }
 
     /* ============================================================
-       DYNAMIC LINK REWRITING (with debug integration)
+       DYNAMIC LINK REWRITING (with improved query & debug)
     ============================================================ */
     async function rewriteDynamicLinks(articleId) {
       const country = await getCountryCode();
@@ -1236,29 +1242,37 @@
           .from('affiliate_links')
           .select('affiliate_key, link_url, country_code')
           .eq('article_id', articleId)
-          .or(`country_code.eq.${country},country_code.eq.default`);
+          .in('country_code', [country, 'default']);
+
+        // Update debug panel with raw data
+        const rawDataEl = document.getElementById('debugRawData');
+        if (rawDataEl) {
+          rawDataEl.textContent = 'Raw query result: ' + JSON.stringify(links, null, 2);
+        }
 
         if (error || !links || links.length === 0) {
           document.querySelectorAll('.dynamic-link').forEach(el => {
             el.classList.add('disabled');
             el.title = 'No affiliate link available for your region';
           });
-          updateDebugInfo(country, { 'error': 'No links found' });
+          updateDebugInfo(country, { 'error': 'No links found' }, links);
           return;
         }
 
-        // Build map
+        // Build map: prefer country-specific over default
         const linkMap = {};
         links.forEach(item => {
-          const existing = linkMap[item.affiliate_key];
+          const key = item.affiliate_key.trim().toLowerCase();
+          const existing = linkMap[key];
+          // If no existing, or existing is default and current is not default, replace
           if (!existing || (item.country_code !== 'default' && existing === 'default')) {
-            linkMap[item.affiliate_key] = item.link_url;
+            linkMap[key] = item.link_url;
           }
         });
 
         // Update DOM links
         document.querySelectorAll('.dynamic-link').forEach(el => {
-          const key = el.dataset.affiliateKey;
+          const key = el.dataset.affiliateKey?.trim().toLowerCase();
           if (key && linkMap[key]) {
             el.href = linkMap[key];
             el.classList.remove('disabled');
@@ -1269,11 +1283,11 @@
         });
 
         // Update debug panel
-        updateDebugInfo(country, linkMap);
+        updateDebugInfo(country, linkMap, links);
 
       } catch (err) {
         console.error('Error rewriting dynamic links:', err);
-        updateDebugInfo(country, { 'error': err.message });
+        updateDebugInfo(country, { 'error': err.message }, null);
       }
     }
 
