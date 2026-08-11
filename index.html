@@ -10,6 +10,11 @@
 
   <meta name="description" content="Discover amazing places, hidden destinations, and fascinating travel facts." />
 
+  <!-- Disable caching for debugging -->
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+
   <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,600;14..32,800&display=swap" rel="stylesheet" />
 
   <style>
@@ -668,6 +673,16 @@
   </footer>
 
   <!-- ============================================================
+       VISUAL DEBUGGER (shows when ?debug=1 in URL)
+  ============================================================ -->
+  <div id="debugPanel" style="display:none; position:fixed; bottom:10px; left:10px; background:#1a1a2e; color:#fff; padding:16px; border-radius:12px; font-size:12px; font-family:monospace; z-index:9999; max-width:300px; border:2px solid #ffdb10; box-shadow:0 4px 20px rgba(0,0,0,0.5);">
+    <div style="font-weight:bold; color:#ffdb10; margin-bottom:8px;">🐞 DEBUG</div>
+    <div id="debugCountry">Country: Loading...</div>
+    <div id="debugLinks" style="margin-top:8px; font-size:11px; word-break:break-all;"></div>
+    <button onclick="document.getElementById('debugPanel').style.display='none'" style="margin-top:8px; background:#ffdb10; color:#1a1a2e; border:none; padding:4px 12px; border-radius:6px; font-weight:bold;">Close</button>
+  </div>
+
+  <!-- ============================================================
        SCRIPTS
   ============================================================ -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2">
@@ -863,9 +878,10 @@
     }
 
     /* ============================================================
-       IP GEOLOCATION (cached)
+       IP GEOLOCATION (enhanced with multiple APIs & timezone fallback)
     ============================================================ */
     async function getCountryCode() {
+      // 1. Check cache first
       try {
         const cached = localStorage.getItem('userCountry');
         const cachedTime = localStorage.getItem('userCountryTimestamp');
@@ -875,33 +891,113 @@
         }
       } catch (_) {}
 
-      try {
-        const res = await fetch('https://ipapi.co/json/');
-        const data = await res.json();
-        if (data && data.country_code) {
-          const country = data.country_code;
-          try {
-            localStorage.setItem('userCountry', country);
-            localStorage.setItem('userCountryTimestamp', String(Date.now()));
-          } catch (_) {}
-          return country;
-        }
-      } catch (_) {}
+      // 2. Try multiple IP APIs (some work better on mobile)
+      const apis = [
+        { url: 'https://ipapi.co/json/', key: 'country_code' },
+        { url: 'https://ip-api.com/json/', key: 'countryCode' },
+        { url: 'https://ipinfo.io/json', key: 'country' },
+        { url: 'https://api.country.is/', key: 'country' }
+      ];
 
-      try {
-        const res = await fetch('https://ip-api.com/json/');
-        const data = await res.json();
-        if (data && data.status === 'success' && data.countryCode) {
-          const country = data.countryCode;
-          try {
-            localStorage.setItem('userCountry', country);
-            localStorage.setItem('userCountryTimestamp', String(Date.now()));
-          } catch (_) {}
-          return country;
+      for (const api of apis) {
+        try {
+          const res = await fetch(api.url, {
+            mode: 'cors',
+            headers: { 'Accept': 'application/json' }
+          });
+          const data = await res.json();
+          let country = data[api.key];
+          
+          // Country.is returns { country: "JP" }
+          if (api.url.includes('country.is')) {
+            country = data.country;
+          }
+          
+          if (country && typeof country === 'string' && country.length === 2) {
+            // Save to cache
+            try {
+              localStorage.setItem('userCountry', country);
+              localStorage.setItem('userCountryTimestamp', String(Date.now()));
+            } catch (_) {}
+            return country.toUpperCase();
+          }
+        } catch (e) {
+          console.warn('API failed:', api.url, e);
+          continue;
         }
+      }
+
+      // 3. Last resort: use timezone (approximate)
+      try {
+        const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+        if (tz.includes('Japan') || tz.includes('Tokyo')) return 'JP';
+        if (tz.includes('Singapore')) return 'SG';
+        if (tz.includes('US') || tz.includes('America')) return 'US';
+        if (tz.includes('Europe')) return 'DE';
+        if (tz.includes('India')) return 'IN';
+        if (tz.includes('Australia')) return 'AU';
+        if (tz.includes('UK') || tz.includes('London')) return 'GB';
+        if (tz.includes('Berlin') || tz.includes('Paris')) return 'DE';
+        if (tz.includes('Rome')) return 'IT';
+        if (tz.includes('Madrid')) return 'ES';
+        if (tz.includes('Dubai')) return 'AE';
+        if (tz.includes('Hong Kong')) return 'HK';
+        if (tz.includes('Seoul')) return 'KR';
+        if (tz.includes('Taipei')) return 'TW';
+        if (tz.includes('Bangkok')) return 'TH';
+        if (tz.includes('Moscow')) return 'RU';
+        if (tz.includes('Mexico')) return 'MX';
+        if (tz.includes('Brazil')) return 'BR';
+        if (tz.includes('South Africa')) return 'ZA';
+        if (tz.includes('Nigeria')) return 'NG';
+        if (tz.includes('Egypt')) return 'EG';
+        if (tz.includes('Saudi Arabia')) return 'SA';
+        if (tz.includes('Israel')) return 'IL';
+        if (tz.includes('Turkey')) return 'TR';
+        if (tz.includes('Pakistan')) return 'PK';
+        if (tz.includes('Bangladesh')) return 'BD';
+        if (tz.includes('Vietnam')) return 'VN';
+        if (tz.includes('Philippines')) return 'PH';
+        if (tz.includes('Malaysia')) return 'MY';
+        if (tz.includes('Indonesia')) return 'ID';
+        if (tz.includes('New Zealand')) return 'NZ';
+        if (tz.includes('Argentina')) return 'AR';
+        if (tz.includes('Chile')) return 'CL';
+        if (tz.includes('Colombia')) return 'CO';
       } catch (_) {}
 
       return 'default';
+    }
+
+    /* ============================================================
+       VISUAL DEBUGGER
+    ============================================================ */
+    function showDebugPanel() {
+      // Only show if ?debug=1 is in the URL
+      if (window.location.search.includes('debug=1')) {
+        document.getElementById('debugPanel').style.display = 'block';
+      }
+    }
+
+    function updateDebugInfo(country, keyLinks) {
+      const countryEl = document.getElementById('debugCountry');
+      const linksEl = document.getElementById('debugLinks');
+      
+      if (countryEl) {
+        countryEl.textContent = `🌍 Country: ${country || 'Unknown'}`;
+      }
+      
+      if (linksEl) {
+        let html = '<div style="font-weight:bold; margin-top:4px;">🔗 Links:</div>';
+        if (keyLinks) {
+          Object.keys(keyLinks).forEach(key => {
+            html += `<div><span style="color:#ffdb10;">${key}</span>: ${keyLinks[key] || 'Not found'}</div>`;
+          });
+        } else {
+          html += '<div>No dynamic links found on page.</div>';
+        }
+        linksEl.innerHTML = html;
+      }
     }
 
     /* ============================================================
@@ -1130,7 +1226,7 @@
     }
 
     /* ============================================================
-       DYNAMIC LINK REWRITING (based on IP & article ID)
+       DYNAMIC LINK REWRITING (with debug integration)
     ============================================================ */
     async function rewriteDynamicLinks(articleId) {
       const country = await getCountryCode();
@@ -1143,15 +1239,15 @@
           .or(`country_code.eq.${country},country_code.eq.default`);
 
         if (error || !links || links.length === 0) {
-          // No affiliate links – disable all dynamic links
           document.querySelectorAll('.dynamic-link').forEach(el => {
             el.classList.add('disabled');
             el.title = 'No affiliate link available for your region';
           });
+          updateDebugInfo(country, { 'error': 'No links found' });
           return;
         }
 
-        // Build map: affiliate_key -> best link URL (country-specific beats default)
+        // Build map
         const linkMap = {};
         links.forEach(item => {
           const existing = linkMap[item.affiliate_key];
@@ -1160,7 +1256,7 @@
           }
         });
 
-        // Find all dynamic links on the page and replace their href
+        // Update DOM links
         document.querySelectorAll('.dynamic-link').forEach(el => {
           const key = el.dataset.affiliateKey;
           if (key && linkMap[key]) {
@@ -1172,8 +1268,12 @@
           }
         });
 
+        // Update debug panel
+        updateDebugInfo(country, linkMap);
+
       } catch (err) {
         console.error('Error rewriting dynamic links:', err);
+        updateDebugInfo(country, { 'error': err.message });
       }
     }
 
@@ -1227,8 +1327,10 @@
 
         container.innerHTML = html;
 
-        // ⭐ REWRITE THE AFFILIATE LINKS BASED ON IP ⭐
-        await rewriteDynamicLinks(article.id);
+        // Small delay to ensure DOM is rendered, then rewrite links
+        setTimeout(async () => {
+          await rewriteDynamicLinks(article.id);
+        }, 150);
 
       } catch (err) {
         console.error('Error loading article:', err);
@@ -1255,6 +1357,7 @@
     ============================================================ */
     document.addEventListener('DOMContentLoaded', () => {
       navigateTo('home');
+      showDebugPanel();
     });
   </script>
 
