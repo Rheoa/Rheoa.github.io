@@ -1232,7 +1232,7 @@
     }
 
     /* ============================================================
-       DYNAMIC LINK REWRITING (with improved query & debug)
+       DYNAMIC LINK REWRITING (FIXED – prioritizes country-specific links)
     ============================================================ */
     async function rewriteDynamicLinks(articleId) {
       const country = await getCountryCode();
@@ -1259,13 +1259,19 @@
           return;
         }
 
-        // Build map: prefer country-specific over default
+        // STEP 1: Collect all country-specific links first
         const linkMap = {};
         links.forEach(item => {
           const key = item.affiliate_key.trim().toLowerCase();
-          const existing = linkMap[key];
-          // If no existing, or existing is default and current is not default, replace
-          if (!existing || (item.country_code !== 'default' && existing === 'default')) {
+          if (item.country_code === country) {
+            linkMap[key] = item.link_url;
+          }
+        });
+
+        // STEP 2: For any missing keys, use default as fallback
+        links.forEach(item => {
+          const key = item.affiliate_key.trim().toLowerCase();
+          if (item.country_code === 'default' && !linkMap[key]) {
             linkMap[key] = item.link_url;
           }
         });
