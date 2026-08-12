@@ -1127,7 +1127,7 @@
     }
 
     /* ============================================================
-       LOAD SINGLE ARTICLE
+       LOAD SINGLE ARTICLE (MODIFIED: Removed duplicate hero image)
     ============================================================ */
     async function loadArticle(slug) {
       const container = document.getElementById('articleContent');
@@ -1156,15 +1156,13 @@
           catSpan.textContent = category ? category.name : article.tag || 'Travel';
         }
 
+        // Build the article HTML WITHOUT the hero image (only title and meta)
         let html = `
           <div class="article-header">
             <h1>${article.title}</h1>
             <div class="meta">
               <span class="tag">${article.tag || 'Travel'}</span>
               ${article.featured ? ' ⭐ Featured' : ''}
-            </div>
-            <div class="hero-image">
-              <img src="${article.image_url}" alt="${article.title}" />
             </div>
           </div>
           <div class="article-content" data-article-id="${article.id}">
