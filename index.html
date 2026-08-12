@@ -14,7 +14,7 @@
 
   <style>
     /* ============================================================
-       COLOR SCHEME
+       COLOR SCHEME (same as before)
        ============================================================ */
     :root {
       --yellow: #ffdb10;
@@ -685,10 +685,9 @@
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     /* ============================================================
-       BOARD DEFINITIONS (20 Pinterest boards → category data)
+       BOARD DEFINITIONS (20 Pinterest boards)
     ============================================================ */
     const categories = [
-      // Core Boards
       { id: 'amazing-places', name: 'Amazing Places Around the World', icon: '🏔️', tag: 'amazing-places' },
       { id: 'hidden-places', name: 'Hidden Places to Visit', icon: '🌿', tag: 'hidden-places' },
       { id: 'beautiful-places', name: 'Beautiful Places on Earth', icon: '🌅', tag: 'beautiful-places' },
@@ -697,7 +696,6 @@
       { id: 'dream-destinations', name: 'Dream Destinations', icon: '✨', tag: 'dream-destinations' },
       { id: 'travel-inspiration', name: 'World Travel Inspiration', icon: '🌟', tag: 'travel-inspiration' },
       { id: 'travel-tips', name: 'Travel Tips & Guides', icon: '📝', tag: 'travel-tips' },
-      // Geographic Boards
       { id: 'europe', name: 'Europe Travel', icon: '🇪🇺', tag: 'europe' },
       { id: 'asia', name: 'Asia Travel', icon: '🌏', tag: 'asia' },
       { id: 'north-america', name: 'North America Travel', icon: '🇺🇸', tag: 'north-america' },
@@ -705,7 +703,6 @@
       { id: 'africa', name: 'Africa Travel', icon: '🇿🇦', tag: 'africa' },
       { id: 'oceania', name: 'Australia & Oceania Travel', icon: '🇦🇺', tag: 'oceania' },
       { id: 'india', name: 'India Travel', icon: '🇮🇳', tag: 'india' },
-      // Specialized Boards
       { id: 'world-maps', name: 'World Maps', icon: '🗺️', tag: 'world-maps' },
       { id: 'country-facts', name: 'Interesting Facts About Countries', icon: '📊', tag: 'country-facts' },
       { id: 'unreal-places', name: 'Places That Look Unreal', icon: '🌌', tag: 'unreal-places' },
@@ -714,7 +711,7 @@
     ];
 
     /* ============================================================
-       SPA ROUTER
+       SPA ROUTER (only public pages)
     ============================================================ */
     const pages = {
       home: `
@@ -797,7 +794,6 @@
 
     let currentPage = 'home';
     let currentCategoryId = null;
-    let allArticles = [];
 
     function navigateTo(pageKey) {
       if (!pages[pageKey]) return;
@@ -854,8 +850,6 @@
       });
 
       document.getElementById('navLinks').classList.remove('open');
-
-      // Load the article
       loadArticle(slug);
     }
 
@@ -864,10 +858,9 @@
     }
 
     /* ============================================================
-       IP GEOLOCATION (enhanced with multiple APIs & timezone fallback)
+       IP GEOLOCATION (with caching)
     ============================================================ */
     async function getCountryCode() {
-      // 1. Check cache first
       try {
         const cached = localStorage.getItem('userCountry');
         const cachedTime = localStorage.getItem('userCountryTimestamp');
@@ -877,7 +870,6 @@
         }
       } catch (_) {}
 
-      // 2. Try multiple IP APIs (some work better on mobile)
       const apis = [
         { url: 'https://ipapi.co/json/', key: 'country_code' },
         { url: 'https://ip-api.com/json/', key: 'countryCode' },
@@ -887,76 +879,48 @@
 
       for (const api of apis) {
         try {
-          const res = await fetch(api.url, {
-            mode: 'cors',
-            headers: { 'Accept': 'application/json' }
-          });
+          const res = await fetch(api.url, { mode: 'cors', headers: { 'Accept': 'application/json' } });
           const data = await res.json();
           let country = data[api.key];
-          
-          // Country.is returns { country: "JP" }
-          if (api.url.includes('country.is')) {
-            country = data.country;
-          }
-          
+          if (api.url.includes('country.is')) country = data.country;
           if (country && typeof country === 'string' && country.length === 2) {
-            // Save to cache
             try {
               localStorage.setItem('userCountry', country);
               localStorage.setItem('userCountryTimestamp', String(Date.now()));
             } catch (_) {}
             return country.toUpperCase();
           }
-        } catch (e) {
-          console.warn('API failed:', api.url, e);
-          continue;
-        }
+        } catch (e) { continue; }
       }
 
-      // 3. Last resort: use timezone (approximate)
       try {
         const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
-        if (tz.includes('Japan') || tz.includes('Tokyo')) return 'JP';
+        if (tz.includes('Japan')) return 'JP';
         if (tz.includes('Singapore')) return 'SG';
-        if (tz.includes('US') || tz.includes('America')) return 'US';
+        if (tz.includes('US')) return 'US';
         if (tz.includes('Europe')) return 'DE';
         if (tz.includes('India')) return 'IN';
         if (tz.includes('Australia')) return 'AU';
-        if (tz.includes('UK') || tz.includes('London')) return 'GB';
-        if (tz.includes('Berlin') || tz.includes('Paris')) return 'DE';
-        if (tz.includes('Rome')) return 'IT';
-        if (tz.includes('Madrid')) return 'ES';
-        if (tz.includes('Dubai')) return 'AE';
-        if (tz.includes('Hong Kong')) return 'HK';
-        if (tz.includes('Seoul')) return 'KR';
-        if (tz.includes('Taipei')) return 'TW';
-        if (tz.includes('Bangkok')) return 'TH';
-        if (tz.includes('Moscow')) return 'RU';
-        if (tz.includes('Mexico')) return 'MX';
-        if (tz.includes('Brazil')) return 'BR';
-        if (tz.includes('South Africa')) return 'ZA';
-        if (tz.includes('Nigeria')) return 'NG';
-        if (tz.includes('Egypt')) return 'EG';
-        if (tz.includes('Saudi Arabia')) return 'SA';
-        if (tz.includes('Israel')) return 'IL';
-        if (tz.includes('Turkey')) return 'TR';
-        if (tz.includes('Pakistan')) return 'PK';
-        if (tz.includes('Bangladesh')) return 'BD';
-        if (tz.includes('Vietnam')) return 'VN';
-        if (tz.includes('Philippines')) return 'PH';
-        if (tz.includes('Malaysia')) return 'MY';
-        if (tz.includes('Indonesia')) return 'ID';
-        if (tz.includes('New Zealand')) return 'NZ';
-        if (tz.includes('Argentina')) return 'AR';
-        if (tz.includes('Chile')) return 'CL';
-        if (tz.includes('Colombia')) return 'CO';
+        if (tz.includes('UK')) return 'GB';
       } catch (_) {}
 
       return 'default';
     }
 
     /* ============================================================
-       RENDER CARDS (without affiliate links – just "View More →")
+       VISITOR ID (for unique clickers)
+    ============================================================ */
+    function getVisitorId() {
+      let vid = localStorage.getItem('visitorId');
+      if (!vid) {
+        vid = crypto.randomUUID ? crypto.randomUUID() : 'visitor-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+        localStorage.setItem('visitorId', vid);
+      }
+      return vid;
+    }
+
+    /* ============================================================
+       RENDER CARDS (no affiliate links)
     ============================================================ */
     function createCardHTML(article) {
       return `
@@ -979,19 +943,10 @@
     ============================================================ */
     async function loadCategoryCounts() {
       try {
-        const { data, error } = await supabaseClient
-          .from('articles')
-          .select('tag');
-
+        const { data, error } = await supabaseClient.from('articles').select('tag');
         if (error || !data) return;
-
         const counts = {};
-        data.forEach(article => {
-          if (article.tag) {
-            counts[article.tag] = (counts[article.tag] || 0) + 1;
-          }
-        });
-
+        data.forEach(article => { if (article.tag) counts[article.tag] = (counts[article.tag] || 0) + 1; });
         categories.forEach(cat => {
           const el = document.getElementById(`count-${cat.id}`);
           if (el) {
@@ -999,21 +954,16 @@
             el.textContent = `${count} article${count !== 1 ? 's' : ''}`;
           }
         });
-
-      } catch (err) {
-        console.error('Error loading counts:', err);
-      }
+      } catch (err) { console.error(err); }
     }
 
     /* ============================================================
-       LOAD FEATURED ARTICLES
+       LOAD FEATURED / LATEST / CATEGORY ARTICLES
     ============================================================ */
     async function loadFeaturedArticles() {
       const grid = document.getElementById('featuredGrid');
       if (!grid) return;
-
       grid.innerHTML = '<div class="loading-spinner">Loading featured articles…</div>';
-
       try {
         let { data: articles, error } = await supabaseClient
           .from('articles')
@@ -1021,105 +971,66 @@
           .eq('featured', true)
           .order('created_at', { ascending: false })
           .limit(4);
-
         if (error || !articles || articles.length === 0) {
-          // Fallback to latest if no featured
-          const { data: fallback, error: fallbackError } = await supabaseClient
+          const { data: fallback } = await supabaseClient
             .from('articles')
             .select('*')
             .order('created_at', { ascending: false })
             .limit(4);
-
-          if (fallbackError || !fallback || fallback.length === 0) {
-            grid.innerHTML = `<p style="color: var(--muted); padding: 20px;">No articles yet.</p>`;
-            return;
-          }
-          articles = fallback;
+          articles = fallback || [];
         }
-
+        if (articles.length === 0) {
+          grid.innerHTML = `<p style="color: var(--muted); padding: 20px;">No articles yet.</p>`;
+          return;
+        }
         let html = '';
-        articles.forEach(article => {
-          html += createCardHTML(article);
-        });
-
+        articles.forEach(article => { html += createCardHTML(article); });
         grid.innerHTML = html;
-
-      } catch (err) {
-        console.error('Error loading featured:', err);
-        grid.innerHTML = `<p style="color: var(--muted); padding: 20px;">⚠️ Could not load featured articles.</p>`;
-      }
+      } catch (err) { console.error(err); grid.innerHTML = `<p style="color: var(--muted); padding: 20px;">⚠️ Could not load articles.</p>`; }
     }
 
-    /* ============================================================
-       LOAD LATEST ARTICLES
-    ============================================================ */
     async function loadLatestArticles() {
       const grid = document.getElementById('latestGrid');
       if (!grid) return;
-
       grid.innerHTML = '<div class="loading-spinner">Loading latest articles…</div>';
-
       try {
         const { data: articles, error } = await supabaseClient
           .from('articles')
           .select('*')
           .order('created_at', { ascending: false })
           .limit(6);
-
         if (error || !articles || articles.length === 0) {
           grid.innerHTML = `<p style="color: var(--muted); padding: 20px;">No articles published yet.</p>`;
           return;
         }
-
         let html = '';
-        articles.forEach(article => {
-          html += createCardHTML(article);
-        });
-
+        articles.forEach(article => { html += createCardHTML(article); });
         grid.innerHTML = html;
-
-      } catch (err) {
-        console.error('Error loading latest:', err);
-        grid.innerHTML = `<p style="color: var(--muted); padding: 20px;">⚠️ Could not load latest articles.</p>`;
-      }
+      } catch (err) { console.error(err); grid.innerHTML = `<p style="color: var(--muted); padding: 20px;">⚠️ Could not load articles.</p>`; }
     }
 
-    /* ============================================================
-       LOAD CATEGORY ARTICLES
-    ============================================================ */
     async function loadCategoryArticles(tag) {
       const grid = document.getElementById('categoryGrid');
       if (!grid) return;
-
       grid.innerHTML = '<div class="loading-spinner">Loading articles…</div>';
-
       try {
         const { data: articles, error } = await supabaseClient
           .from('articles')
           .select('*')
           .eq('tag', tag)
           .order('created_at', { ascending: false });
-
         if (error || !articles || articles.length === 0) {
-          grid.innerHTML = `<p style="color: var(--muted); padding: 20px;">No articles in this category yet. Check back soon!</p>`;
+          grid.innerHTML = `<p style="color: var(--muted); padding: 20px;">No articles in this category yet.</p>`;
           return;
         }
-
         let html = '';
-        articles.forEach(article => {
-          html += createCardHTML(article);
-        });
-
+        articles.forEach(article => { html += createCardHTML(article); });
         grid.innerHTML = html;
-
-      } catch (err) {
-        console.error('Error loading category:', err);
-        grid.innerHTML = `<p style="color: var(--muted); padding: 20px;">⚠️ Could not load articles.</p>`;
-      }
+      } catch (err) { console.error(err); grid.innerHTML = `<p style="color: var(--muted); padding: 20px;">⚠️ Could not load articles.</p>`; }
     }
 
     /* ============================================================
-       DYNAMIC LINK REWRITING (for rich article content – no debug)
+       DYNAMIC LINK REWRITING (with click tracking)
     ============================================================ */
     async function rewriteDynamicLinks(articleId) {
       const country = await getCountryCode();
@@ -1139,30 +1050,24 @@
           return;
         }
 
-        // Build map: country-specific links take priority
         const linkMap = {};
-        // First collect all country-specific links
         links.forEach(item => {
           const key = item.affiliate_key.trim().toLowerCase();
-          if (item.country_code === country) {
-            linkMap[key] = item.link_url;
-          }
+          if (item.country_code === country) linkMap[key] = item.link_url;
         });
-
-        // Then fill missing ones with default
         links.forEach(item => {
           const key = item.affiliate_key.trim().toLowerCase();
-          if (item.country_code === 'default' && !linkMap[key]) {
-            linkMap[key] = item.link_url;
-          }
+          if (item.country_code === 'default' && !linkMap[key]) linkMap[key] = item.link_url;
         });
 
-        // Update DOM links
         document.querySelectorAll('.dynamic-link').forEach(el => {
           const key = el.dataset.affiliateKey?.trim().toLowerCase();
           if (key && linkMap[key]) {
-            el.href = linkMap[key];
+            const url = linkMap[key];
+            el.href = url;
             el.classList.remove('disabled');
+            el.removeEventListener('click', trackClickHandler);
+            el.addEventListener('click', trackClickHandler);
           } else {
             el.classList.add('disabled');
             el.title = 'No affiliate link available for your region';
@@ -1172,6 +1077,38 @@
       } catch (err) {
         console.error('Error rewriting dynamic links:', err);
       }
+    }
+
+    async function trackClickHandler(e) {
+      e.preventDefault();
+      const link = e.currentTarget;
+      const href = link.href;
+      const affiliateKey = link.dataset.affiliateKey;
+      const contentEl = link.closest('.article-content');
+      let articleIdVal = null;
+      if (contentEl && contentEl.dataset.articleId) {
+        articleIdVal = contentEl.dataset.articleId;
+      }
+
+      const country = await getCountryCode();
+      const visitorId = getVisitorId();
+
+      try {
+        await supabaseClient
+          .from('click_logs')
+          .insert({
+            article_id: articleIdVal || null,
+            affiliate_key: affiliateKey,
+            link_url: href,
+            country_code: country,
+            visitor_id: visitorId,
+            user_agent: navigator.userAgent,
+          });
+      } catch (err) {
+        console.warn('Click log insert failed:', err);
+      }
+
+      window.open(href, '_blank');
     }
 
     /* ============================================================
@@ -1198,14 +1135,12 @@
           return;
         }
 
-        // Update breadcrumb
         if (titleSpan) titleSpan.textContent = article.title;
         if (catSpan) {
           const category = categories.find(c => c.tag === article.tag);
           catSpan.textContent = category ? category.name : article.tag || 'Travel';
         }
 
-        // Build the article HTML
         let html = `
           <div class="article-header">
             <h1>${article.title}</h1>
@@ -1217,14 +1152,13 @@
               <img src="${article.image_url}" alt="${article.title}" />
             </div>
           </div>
-          <div class="article-content">
+          <div class="article-content" data-article-id="${article.id}">
             ${article.content || `<p>No full content available for this article yet.</p>`}
           </div>
         `;
 
         container.innerHTML = html;
 
-        // Small delay to ensure DOM is rendered, then rewrite links
         setTimeout(async () => {
           await rewriteDynamicLinks(article.id);
         }, 150);
