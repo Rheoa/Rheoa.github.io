@@ -726,7 +726,7 @@
     ];
 
     /* ============================================================
-       SPA ROUTER (only public pages)
+       SPA ROUTER (with hash-based routing)
     ============================================================ */
     const pages = {
       home: `
@@ -810,8 +810,17 @@
     let currentPage = 'home';
     let currentCategoryId = null;
 
+    /* ============================================================
+       ROUTER NAVIGATION FUNCTIONS (with hash updates)
+    ============================================================ */
+
     function navigateTo(pageKey) {
       if (!pages[pageKey]) return;
+
+      // Clear hash when going home
+      if (pageKey === 'home') {
+        window.location.hash = '';
+      }
 
       currentPage = pageKey;
       currentCategoryId = null;
@@ -856,6 +865,9 @@
     }
 
     function navigateToArticle(slug) {
+      // Update the URL hash
+      window.location.hash = `article-${slug}`;
+
       currentPage = 'article';
       const main = document.getElementById('main-content');
       main.innerHTML = pages.article;
@@ -1127,7 +1139,7 @@
     }
 
     /* ============================================================
-       LOAD SINGLE ARTICLE (MODIFIED: Removed duplicate hero image)
+       LOAD SINGLE ARTICLE (without duplicate hero image)
     ============================================================ */
     async function loadArticle(slug) {
       const container = document.getElementById('articleContent');
@@ -1197,11 +1209,44 @@
     }
 
     /* ============================================================
-       START THE APP
+       HASH ROUTING – HANDLE HASH CHANGES & INITIAL LOAD
     ============================================================ */
+
+    function handleHashChange() {
+      const hash = window.location.hash;
+      if (hash && hash.startsWith('#article-')) {
+        const slug = hash.replace('#article-', '');
+        // Only navigate if not already on that article
+        if (currentPage !== 'article' || document.getElementById('articleTitle')?.textContent !== slug) {
+          navigateToArticle(slug);
+        }
+      } else {
+        // If hash is empty or not an article, go home
+        if (currentPage !== 'home') {
+          navigateTo('home');
+        }
+      }
+    }
+
+    // Listen for hash changes (back/forward buttons)
+    window.addEventListener('hashchange', handleHashChange);
+
+    // Handle initial load – check if there's a hash on first visit
     document.addEventListener('DOMContentLoaded', () => {
-      navigateTo('home');
+      const hash = window.location.hash;
+      if (hash && hash.startsWith('#article-')) {
+        const slug = hash.replace('#article-', '');
+        // Small delay to ensure the DOM is ready
+        setTimeout(() => {
+          navigateToArticle(slug);
+        }, 100);
+      } else {
+        navigateTo('home');
+      }
     });
+
+    // Also handle the case where the page loads with no hash
+    // The DOMContentLoaded event above already covers this.
   </script>
 
 </body>
