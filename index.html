@@ -845,8 +845,6 @@
 
     let currentPage = 'home';
     let currentCategoryId = null;
-    // Track article views to avoid double counting
-    let viewedArticles = JSON.parse(localStorage.getItem('viewedArticles') || '{}');
 
     /* ============================================================
        ROUTER NAVIGATION FUNCTIONS (with hash updates)
@@ -1175,7 +1173,7 @@
     }
 
     /* ============================================================
-       LOAD SINGLE ARTICLE (with view count increment & save/follow buttons)
+       LOAD SINGLE ARTICLE (Simplified view counter - ALWAYS increments)
     ============================================================ */
     async function loadArticle(slug) {
       const container = document.getElementById('articleContent');
@@ -1198,27 +1196,18 @@
           return;
         }
 
-        // Increment view count (only once per session per article)
-        if (!viewedArticles[article.id]) {
-          viewedArticles[article.id] = true;
-          localStorage.setItem('viewedArticles', JSON.stringify(viewedArticles));
-          // Increment in database
-          const { error: updateError } = await supabaseClient
-            .from('articles')
-            .update({ views: (article.views || 0) + 1 })
-            .eq('id', article.id);
-          if (updateError) console.warn('Failed to update view count:', updateError);
-          // Refresh the article data to get the updated view count
-          const { data: updatedArticle } = await supabaseClient
-            .from('articles')
-            .select('*')
-            .eq('id', article.id)
-            .single();
-          if (updatedArticle) {
-            article.views = updatedArticle.views;
-          }
+        // ✅ ALWAYS increment the view count (no checks, no session)
+        const newViewCount = (article.views || 0) + 1;
+        const { error: updateError } = await supabaseClient
+          .from('articles')
+          .update({ views: newViewCount })
+          .eq('id', article.id);
+
+        if (updateError) {
+          console.warn('Failed to update view count:', updateError);
+          // Still display the old count if update fails
         } else {
-          // Use existing views count (already fetched)
+          article.views = newViewCount; // update local object
         }
 
         if (titleSpan) titleSpan.textContent = article.title;
@@ -1227,7 +1216,7 @@
           catSpan.textContent = category ? category.name : article.tag || 'Travel';
         }
 
-        // Build the article HTML with view count and save/follow buttons
+        // Build the article HTML with the updated view count
         let html = `
           <div class="article-header">
             <h1>${article.title}</h1>
