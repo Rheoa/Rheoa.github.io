@@ -1204,9 +1204,10 @@
           .eq('id', article.id);
 
         if (updateError) {
-          console.warn('Failed to update view count:', updateError);
+          console.error('❌ View count update failed:', updateError);
           // Still display the old count if update fails
         } else {
+          console.log('✅ View count updated to', newViewCount);
           article.views = newViewCount; // update local object
         }
 
