@@ -6,6 +6,23 @@
 
   <title>World Discovery — Explore Amazing Places</title>
 
+  <!-- Dynamic Meta Tags - Updated by JavaScript -->
+  <meta name="description" content="Discover amazing places, hidden destinations, and fascinating travel facts." id="meta-description" />
+  
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website" id="og-type" />
+  <meta property="og:title" content="World Discovery — Explore Amazing Places" id="og-title" />
+  <meta property="og:description" content="Discover amazing places, hidden destinations, and fascinating travel facts." id="og-description" />
+  <meta property="og:image" content="https://images.pexels.com/photos/2613110/pexels-photo-2613110.jpeg?auto=compress&cs=tinysrgb&w=1200" id="og-image" />
+  <meta property="og:url" content="https://worlddiscovery.com" id="og-url" />
+  <meta property="og:site_name" content="World Discovery" />
+  
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image" id="twitter-card" />
+  <meta name="twitter:title" content="World Discovery — Explore Amazing Places" id="twitter-title" />
+  <meta name="twitter:description" content="Discover amazing places, hidden destinations, and fascinating travel facts." id="twitter-description" />
+  <meta name="twitter:image" content="https://images.pexels.com/photos/2613110/pexels-photo-2613110.jpeg?auto=compress&cs=tinysrgb&w=1200" id="twitter-image" />
+
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌍</text></svg>" />
 
   <!-- Impact.com tracking script -->
@@ -25,8 +42,6 @@
 
   <!-- Pinterest verification -->
   <meta name="p:domain_verify" content="97400ed3a597df2d824078cd479b697c"/>
-
-  <meta name="description" content="Discover amazing places, hidden destinations, and fascinating travel facts." />
 
   <!-- Leaflet.js CSS (for map articles) -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -887,6 +902,54 @@
     let map = null;
 
     /* ============================================================
+       SEO META TAG HELPERS
+    ============================================================ */
+    function updateMetaTags(title, description, image, url, type) {
+      // Update title
+      document.title = title || 'World Discovery — Explore Amazing Places';
+      
+      // Update meta description
+      const metaDesc = document.getElementById('meta-description');
+      if (metaDesc) metaDesc.content = description || 'Discover amazing places, hidden destinations, and fascinating travel facts.';
+      
+      // Update Open Graph tags
+      const ogTitle = document.getElementById('og-title');
+      if (ogTitle) ogTitle.content = document.title;
+      
+      const ogDesc = document.getElementById('og-description');
+      if (ogDesc) ogDesc.content = metaDesc.content;
+      
+      const ogImage = document.getElementById('og-image');
+      if (ogImage && image) ogImage.content = image;
+      
+      const ogUrl = document.getElementById('og-url');
+      if (ogUrl && url) ogUrl.content = url;
+      
+      const ogType = document.getElementById('og-type');
+      if (ogType && type) ogType.content = type;
+      
+      // Update Twitter Card tags
+      const twitterTitle = document.getElementById('twitter-title');
+      if (twitterTitle) twitterTitle.content = document.title;
+      
+      const twitterDesc = document.getElementById('twitter-description');
+      if (twitterDesc) twitterDesc.content = metaDesc.content;
+      
+      const twitterImage = document.getElementById('twitter-image');
+      if (twitterImage && image) twitterImage.content = image;
+    }
+
+    function resetMetaTags() {
+      updateMetaTags(
+        'World Discovery — Explore Amazing Places',
+        'Discover amazing places, hidden destinations, and fascinating travel facts.',
+        'https://images.pexels.com/photos/2613110/pexels-photo-2613110.jpeg?auto=compress&cs=tinysrgb&w=1200',
+        window.location.href,
+        'website'
+      );
+    }
+
+    /* ============================================================
        ROUTER NAVIGATION FUNCTIONS (with hash updates)
     ============================================================ */
 
@@ -906,6 +969,7 @@
           link.classList.toggle('active', link.dataset.page === 'home');
         });
         document.getElementById('navLinks').classList.remove('open');
+        resetMetaTags();
         return;
       }
 
@@ -922,6 +986,11 @@
       document.querySelectorAll('.nav-links a').forEach(link => {
         link.classList.toggle('active', link.dataset.page === pageKey);
       });
+
+      // Reset meta tags for non-article pages
+      if (pageKey !== 'article') {
+        resetMetaTags();
+      }
 
       if (pageKey === 'home') {
         loadCategoryCounts();
@@ -953,6 +1022,15 @@
       });
 
       document.getElementById('navLinks').classList.remove('open');
+      
+      // Update meta tags for category page
+      updateMetaTags(
+        `${category.name} — World Discovery`,
+        `Explore ${category.name} articles, travel guides, and destination inspiration.`,
+        'https://images.pexels.com/photos/2613110/pexels-photo-2613110.jpeg?auto=compress&cs=tinysrgb&w=1200',
+        window.location.href,
+        'website'
+      );
     }
 
     function navigateToArticle(slug) {
@@ -1395,6 +1473,7 @@
               <a href="#" onclick="navigateTo('home'); return false;" class="back-home" style="display: inline-block; padding: 12px 32px; background: var(--yellow); color: var(--text); font-weight: 700; border-radius: 30px; text-decoration: none; transition: 0.2s;">← Back to Home</a>
             </div>
           `;
+          resetMetaTags();
           return;
         }
 
@@ -1436,6 +1515,20 @@
 
         container.innerHTML = html;
 
+        // ⭐ UPDATE SEO META TAGS FOR ARTICLE
+        const articleTitle = article.title || 'World Discovery';
+        const articleDesc = article.description || 'Discover amazing places and hidden destinations.';
+        const articleImage = article.image_url || 'https://images.pexels.com/photos/2613110/pexels-photo-2613110.jpeg?auto=compress&cs=tinysrgb&w=1200';
+        const articleUrl = window.location.href;
+        
+        updateMetaTags(
+          `${articleTitle} — World Discovery`,
+          articleDesc,
+          articleImage,
+          articleUrl,
+          'article'
+        );
+
         // ⭐ CHECK FOR MAP DATA IN THE CONTENT ⭐
         const mapDataElement = document.getElementById('mapData');
         if (mapDataElement) {
@@ -1457,6 +1550,7 @@
       } catch (err) {
         console.error('Error loading article:', err);
         container.innerHTML = `<p style="color: var(--muted); padding: 20px;">⚠️ Could not load the article.</p>`;
+        resetMetaTags();
       }
     }
 
