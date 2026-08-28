@@ -817,6 +817,10 @@
                   <span class="icon">${cat.icon}</span>
                   <div class="name">${cat.name}</div>
                   <div class="count" id="count-${cat.id}">Loading…</div>
+                  <div class="category-preview" id="preview-${cat.id}" style="margin-top: 10px; font-size: 0.75rem; color: var(--muted); display: none;">
+                    <span class="preview-image" id="preview-img-${cat.id}" style="display: block; width: 100%; height: 60px; border-radius: 8px; overflow: hidden; margin-bottom: 4px; background: #f0f0f0;"></span>
+                    <span class="preview-title" id="preview-title-${cat.id}"></span>
+                  </div>
                 </div>
               `).join('')}
             </div>
@@ -1052,19 +1056,45 @@
     }
 
     /* ============================================================
-       LOAD CATEGORY COUNTS
+       LOAD CATEGORY COUNTS & PREVIEWS
     ============================================================ */
     async function loadCategoryCounts() {
       try {
-        const { data, error } = await supabaseClient.from('articles').select('tag');
+        const { data, error } = await supabaseClient.from('articles').select('id, tag, title, image_url');
         if (error || !data) return;
+        
         const counts = {};
-        data.forEach(article => { if (article.tag) counts[article.tag] = (counts[article.tag] || 0) + 1; });
+        const previews = {};
+        
+        data.forEach(article => {
+          if (article.tag) {
+            counts[article.tag] = (counts[article.tag] || 0) + 1;
+            // Store one preview article per category (first one found)
+            if (!previews[article.tag] && article.image_url) {
+              previews[article.tag] = {
+                title: article.title,
+                image_url: article.image_url
+              };
+            }
+          }
+        });
+        
         categories.forEach(cat => {
           const el = document.getElementById(`count-${cat.id}`);
           if (el) {
             const count = counts[cat.tag] || 0;
             el.textContent = `${count} article${count !== 1 ? 's' : ''}`;
+          }
+          
+          // Show preview if available
+          const previewEl = document.getElementById(`preview-${cat.id}`);
+          const previewImg = document.getElementById(`preview-img-${cat.id}`);
+          const previewTitle = document.getElementById(`preview-title-${cat.id}`);
+          
+          if (previewEl && previewImg && previewTitle && previews[cat.tag]) {
+            previewEl.style.display = 'block';
+            previewImg.innerHTML = `<img src="${previews[cat.tag].image_url}" alt="${previews[cat.tag].title}" style="width:100%; height:60px; object-fit:cover;" />`;
+            previewTitle.textContent = previews[cat.tag].title.length > 30 ? previews[cat.tag].title.substring(0, 30) + '…' : previews[cat.tag].title;
           }
         });
       } catch (err) { console.error(err); }
