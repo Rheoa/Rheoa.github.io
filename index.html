@@ -1190,6 +1190,16 @@
       const country = await getCountryCode();
       const visitorId = getVisitorId();
 
+      // NEW: Capture IP address
+      let ipAddress = null;
+      try {
+        const ipRes = await fetch('https://api.ipify.org?format=json');
+        const ipData = await ipRes.json();
+        ipAddress = ipData.ip;
+      } catch (err) {
+        console.warn('Could not get IP:', err);
+      }
+
       try {
         await supabaseClient
           .from('click_logs')
@@ -1199,6 +1209,7 @@
             link_url: href,
             country_code: country,
             visitor_id: visitorId,
+            ip_address: ipAddress,  // NEW: Now captures IP
             user_agent: navigator.userAgent,
           });
       } catch (err) {
@@ -1300,7 +1311,7 @@
           return;
         }
 
-        // ✅ Atomic view increment - safe for concurrent users (FIXED)
+        // ✅ Atomic view increment - safe for concurrent users
         const { data: viewData, error: viewError } = await supabaseClient
           .rpc('increment_views', { article_id_param: article.id });
 
