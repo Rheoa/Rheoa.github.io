@@ -1143,53 +1143,87 @@
     }
 
     /* ============================================================
-       DYNAMIC LINK REWRITING (with click tracking)
+       DYNAMIC LINK REWRITING (with click tracking and caching)
     ============================================================ */
     async function rewriteDynamicLinks(articleId) {
       const country = await getCountryCode();
 
-      try {
-        const { data: links, error } = await supabaseClient
-          .from('affiliate_links')
-          .select('affiliate_key, link_url, country_code')
-          .eq('article_id', articleId)
-          .in('country_code', [country, 'default']);
+      // Check cache first
+      const cacheKey = `affiliate_links_${articleId}_${country}`;
+      let links = null;
+      let fromCache = false;
 
-        if (error || !links || links.length === 0) {
-          document.querySelectorAll('.dynamic-link').forEach(el => {
-            el.classList.add('disabled');
-            el.title = 'No affiliate link available for your region';
-          });
+      try {
+        const cached = localStorage.getItem(cacheKey);
+        if (cached) {
+          const parsed = JSON.parse(cached);
+          const age = Date.now() - parsed.timestamp;
+          // Cache for 1 hour (3600000 ms)
+          if (age < 3600000) {
+            links = parsed.data;
+            fromCache = true;
+          }
+        }
+      } catch (_) {}
+
+      // If not in cache, fetch from database
+      if (!links) {
+        try {
+          const { data, error } = await supabaseClient
+            .from('affiliate_links')
+            .select('affiliate_key, link_url, country_code')
+            .eq('article_id', articleId)
+            .in('country_code', [country, 'default']);
+
+          if (error || !data || data.length === 0) {
+            document.querySelectorAll('.dynamic-link').forEach(el => {
+              el.classList.add('disabled');
+              el.title = 'No affiliate link available for your region';
+            });
+            return;
+          }
+
+          links = data;
+
+          // Store in cache
+          try {
+            localStorage.setItem(cacheKey, JSON.stringify({
+              data: links,
+              timestamp: Date.now()
+            }));
+          } catch (_) {}
+
+        } catch (err) {
+          console.error('Error fetching affiliate links:', err);
           return;
         }
-
-        const linkMap = {};
-        links.forEach(item => {
-          const key = item.affiliate_key.trim().toLowerCase();
-          if (item.country_code === country) linkMap[key] = item.link_url;
-        });
-        links.forEach(item => {
-          const key = item.affiliate_key.trim().toLowerCase();
-          if (item.country_code === 'default' && !linkMap[key]) linkMap[key] = item.link_url;
-        });
-
-        document.querySelectorAll('.dynamic-link').forEach(el => {
-          const key = el.dataset.affiliateKey?.trim().toLowerCase();
-          if (key && linkMap[key]) {
-            const url = linkMap[key];
-            el.href = url;
-            el.classList.remove('disabled');
-            el.removeEventListener('click', trackClickHandler);
-            el.addEventListener('click', trackClickHandler);
-          } else {
-            el.classList.add('disabled');
-            el.title = 'No affiliate link available for your region';
-          }
-        });
-
-      } catch (err) {
-        console.error('Error rewriting dynamic links:', err);
       }
+
+      // Build link map
+      const linkMap = {};
+      links.forEach(item => {
+        const key = item.affiliate_key.trim().toLowerCase();
+        if (item.country_code === country) linkMap[key] = item.link_url;
+      });
+      links.forEach(item => {
+        const key = item.affiliate_key.trim().toLowerCase();
+        if (item.country_code === 'default' && !linkMap[key]) linkMap[key] = item.link_url;
+      });
+
+      // Apply links to DOM elements
+      document.querySelectorAll('.dynamic-link').forEach(el => {
+        const key = el.dataset.affiliateKey?.trim().toLowerCase();
+        if (key && linkMap[key]) {
+          const url = linkMap[key];
+          el.href = url;
+          el.classList.remove('disabled');
+          el.removeEventListener('click', trackClickHandler);
+          el.addEventListener('click', trackClickHandler);
+        } else {
+          el.classList.add('disabled');
+          el.title = 'No affiliate link available for your region';
+        }
+      });
     }
 
     async function trackClickHandler(e) {
