@@ -887,7 +887,23 @@
     ============================================================ */
 
     function navigateTo(pageKey) {
-      if (!pages[pageKey]) return;
+      // Handle 404 for invalid pages
+      if (!pages[pageKey]) {
+        const main = document.getElementById('main-content');
+        main.innerHTML = `
+          <div class="container" style="text-align: center; padding: 60px 20px;">
+            <p style="font-size: 4rem; margin-bottom: 16px;">🌍</p>
+            <h2 style="font-size: 2rem; font-weight: 800; margin-bottom: 12px;">Page Not Found</h2>
+            <p style="color: var(--muted); margin-bottom: 24px;">Sorry, the page you're looking for doesn't exist.</p>
+            <a href="#" onclick="navigateTo('home'); return false;" class="back-home" style="display: inline-block; padding: 12px 32px; background: var(--yellow); color: var(--text); font-weight: 700; border-radius: 30px; text-decoration: none; transition: 0.2s;">← Back to Home</a>
+          </div>
+        `;
+        document.querySelectorAll('.nav-links a').forEach(link => {
+          link.classList.toggle('active', link.dataset.page === 'home');
+        });
+        document.getElementById('navLinks').classList.remove('open');
+        return;
+      }
 
       if (pageKey === 'home') {
         window.location.hash = '';
@@ -1190,7 +1206,7 @@
       const country = await getCountryCode();
       const visitorId = getVisitorId();
 
-      // NEW: Capture IP address
+      // Capture IP address
       let ipAddress = null;
       try {
         const ipRes = await fetch('https://api.ipify.org?format=json');
@@ -1209,7 +1225,7 @@
             link_url: href,
             country_code: country,
             visitor_id: visitorId,
-            ip_address: ipAddress,  // NEW: Now captures IP
+            ip_address: ipAddress,
             user_agent: navigator.userAgent,
           });
       } catch (err) {
@@ -1307,7 +1323,14 @@
           .single();
 
         if (error || !article) {
-          container.innerHTML = `<p style="color: var(--muted); padding: 20px;">⚠️ Article not found.</p>`;
+          container.innerHTML = `
+            <div style="text-align: center; padding: 40px 20px;">
+              <p style="font-size: 3rem; margin-bottom: 16px;">🔍</p>
+              <h2 style="font-size: 1.8rem; font-weight: 700; margin-bottom: 12px;">Article Not Found</h2>
+              <p style="color: var(--muted); margin-bottom: 24px;">The article you're looking for doesn't exist or has been moved.</p>
+              <a href="#" onclick="navigateTo('home'); return false;" class="back-home" style="display: inline-block; padding: 12px 32px; background: var(--yellow); color: var(--text); font-weight: 700; border-radius: 30px; text-decoration: none; transition: 0.2s;">← Back to Home</a>
+            </div>
+          `;
           return;
         }
 
