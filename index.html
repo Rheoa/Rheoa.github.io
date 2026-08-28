@@ -1300,18 +1300,15 @@
           return;
         }
 
-        // ✅ ALWAYS increment the view count (no checks, no session)
-        const newViewCount = (article.views || 0) + 1;
-        const { error: updateError } = await supabaseClient
-          .from('articles')
-          .update({ views: newViewCount })
-          .eq('id', article.id);
+        // ✅ Atomic view increment - safe for concurrent users (FIXED)
+        const { data: viewData, error: viewError } = await supabaseClient
+          .rpc('increment_views', { article_id_param: article.id });
 
-        if (updateError) {
-          console.error('❌ View count update failed:', updateError);
+        if (viewError) {
+          console.error('❌ View count update failed:', viewError);
         } else {
-          console.log('✅ View count updated to', newViewCount);
-          article.views = newViewCount;
+          console.log('✅ View count updated to', viewData);
+          article.views = viewData;
         }
 
         if (titleSpan) titleSpan.textContent = article.title;
