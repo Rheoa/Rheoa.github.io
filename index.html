@@ -918,6 +918,8 @@
   <!-- ============================================================
        SCRIPTS
   ============================================================ -->
+  <!-- Supabase Configuration (from config.js) -->
+  <script src="config.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2">
   </script>
 
@@ -974,11 +976,15 @@
     });
 
     /* ============================================================
-       SUPABASE INIT
+       SUPABASE INIT (from config.js)
     ============================================================ */
-    const SUPABASE_URL = 'https://kabvjgnbxgwlltzrkxsj.supabase.co';
-    const SUPABASE_ANON_KEY =
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImthYnZqZ25ieGd3bGx0enJreHNqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYzMjQ2NTQsImV4cCI6MjEwMTkwMDY1NH0.lJdkSERv8dwhMvCMUWLRe6mpC66SzAi_jXFcWJJ_Qng';
+    const config = window.WORLD_DISCOVERY_CONFIG || {};
+    const SUPABASE_URL = config.SUPABASE_URL || 'https://kabvjgnbxgwlltzrkxsj.supabase.co';
+    const SUPABASE_ANON_KEY = config.SUPABASE_ANON_KEY || '';
+
+    if (!SUPABASE_ANON_KEY) {
+      console.warn('⚠️ Supabase ANON_KEY not found. Check config.js');
+    }
 
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
