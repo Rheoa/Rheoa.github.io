@@ -6,15 +6,13 @@
   <title>Admin Dashboard — World Discovery</title>
 
   <!-- ============================================================
-       SECURITY HEADERS (Meta Tags)
+       SECURITY HEADERS (Meta Tags) — UPDATED connect-src
        ============================================================ -->
   <meta http-equiv="X-Content-Type-Options" content="nosniff" />
   <meta http-equiv="X-Frame-Options" content="DENY" />
   <meta name="referrer" content="strict-origin-when-cross-origin" />
   <meta http-equiv="Content-Security-Policy" 
-        content="default-src 'self' https://*.supabase.co https://*.pexels.com https://*.googleapis.com https://*.gstatic.com https://unpkg.com https://cdn.jsdelivr.net https://www.pinterest.com https://api.ipify.org https://*.impactcdn.com https://utt.impactcdn.com; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://unpkg.com https://utt.impactcdn.com https://www.googletagmanager.com; style-src 'self' 'unsafe-inline' https://unpkg.com https://fonts.googleapis.com; img-src 'self' data: https://*.pexels.com https://images.pexels.com https://*.pinterest.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://*.supabase.co https://api.ipify.org https://ipapi.co https://ip-api.com https://ipinfo.io https://cdn.jsdelivr.net; frame-src 'self' https://www.pinterest.com;" />
-  <meta http-equiv="Permissions-Policy" 
-        content="geolocation=(), microphone=(), camera=(), payment=(), usb=(), battery=(), accelerometer=(), gyroscope=(), magnetometer=(), ambient-light-sensor=(), vibrate=(), midi=(), clipboard-read=(), clipboard-write=(), screen-wake-lock=(), serial=(), hid=(), xr-spatial-tracking=()" />
+        content="default-src 'self' https://*.supabase.co https://*.pexels.com https://*.googleapis.com https://*.gstatic.com https://unpkg.com https://cdn.jsdelivr.net https://www.pinterest.com https://api.ipify.org https://*.impactcdn.com https://utt.impactcdn.com; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://unpkg.com https://utt.impactcdn.com https://www.googletagmanager.com; style-src 'self' 'unsafe-inline' https://unpkg.com https://fonts.googleapis.com; img-src 'self' data: https://*.pexels.com https://images.pexels.com https://*.pinterest.com https://*.tile.openstreetmap.org; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://*.supabase.co https://api.ipify.org https://ipapi.co https://ip-api.com https://ipinfo.io https://cdn.jsdelivr.net https://*.tile.openstreetmap.org; frame-src 'self' https://www.pinterest.com;" />
 
   <!-- Google Search Console Verification -->
   <meta name="google-site-verification" content="7unpVZHBGdonyB06vWx9YIigUSi83ReKycHSDRWH2ws" />
@@ -228,11 +226,6 @@
       display: flex;
       align-items: center;
       gap: 6px;
-    }
-    .map-legend .legend-color {
-      width: 20px;
-      height: 12px;
-      border-radius: 2px;
     }
     .map-legend .legend-circle {
       width: 16px;
@@ -1043,11 +1036,11 @@
               <div class="stat-card"><div class="number" id="statTopCountry">—</div><div class="label">Top Country</div></div>
             </div>
 
-            <!-- 🆕 Geographic Map (Marker-based) -->
+            <!-- 🆕 Geographic Map (Marker-based with simple background) -->
             <h3 class="section-title">🌍 Geographic Click Distribution</h3>
             <div id="clickMap"></div>
             <div style="text-align: right; font-size: 0.8rem; color: var(--muted); margin-top: -10px; margin-bottom: 20px;">
-              Circle size = click volume | Hover/Click for details
+              Circle size = click volume | Click on a circle for details
             </div>
 
             <div class="two-col">
@@ -1553,7 +1546,7 @@
     }
 
     // ============================================================
-    // 🆕 RENDER CLICK MAP (MARKER-BASED — NO GEOJSON DEPENDENCY)
+    // 🆕 RENDER CLICK MAP (MARKER-BASED WITH SIMPLE TILE LAYER)
     // ============================================================
     function renderClickMap(countryStats) {
       const mapContainer = document.getElementById('clickMap');
@@ -1593,13 +1586,14 @@
       }
 
       try {
-        // Create a new map
+        // Create a new map with a very basic and reliable tile layer
         clickMap = L.map(mapContainer).setView([20, 0], 2);
 
-        // Add a tile layer
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>, &copy; CartoDB',
-          maxZoom: 19
+        // Use the standard OpenStreetMap tile layer — it's widely available and reliable
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+          maxZoom: 19,
+          minZoom: 1
         }).addTo(clickMap);
 
         // Find max clicks for scaling
