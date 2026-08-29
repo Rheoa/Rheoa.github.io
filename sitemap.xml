@@ -1,0 +1,276 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  
+  <!-- Homepage -->
+  <url>
+    <loc>https://rheoa.github.io/</loc>
+    <lastmod>2026-08-29</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+  </url>
+
+  <!-- ===== AFRICA ===== -->
+  <url>
+    <loc>https://rheoa.github.io/#article-10-places-in-africa-to-discover</loc>
+    <lastmod>2026-08-29</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://rheoa.github.io/#article-african-landscapes-that-are-amazing</loc>
+    <lastmod>2026-08-29</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://rheoa.github.io/#article-african-landscapes-that-look-unreal</loc>
+    <lastmod>2026-08-29</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://rheoa.github.io/#article-20-interesting-africa-facts</loc>
+    <lastmod>2026-08-29</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- ===== ASIA ===== -->
+  <url>
+    <loc>https://rheoa.github.io/#article-10-incredible-places-to-visit-in-asia</loc>
+    <lastmod>2026-08-29</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://rheoa.github.io/#article-12-places-in-asia-worth-visiting</loc>
+    <lastmod>2026-08-29</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://rheoa.github.io/#article-asian-destinations-youll-dream-about</loc>
+    <lastmod>2026-08-29</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://rheoa.github.io/#article-15-surprising-facts-about-asia</loc>
+    <lastmod>2026-08-29</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- ===== AUSTRALIA & OCEANIA ===== -->
+  <url>
+    <loc>https://rheoa.github.io/#article-10-places-to-explore-in-australia-&-oceania</loc>
+    <lastmod>2026-08-29</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- ===== EUROPE ===== -->
+  <url>
+    <loc>https://rheoa.github.io/#article-20-european-places-for-your-bucket-list</loc>
+    <lastmod>2026-08-29</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://rheoa.github.io/#article-10-beautiful-places-in-europe-you-should-see</loc>
+    <lastmod>2026-08-29</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://rheoa.github.io/#article-10-european-towns-that-look-like-fairy-tales</loc>
+    <lastmod>2026-08-29</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- ===== NORTH AMERICA ===== -->
+  <url>
+    <loc>https://rheoa.github.io/#article-10-places-in-north-america-you-should-see</loc>
+    <lastmod>2026-08-29</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://rheoa.github.io/#article-10-beautiful-places-in-north-america</loc>
+    <lastmod>2026-08-29</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- ===== SOUTH AMERICA ===== -->
+  <url>
+    <loc>https://rheoa.github.io/#article-beautiful-places-in-south-america</loc>
+    <lastmod>2026-08-29</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- ===== INDIA ===== -->
+  <url>
+    <loc>https://rheoa.github.io/#article-10-incredible-places-in-india</loc>
+    <lastmod>2026-08-29</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://rheoa.github.io/#article-hidden-places-in-india</loc>
+    <lastmod>2026-08-29</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://rheoa.github.io/#article-india-travel-map-places-to-explore</loc>
+    <lastmod>2026-08-29</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- ===== DREAM DESTINATIONS & BUCKET LIST ===== -->
+  <url>
+    <loc>https://rheoa.github.io/#article-15-dream-destinations-around-the-world</loc>
+    <lastmod>2026-08-29</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://rheoa.github.io/#article-20-places-to-put-on-your-bucket-list</loc>
+    <lastmod>2026-08-29</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://rheoa.github.io/#article-dream-island-destinations</loc>
+    <lastmod>2026-08-29</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- ===== HIDDEN GEMS ===== -->
+  <url>
+    <loc>https://rheoa.github.io/#article-12-hidden-gems-most-tourists-miss</loc>
+    <lastmod>2026-08-29</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://rheoa.github.io/#article-10-hidden-destinations-most-tourists-miss</loc>
+    <lastmod>2026-08-29</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://rheoa.github.io/#article-places-tourists-often-miss</loc>
+    <lastmod>2026-08-29</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://rheoa.github.io/#article-secret-beaches</loc>
+    <lastmod>2026-08-29</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- ===== PLACES THAT LOOK UNREAL / STRANGE ===== -->
+  <url>
+    <loc>https://rheoa.github.io/#article-places-like-another-planet</loc>
+    <lastmod>2026-08-29</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://rheoa.github.io/#article-10-landscapes-that-dont-look-real</loc>
+    <lastmod>2026-08-29</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://rheoa.github.io/#article-10-of-the-worlds-strangest-places</loc>
+    <lastmod>2026-08-29</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://rheoa.github.io/#article-10strange-places-that-dont-make-sense</loc>
+    <lastmod>2026-08-29</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- ===== PLACES YOU'LL WANT TO SAVE ===== -->
+  <url>
+    <loc>https://rheoa.github.io/#article-places-youll-want-to-save</loc>
+    <lastmod>2026-08-29</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- ===== COUNTRY FACTS ===== -->
+  <url>
+    <loc>https://rheoa.github.io/#article-15-country-facts-that-will-surprise-you</loc>
+    <lastmod>2026-08-29</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- ===== DISCOVERIES ===== -->
+  <url>
+    <loc>https://rheoa.github.io/#article-20-discoveries-around-the-world</loc>
+    <lastmod>2026-08-29</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://rheoa.github.io/#article-discover-somewhere-new</loc>
+    <lastmod>2026-08-29</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://rheoa.github.io/#article-the-world-is-full-of-places-you-never-knew-existed</loc>
+    <lastmod>2026-08-29</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- ===== COUNTRIES TO EXPLORE ===== -->
+  <url>
+    <loc>https://rheoa.github.io/#article-countries-you-should-explore</loc>
+    <lastmod>2026-08-29</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- ===== LEGAL PAGES (lower priority) ===== -->
+  <url>
+    <loc>https://rheoa.github.io/privacy.html</loc>
+    <lastmod>2026-08-29</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+  </url>
+  <url>
+    <loc>https://rheoa.github.io/terms.html</loc>
+    <lastmod>2026-08-29</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+  </url>
+  <url>
+    <loc>https://rheoa.github.io/affiliate-disclosure.html</loc>
+    <lastmod>2026-08-29</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+  </url>
+  <url>
+    <loc>https://rheoa.github.io/cookie-policy.html</loc>
+    <lastmod>2026-08-29</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+  </url>
+
+</urlset>
