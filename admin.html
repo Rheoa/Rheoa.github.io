@@ -6,6 +6,8 @@
   <title>Admin Dashboard — World Discovery</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📊</text></svg>" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,600;14..32,800&display=swap" rel="stylesheet" />
+  <!-- Chart.js for charts -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <style>
     :root {
       --yellow: #ffdb10;
@@ -18,7 +20,7 @@
       --border: #eaeaea;
       --shadow: 0 8px 30px rgba(0, 0, 0, 0.06);
       --radius: 16px;
-      --max-width: 1200px;
+      --max-width: 1400px;
     }
 
     * { margin:0; padding:0; box-sizing:border-box; }
@@ -58,6 +60,13 @@
       margin-top: 4px;
     }
 
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      margin-bottom: 24px;
+    }
+
     .section-title {
       font-size: 1.4rem;
       font-weight: 700;
@@ -83,6 +92,16 @@
     th { text-align: left; font-weight: 700; padding: 10px 8px; border-bottom: 2px solid var(--border); }
     td { padding: 10px 8px; border-bottom: 1px solid var(--border); }
     tr:last-child td { border-bottom: none; }
+
+    .chart-container {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+      box-shadow: var(--shadow);
+      margin-bottom: 20px;
+      height: 300px;
+    }
 
     .login-box {
       max-width: 400px;
@@ -138,29 +157,57 @@
       justify-content: space-between;
       align-items: center;
       margin-bottom: 20px;
+      flex-wrap: wrap;
+      gap: 12px;
     }
     .top-bar .last-updated {
       font-size: 0.9rem;
       color: var(--muted);
     }
+    .refresh-btn {
+      background: var(--yellow);
+      border: none;
+      padding: 6px 16px;
+      border-radius: 30px;
+      font-weight: 700;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+    .refresh-btn:hover { background: var(--yellow-dark); }
+
+    @media (max-width: 700px) {
+      .two-col { grid-template-columns: 1fr; }
+      .stats-grid { grid-template-columns: repeat(2, 1fr); }
+    }
   </style>
 </head>
-
 <body>
 
   <div id="app">
     <!-- Will be filled by JavaScript -->
   </div>
 
+  <!-- Supabase Configuration -->
+  <script src="config.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
-    const SUPABASE_URL = 'https://kabvjgnbxgwlltzrkxsj.supabase.co';
-    const SUPABASE_ANON_KEY =
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImthYnZqZ25ieGd3bGx0enJreHNqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYzMjQ2NTQsImV4cCI6MjEwMTkwMDY1NH0.lJdkSERv8dwhMvCMUWLRe6mpC66SzAi_jXFcWJJ_Qng';
+    // Load config
+    const config = window.WORLD_DISCOVERY_CONFIG || {};
+    const SUPABASE_URL = config.SUPABASE_URL || 'https://kabvjgnbxgwlltzrkxsj.supabase.co';
+    const SUPABASE_ANON_KEY = config.SUPABASE_ANON_KEY || '';
+
+    if (!SUPABASE_ANON_KEY) {
+      console.warn('⚠️ Supabase ANON_KEY not found. Check config.js');
+    }
 
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     let currentUser = null;
+    let chartInstance = null;
 
+    /* ============================================================
+       AUTH
+    ============================================================ */
     async function checkSession() {
       const { data: { session }, error } = await supabaseClient.auth.getSession();
       if (session) {
@@ -216,18 +263,24 @@
       renderLogin();
     }
 
+    /* ============================================================
+       DASHBOARD
+    ============================================================ */
     function renderDashboard() {
       document.getElementById('app').innerHTML = `
         <div class="container dashboard">
           <div class="top-bar">
             <h1>📊 Analytics Dashboard</h1>
-            <div>
+            <div style="display:flex; align-items:center; gap:16px; flex-wrap:wrap;">
               <span class="last-updated">Last updated: <span id="lastUpdated">now</span></span>
+              <button class="refresh-btn" onclick="loadDashboardData()">⟳ Refresh</button>
               <button class="logout-btn" onclick="logoutAdmin()">Logout</button>
             </div>
           </div>
 
+          <!-- Stats Row -->
           <div class="stats-grid" id="statsGrid">
+            <div class="stat-card"><div class="number" id="statTotal">—</div><div class="label">Total Clicks</div></div>
             <div class="stat-card"><div class="number" id="stat24h">—</div><div class="label">Clicks (24h)</div></div>
             <div class="stat-card"><div class="number" id="stat7d">—</div><div class="label">Clicks (7d)</div></div>
             <div class="stat-card"><div class="number" id="stat30d">—</div><div class="label">Clicks (30d)</div></div>
@@ -236,27 +289,62 @@
             <div class="stat-card"><div class="number" id="statTopCountry">—</div><div class="label">Top Country</div></div>
           </div>
 
-          <h3 class="section-title">🏆 Top Links</h3>
-          <div class="table-wrap">
-            <table id="topLinksTable">
-              <thead><tr><th>Link</th><th>Total Clicks</th><th>Unique Clickers</th></tr></thead>
-              <tbody id="topLinksBody"><tr><td colspan="3" style="text-align:center;">Loading…</td></tr></tbody>
-            </table>
+          <!-- Chart + Affiliate Breakdown -->
+          <div class="two-col">
+            <div>
+              <h3 class="section-title">📈 Clicks by Affiliate Key</h3>
+              <div class="chart-container">
+                <canvas id="affiliateChart"></canvas>
+              </div>
+            </div>
+            <div>
+              <h3 class="section-title">🏷️ Affiliate Key Breakdown</h3>
+              <div class="table-wrap">
+                <table>
+                  <thead><tr><th>Affiliate Key</th><th>Clicks</th></tr></thead>
+                  <tbody id="affiliateBreakdownBody"><tr><td colspan="2" style="text-align:center;">Loading…</td></tr></tbody>
+                </table>
+              </div>
+            </div>
           </div>
 
+          <!-- Top Links & Top Articles -->
+          <div class="two-col">
+            <div>
+              <h3 class="section-title">🔗 Top Links</h3>
+              <div class="table-wrap">
+                <table>
+                  <thead><tr><th>Link</th><th>Clicks</th><th>Unique</th></tr></thead>
+                  <tbody id="topLinksBody"><tr><td colspan="3" style="text-align:center;">Loading…</td></tr></tbody>
+                </table>
+              </div>
+            </div>
+            <div>
+              <h3 class="section-title">📄 Top Articles</h3>
+              <div class="table-wrap">
+                <table>
+                  <thead><tr><th>Article</th><th>Clicks</th></tr></thead>
+                  <tbody id="topArticlesBody"><tr><td colspan="2" style="text-align:center;">Loading…</td></tr></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- Region Distribution -->
           <h3 class="section-title">🌍 Region Distribution</h3>
           <div class="table-wrap">
-            <table id="regionTable">
+            <table>
               <thead><tr><th>Country</th><th>Clicks</th></tr></thead>
               <tbody id="regionBody"><tr><td colspan="2" style="text-align:center;">Loading…</td></tr></tbody>
             </table>
           </div>
 
+          <!-- Recent Clicks -->
           <h3 class="section-title">🕒 Recent Clicks</h3>
           <div class="table-wrap">
-            <table id="recentTable">
-              <thead><tr><th>Time</th><th>Link</th><th>Country</th></tr></thead>
-              <tbody id="recentBody"><tr><td colspan="3" style="text-align:center;">Loading…</td></tr></tbody>
+            <table>
+              <thead><tr><th>Time</th><th>Article</th><th>Link</th><th>Affiliate Key</th><th>Country</th></tr></thead>
+              <tbody id="recentBody"><tr><td colspan="5" style="text-align:center;">Loading…</td></tr></tbody>
             </table>
           </div>
         </div>
@@ -265,9 +353,12 @@
       loadDashboardData();
     }
 
+    /* ============================================================
+       LOAD DATA
+    ============================================================ */
     async function loadDashboardData() {
       // Show loading
-      ['stat24h','stat7d','stat30d','statUnique','statTopLink','statTopCountry'].forEach(id => {
+      ['statTotal','stat24h','stat7d','stat30d','statUnique','statTopLink','statTopCountry'].forEach(id => {
         document.getElementById(id).textContent = '…';
       });
 
@@ -277,73 +368,122 @@
       const thirtyDaysAgo = new Date(now.getTime() - 30*24*60*60*1000);
 
       try {
-        // Stats counts
-        const { count: count24h } = await supabaseClient
+        // --- All clicks (for counts) ---
+        const { data: allClicksData, error: allError } = await supabaseClient
           .from('click_logs')
-          .select('*', { count: 'exact', head: true })
-          .gte('created_at', dayAgo.toISOString());
+          .select('created_at, affiliate_key, link_url, visitor_id, country_code, article_id')
+          .order('created_at', { ascending: false });
 
-        const { count: count7d } = await supabaseClient
-          .from('click_logs')
-          .select('*', { count: 'exact', head: true })
-          .gte('created_at', sevenDaysAgo.toISOString());
+        if (allError) throw allError;
 
-        const { count: count30d } = await supabaseClient
-          .from('click_logs')
-          .select('*', { count: 'exact', head: true })
-          .gte('created_at', thirtyDaysAgo.toISOString());
+        const clicks = allClicksData || [];
+        const totalClicks = clicks.length;
 
-        // Unique visitors
-        const { data: uniqueData } = await supabaseClient
-          .from('click_logs')
-          .select('visitor_id')
-          .gte('created_at', thirtyDaysAgo.toISOString());
+        // Time filters
+        const dayFilter = dayAgo.toISOString();
+        const sevenFilter = sevenDaysAgo.toISOString();
+        const thirtyFilter = thirtyDaysAgo.toISOString();
 
-        let uniqueCount = 0;
-        if (uniqueData) {
-          const uniqueSet = new Set(uniqueData.map(d => d.visitor_id).filter(Boolean));
-          uniqueCount = uniqueSet.size;
-        }
+        const count24h = clicks.filter(c => c.created_at >= dayFilter).length;
+        const count7d = clicks.filter(c => c.created_at >= sevenFilter).length;
+        const count30d = clicks.filter(c => c.created_at >= thirtyFilter).length;
 
-        // All clicks for aggregation
-        const { data: allClicks } = await supabaseClient
-          .from('click_logs')
-          .select('link_url, visitor_id, country_code')
-          .gte('created_at', thirtyDaysAgo.toISOString());
+        // Unique visitors (30d)
+        const uniqueSet = new Set(clicks.filter(c => c.created_at >= thirtyFilter).map(c => c.visitor_id).filter(Boolean));
+        const uniqueCount = uniqueSet.size;
 
-        // Top link
+        // Aggregate for top link, country, affiliate, article
         const linkStats = {};
         const countryStats = {};
-        if (allClicks) {
-          allClicks.forEach(row => {
+        const affiliateStats = {};
+        const articleStats = {};
+
+        clicks.forEach(row => {
+          // link
+          if (row.link_url) {
             if (!linkStats[row.link_url]) linkStats[row.link_url] = { total: 0, unique: new Set() };
             linkStats[row.link_url].total++;
             if (row.visitor_id) linkStats[row.link_url].unique.add(row.visitor_id);
-            const cc = row.country_code || 'Unknown';
-            countryStats[cc] = (countryStats[cc] || 0) + 1;
-          });
-        }
+          }
+          // country
+          const cc = row.country_code || 'Unknown';
+          countryStats[cc] = (countryStats[cc] || 0) + 1;
+          // affiliate
+          if (row.affiliate_key) {
+            affiliateStats[row.affiliate_key] = (affiliateStats[row.affiliate_key] || 0) + 1;
+          }
+          // article
+          if (row.article_id) {
+            articleStats[row.article_id] = (articleStats[row.article_id] || 0) + 1;
+          }
+        });
 
-        let topLink = '—', topCountry = '—';
+        // Top link
         const sortedLinks = Object.entries(linkStats)
           .map(([url, stats]) => ({ url, total: stats.total, unique: stats.unique.size }))
           .sort((a, b) => b.total - a.total);
-        if (sortedLinks.length) {
-          const best = sortedLinks[0];
-          topLink = best.url.length > 40 ? best.url.substring(0,40)+'…' : best.url;
-        }
-        const sortedCountries = Object.entries(countryStats).sort((a,b) => b[1] - a[1]);
-        if (sortedCountries.length) topCountry = sortedCountries[0][0];
+        const topLink = sortedLinks.length ? (sortedLinks[0].url.length > 40 ? sortedLinks[0].url.substring(0,40)+'…' : sortedLinks[0].url) : '—';
 
-        // Update stats cards
-        document.getElementById('stat24h').textContent = count24h || 0;
-        document.getElementById('stat7d').textContent = count7d || 0;
-        document.getElementById('stat30d').textContent = count30d || 0;
-        document.getElementById('statUnique').textContent = uniqueCount || 0;
+        // Top country
+        const sortedCountries = Object.entries(countryStats).sort((a,b) => b[1] - a[1]);
+        const topCountry = sortedCountries.length ? sortedCountries[0][0] : '—';
+
+        // Update stats
+        document.getElementById('statTotal').textContent = totalClicks;
+        document.getElementById('stat24h').textContent = count24h;
+        document.getElementById('stat7d').textContent = count7d;
+        document.getElementById('stat30d').textContent = count30d;
+        document.getElementById('statUnique').textContent = uniqueCount;
         document.getElementById('statTopLink').textContent = topLink;
         document.getElementById('statTopCountry').textContent = topCountry;
 
-        // Top links table (top 10)
+        // --- Affiliate breakdown (table + chart) ---
+        const sortedAffiliates = Object.entries(affiliateStats).sort((a,b) => b[1] - a[1]);
+        const tbodyAffiliate = document.getElementById('affiliateBreakdownBody');
+        if (tbodyAffiliate) {
+          if (sortedAffiliates.length === 0) {
+            tbodyAffiliate.innerHTML = `<tr><td colspan="2" style="text-align:center;">No data.</td></tr>`;
+          } else {
+            let rows = '';
+            sortedAffiliates.forEach(([key, count]) => {
+              rows += `<tr><td><code>${key}</code></td><td>${count}</td></tr>`;
+            });
+            tbodyAffiliate.innerHTML = rows;
+          }
+        }
+
+        // --- Chart (Affiliate) ---
+        const labels = sortedAffiliates.map(([key]) => key);
+        const dataValues = sortedAffiliates.map(([, count]) => count);
+        const ctx = document.getElementById('affiliateChart')?.getContext('2d');
+        if (ctx) {
+          if (chartInstance) chartInstance.destroy();
+          chartInstance = new Chart(ctx, {
+            type: 'bar',
+            data: {
+              labels: labels,
+              datasets: [{
+                label: 'Clicks',
+                data: dataValues,
+                backgroundColor: '#ffdb10',
+                borderColor: '#b39b00',
+                borderWidth: 1
+              }]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                legend: { display: false }
+              },
+              scales: {
+                y: { beginAtZero: true }
+              }
+            }
+          });
+        }
+
+        // --- Top Links table (top 10) ---
         const tbodyLinks = document.getElementById('topLinksBody');
         if (tbodyLinks) {
           if (sortedLinks.length === 0) {
@@ -358,7 +498,39 @@
           }
         }
 
-        // Region table
+        // --- Top Articles ---
+        // Fetch article titles for the article IDs
+        const articleIds = Object.keys(articleStats).filter(id => id !== null).map(Number);
+        let articleMap = {};
+        if (articleIds.length > 0) {
+          const { data: articles, error: artError } = await supabaseClient
+            .from('articles')
+            .select('id, title')
+            .in('id', articleIds);
+          if (!artError && articles) {
+            articles.forEach(a => { articleMap[a.id] = a.title; });
+          }
+        }
+        const sortedArticles = Object.entries(articleStats)
+          .filter(([id]) => id !== null)
+          .map(([id, count]) => ({ id: Number(id), count, title: articleMap[id] || 'Unknown Article' }))
+          .sort((a,b) => b.count - a.count);
+
+        const tbodyArticles = document.getElementById('topArticlesBody');
+        if (tbodyArticles) {
+          if (sortedArticles.length === 0) {
+            tbodyArticles.innerHTML = `<tr><td colspan="2" style="text-align:center;">No article clicks yet.</td></tr>`;
+          } else {
+            let rows = '';
+            sortedArticles.slice(0,10).forEach(item => {
+              const titleDisplay = item.title.length > 40 ? item.title.substring(0,40)+'…' : item.title;
+              rows += `<tr><td>${titleDisplay}</td><td>${item.count}</td></tr>`;
+            });
+            tbodyArticles.innerHTML = rows;
+          }
+        }
+
+        // --- Region table ---
         const tbodyRegion = document.getElementById('regionBody');
         if (tbodyRegion) {
           if (sortedCountries.length === 0) {
@@ -372,23 +544,37 @@
           }
         }
 
-        // Recent clicks (last 50)
-        const { data: recent } = await supabaseClient
-          .from('click_logs')
-          .select('created_at, link_url, country_code')
-          .order('created_at', { ascending: false })
-          .limit(50);
+        // --- Recent clicks (last 30) with article titles ---
+        const recent = clicks.slice(0, 30);
+        const recentArticleIds = recent.map(r => r.article_id).filter(id => id !== null).map(Number);
+        let recentArticleMap = {};
+        if (recentArticleIds.length > 0) {
+          const { data: recentArts, error: rArtError } = await supabaseClient
+            .from('articles')
+            .select('id, title')
+            .in('id', recentArticleIds);
+          if (!rArtError && recentArts) {
+            recentArts.forEach(a => { recentArticleMap[a.id] = a.title; });
+          }
+        }
 
         const tbodyRecent = document.getElementById('recentBody');
         if (tbodyRecent) {
-          if (!recent || recent.length === 0) {
-            tbodyRecent.innerHTML = `<tr><td colspan="3" style="text-align:center;">No clicks yet.</td></tr>`;
+          if (recent.length === 0) {
+            tbodyRecent.innerHTML = `<tr><td colspan="5" style="text-align:center;">No clicks yet.</td></tr>`;
           } else {
             let rows = '';
             recent.forEach(row => {
               const time = new Date(row.created_at).toLocaleString();
-              const display = row.link_url.length > 50 ? row.link_url.substring(0,50)+'…' : row.link_url;
-              rows += `<tr><td>${time}</td><td><a href="${row.link_url}" target="_blank">${display}</a></td><td>${row.country_code || 'Unknown'}</td></tr>`;
+              const articleTitle = row.article_id ? (recentArticleMap[row.article_id] || 'Unknown') : '—';
+              const displayLink = row.link_url ? (row.link_url.length > 40 ? row.link_url.substring(0,40)+'…' : row.link_url) : '—';
+              rows += `<tr>
+                <td>${time}</td>
+                <td>${articleTitle}</td>
+                <td><a href="${row.link_url || '#'}" target="_blank">${displayLink}</a></td>
+                <td><code>${row.affiliate_key || '—'}</code></td>
+                <td>${row.country_code || 'Unknown'}</td>
+              </tr>`;
             });
             tbodyRecent.innerHTML = rows;
           }
@@ -404,7 +590,6 @@
 
     // Auto-refresh every 60 seconds
     let refreshInterval = null;
-
     function startAutoRefresh() {
       if (refreshInterval) clearInterval(refreshInterval);
       refreshInterval = setInterval(() => {
