@@ -4,10 +4,25 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Admin Dashboard — World Discovery</title>
+
+  <!-- ============================================================
+       SECURITY HEADERS (Meta Tags)
+       ============================================================ -->
+  <meta http-equiv="X-Content-Type-Options" content="nosniff" />
+  <meta http-equiv="X-Frame-Options" content="DENY" />
+  <meta name="referrer" content="strict-origin-when-cross-origin" />
+  <meta http-equiv="Content-Security-Policy" 
+        content="default-src 'self' https://*.supabase.co https://*.pexels.com https://*.googleapis.com https://*.gstatic.com https://unpkg.com https://cdn.jsdelivr.net https://www.pinterest.com https://api.ipify.org https://*.impactcdn.com https://utt.impactcdn.com; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://unpkg.com https://utt.impactcdn.com https://www.googletagmanager.com; style-src 'self' 'unsafe-inline' https://unpkg.com https://fonts.googleapis.com; img-src 'self' data: https://*.pexels.com https://images.pexels.com https://*.pinterest.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://*.supabase.co https://api.ipify.org https://ipapi.co https://ip-api.com https://ipinfo.io; frame-src 'self' https://www.pinterest.com;" />
+  <meta http-equiv="Permissions-Policy" 
+        content="geolocation=(), microphone=(), camera=(), payment=(), usb=(), battery=(), accelerometer=(), gyroscope=(), magnetometer=(), ambient-light-sensor=(), vibrate=(), midi=(), clipboard-read=(), clipboard-write=(), screen-wake-lock=(), serial=(), hid=(), xr-spatial-tracking=()" />
+
+  <!-- Google Search Console Verification -->
+  <meta name="google-site-verification" content="7unpVZHBGdonyB06vWx9YIigUSi83ReKycHSDRWH2ws" />
+
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📊</text></svg>" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,600;14..32,800&display=swap" rel="stylesheet" />
-  <!-- Chart.js for charts -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
   <style>
     :root {
       --yellow: #ffdb10;
@@ -35,7 +50,72 @@
 
     h1, h2, h3 { font-weight: 800; }
 
-    .dashboard .stats-grid {
+    /* ===== TOP BAR ===== */
+    .top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .top-bar .last-updated {
+      font-size: 0.9rem;
+      color: var(--muted);
+    }
+
+    .logout-btn {
+      background: none;
+      border: none;
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 0.9rem;
+      text-decoration: underline;
+    }
+    .logout-btn:hover { color: var(--text); }
+
+    /* ===== TAB NAVIGATION ===== */
+    .tab-nav {
+      display: flex;
+      gap: 4px;
+      margin-bottom: 24px;
+      background: var(--surface);
+      border-radius: var(--radius);
+      padding: 4px;
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border);
+      overflow-x: auto;
+    }
+    .tab-nav button {
+      padding: 10px 24px;
+      border: none;
+      border-radius: 12px;
+      font-weight: 700;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: 0.2s;
+      background: transparent;
+      color: var(--muted);
+      font-family: inherit;
+      white-space: nowrap;
+    }
+    .tab-nav button:hover {
+      background: var(--yellow-light);
+      color: var(--text);
+    }
+    .tab-nav button.active {
+      background: var(--yellow);
+      color: var(--text);
+    }
+    .tab-content {
+      display: none;
+    }
+    .tab-content.active {
+      display: block;
+    }
+
+    /* ===== STATS GRID (Dashboard) ===== */
+    .stats-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
       gap: 16px;
@@ -60,6 +140,7 @@
       margin-top: 4px;
     }
 
+    /* ===== TWO COLUMN ===== */
     .two-col {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -75,6 +156,7 @@
       padding-bottom: 6px;
     }
 
+    /* ===== TABLES ===== */
     .table-wrap {
       overflow-x: auto;
       background: var(--surface);
@@ -90,9 +172,21 @@
       font-size: 0.9rem;
     }
     th { text-align: left; font-weight: 700; padding: 10px 8px; border-bottom: 2px solid var(--border); }
-    td { padding: 10px 8px; border-bottom: 1px solid var(--border); }
+    td { padding: 10px 8px; border-bottom: 1px solid var(--border); vertical-align: middle; }
     tr:last-child td { border-bottom: none; }
 
+    .badge {
+      display: inline-block;
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 2px 10px;
+      border-radius: 20px;
+      text-transform: uppercase;
+    }
+    .badge-yes { background: #e8f5e9; color: #2e7d32; }
+    .badge-no { background: #ffebee; color: #c62828; }
+
+    /* ===== CHARTS ===== */
     .chart-container {
       background: var(--surface);
       border: 1px solid var(--border);
@@ -103,6 +197,7 @@
       height: 300px;
     }
 
+    /* ===== LOGIN ===== */
     .login-box {
       max-width: 400px;
       margin: 80px auto;
@@ -141,29 +236,55 @@
     .login-box .btn:hover { background: var(--yellow-dark); }
     .error-msg { color: #d32f2f; margin-top: 10px; font-size: 0.9rem; display:none; }
 
-    .logout-btn {
-      background: none;
+    /* ===== BUTTONS ===== */
+    .btn-primary {
+      background: var(--yellow);
+      color: var(--text);
       border: none;
-      color: var(--muted);
+      padding: 8px 18px;
+      border-radius: 30px;
+      font-weight: 700;
+      font-size: 0.85rem;
       cursor: pointer;
-      font-size: 0.9rem;
-      text-decoration: underline;
-      margin-top: 10px;
+      transition: 0.2s;
+      font-family: inherit;
     }
-    .logout-btn:hover { color: var(--text); }
+    .btn-primary:hover { background: var(--yellow-dark); }
 
-    .top-bar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 20px;
-      flex-wrap: wrap;
-      gap: 12px;
+    .btn-danger {
+      background: #ffebee;
+      color: #c62828;
+      border: none;
+      padding: 6px 14px;
+      border-radius: 30px;
+      font-weight: 700;
+      font-size: 0.8rem;
+      cursor: pointer;
+      transition: 0.2s;
+      font-family: inherit;
     }
-    .top-bar .last-updated {
-      font-size: 0.9rem;
-      color: var(--muted);
+    .btn-danger:hover { background: #ffcdd2; }
+
+    .btn-edit {
+      background: #e3f2fd;
+      color: #0d47a1;
+      border: none;
+      padding: 6px 14px;
+      border-radius: 30px;
+      font-weight: 700;
+      font-size: 0.8rem;
+      cursor: pointer;
+      transition: 0.2s;
+      font-family: inherit;
     }
+    .btn-edit:hover { background: #bbdefb; }
+
+    .btn-sm {
+      padding: 4px 12px;
+      font-size: 0.75rem;
+      border-radius: 20px;
+    }
+
     .refresh-btn {
       background: var(--yellow);
       border: none;
@@ -173,26 +294,229 @@
       font-size: 0.85rem;
       cursor: pointer;
       transition: 0.2s;
+      font-family: inherit;
     }
     .refresh-btn:hover { background: var(--yellow-dark); }
 
+    /* ===== MODAL ===== */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 3000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      backdrop-filter: blur(4px);
+    }
+    .modal-overlay.show {
+      display: flex;
+    }
+    .modal {
+      background: var(--surface);
+      border-radius: var(--radius);
+      max-width: 900px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+      padding: 32px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    }
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    .modal-header h2 { font-size: 1.4rem; }
+    .modal-close {
+      background: none;
+      border: none;
+      font-size: 1.8rem;
+      cursor: pointer;
+      color: var(--muted);
+      padding: 0 8px;
+      line-height: 1;
+    }
+    .modal-close:hover { color: var(--text); }
+
+    .modal .form-group {
+      margin-bottom: 16px;
+    }
+    .modal .form-group label {
+      display: block;
+      font-weight: 700;
+      font-size: 0.9rem;
+      margin-bottom: 4px;
+    }
+    .modal .form-group input,
+    .modal .form-group select,
+    .modal .form-group textarea {
+      width: 100%;
+      padding: 10px 14px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 0.95rem;
+      font-family: inherit;
+      transition: 0.2s;
+    }
+    .modal .form-group input:focus,
+    .modal .form-group select:focus,
+    .modal .form-group textarea:focus {
+      outline: none;
+      border-color: var(--yellow-dark);
+      box-shadow: 0 0 0 3px rgba(255, 219, 16, 0.2);
+    }
+    .modal .form-group textarea {
+      min-height: 200px;
+      resize: vertical;
+      font-family: 'Courier New', monospace;
+      font-size: 0.85rem;
+      line-height: 1.6;
+    }
+    .modal .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+    .modal .form-actions {
+      display: flex;
+      gap: 12px;
+      margin-top: 20px;
+      justify-content: flex-end;
+      border-top: 1px solid var(--border);
+      padding-top: 20px;
+    }
+    .modal .form-actions .btn {
+      padding: 10px 28px;
+      border: none;
+      border-radius: 30px;
+      font-weight: 700;
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: 0.2s;
+      font-family: inherit;
+    }
+    .modal .form-actions .btn-save {
+      background: var(--yellow);
+      color: var(--text);
+    }
+    .modal .form-actions .btn-save:hover { background: var(--yellow-dark); }
+    .modal .form-actions .btn-cancel {
+      background: transparent;
+      color: var(--muted);
+      border: 2px solid var(--border);
+    }
+    .modal .form-actions .btn-cancel:hover { border-color: var(--yellow); }
+
+    .checkbox-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .checkbox-group input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      cursor: pointer;
+    }
+
+    /* ===== RESPONSIVE ===== */
     @media (max-width: 700px) {
       .two-col { grid-template-columns: 1fr; }
       .stats-grid { grid-template-columns: repeat(2, 1fr); }
+      .modal .form-row { grid-template-columns: 1fr; }
+      .modal { padding: 20px; }
+      .tab-nav button { padding: 8px 16px; font-size: 0.8rem; }
     }
   </style>
 </head>
 <body>
 
-  <div id="app">
-    <!-- Will be filled by JavaScript -->
+  <div id="app"></div>
+
+  <!-- ============================================================
+       MODAL (Article Edit/Create)
+  ============================================================ -->
+  <div class="modal-overlay" id="articleModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 id="modalTitle">Add New Article</h2>
+        <button class="modal-close" onclick="closeArticleModal()">&times;</button>
+      </div>
+      <form id="articleForm" onsubmit="saveArticle(event)">
+        <input type="hidden" id="editArticleId" value="" />
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="articleTitleInput">Title *</label>
+            <input type="text" id="articleTitleInput" placeholder="Article title" required />
+          </div>
+          <div class="form-group">
+            <label for="articleSlugInput">Slug *</label>
+            <input type="text" id="articleSlugInput" placeholder="article-url-slug" required />
+            <small style="color:var(--muted); font-size:0.75rem;">URL-friendly identifier. Use hyphens, no spaces.</small>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="articleDescInput">Description</label>
+          <input type="text" id="articleDescInput" placeholder="Short description (shown on cards)" />
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="articleTagInput">Tag / Category *</label>
+            <select id="articleTagInput" required>
+              <option value="">Select a category...</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="articleImageInput">Image URL</label>
+            <input type="url" id="articleImageInput" placeholder="https://images.pexels.com/..." />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="articleContentInput">Content (HTML) *</label>
+          <textarea id="articleContentInput" placeholder="Paste article HTML content here..." required></textarea>
+          <small style="color:var(--muted); font-size:0.75rem;">
+            Supports HTML. Use &lt;h2&gt;, &lt;h3&gt;, &lt;p&gt;, &lt;img&gt;, &lt;ul&gt;, &lt;ol&gt;, etc.
+            Affiliate links: use <code>class="dynamic-link" data-affiliate-key="amazon_tour"</code>
+          </small>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group checkbox-group">
+            <input type="checkbox" id="articleFeaturedInput" />
+            <label for="articleFeaturedInput" style="margin:0; font-weight:600;">Featured Article</label>
+          </div>
+          <div class="form-group" style="display:flex; align-items:center; gap:16px; justify-content:flex-end;">
+            <span id="articleViewCount" style="color:var(--muted); font-size:0.9rem;">Views: 0</span>
+            <span id="articleCreatedAt" style="color:var(--muted); font-size:0.9rem;">Created: —</span>
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="btn btn-cancel" onclick="closeArticleModal()">Cancel</button>
+          <button type="submit" class="btn btn-save" id="modalSaveBtn">Save Article</button>
+        </div>
+      </form>
+    </div>
   </div>
 
-  <!-- Supabase Configuration -->
+  <!-- ============================================================
+       SCRIPTS
+  ============================================================ -->
   <script src="config.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
-    // Load config
+    // ============================================================
+    // SUPABASE INIT
+    // ============================================================
     const config = window.WORLD_DISCOVERY_CONFIG || {};
     const SUPABASE_URL = config.SUPABASE_URL || 'https://kabvjgnbxgwlltzrkxsj.supabase.co';
     const SUPABASE_ANON_KEY = config.SUPABASE_ANON_KEY || '';
@@ -204,15 +528,40 @@
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     let currentUser = null;
     let chartInstance = null;
+    let currentTab = 'dashboard';
 
-    /* ============================================================
-       AUTH
-    ============================================================ */
+    // Categories list (same as index.html)
+    const CATEGORIES = [
+      { id: 'amazing-places', name: 'Amazing Places Around the World', tag: 'amazing-places' },
+      { id: 'hidden-places', name: 'Hidden Places to Visit', tag: 'hidden-places' },
+      { id: 'beautiful-places', name: 'Beautiful Places on Earth', tag: 'beautiful-places' },
+      { id: 'bucket-list', name: 'Bucket List Destinations', tag: 'bucket-list' },
+      { id: 'unusual-places', name: 'Unusual Places Around the World', tag: 'unusual-places' },
+      { id: 'dream-destinations', name: 'Dream Destinations', tag: 'dream-destinations' },
+      { id: 'travel-inspiration', name: 'World Travel Inspiration', tag: 'travel-inspiration' },
+      { id: 'travel-tips', name: 'Travel Tips & Guides', tag: 'travel-tips' },
+      { id: 'europe', name: 'Europe Travel', tag: 'europe' },
+      { id: 'asia', name: 'Asia Travel', tag: 'asia' },
+      { id: 'north-america', name: 'North America Travel', tag: 'north-america' },
+      { id: 'south-america', name: 'South America Travel', tag: 'south-america' },
+      { id: 'africa', name: 'Africa Travel', tag: 'africa' },
+      { id: 'oceania', name: 'Australia & Oceania Travel', tag: 'oceania' },
+      { id: 'india', name: 'India Travel', tag: 'india' },
+      { id: 'world-maps', name: 'World Maps', tag: 'world-maps' },
+      { id: 'country-facts', name: 'Interesting Facts About Countries', tag: 'country-facts' },
+      { id: 'unreal-places', name: 'Places That Look Unreal', tag: 'unreal-places' },
+      { id: 'hidden-gems', name: 'Hidden Travel Gems', tag: 'hidden-gems' },
+      { id: 'world-discovery', name: 'World Discovery', tag: 'world-discovery' }
+    ];
+
+    // ============================================================
+    // AUTH
+    // ============================================================
     async function checkSession() {
       const { data: { session }, error } = await supabaseClient.auth.getSession();
       if (session) {
         currentUser = session.user;
-        renderDashboard();
+        renderAdmin();
       } else {
         renderLogin();
       }
@@ -249,7 +598,7 @@
           return;
         }
         currentUser = data.user;
-        renderDashboard();
+        renderAdmin();
       } catch (err) {
         errorEl.style.display = 'block';
         errorEl.textContent = 'An error occurred.';
@@ -263,103 +612,163 @@
       renderLogin();
     }
 
-    /* ============================================================
-       DASHBOARD
-    ============================================================ */
-    function renderDashboard() {
-      document.getElementById('app').innerHTML = `
-        <div class="container dashboard">
+    // ============================================================
+    // RENDER ADMIN
+    // ============================================================
+    function renderAdmin() {
+      const app = document.getElementById('app');
+      app.innerHTML = `
+        <div class="container">
           <div class="top-bar">
-            <h1>📊 Analytics Dashboard</h1>
+            <h1>📊 Admin Dashboard</h1>
             <div style="display:flex; align-items:center; gap:16px; flex-wrap:wrap;">
-              <span class="last-updated">Last updated: <span id="lastUpdated">now</span></span>
-              <button class="refresh-btn" onclick="loadDashboardData()">⟳ Refresh</button>
+              <span class="last-updated">Welcome, ${currentUser?.email || 'Admin'}</span>
               <button class="logout-btn" onclick="logoutAdmin()">Logout</button>
             </div>
           </div>
 
-          <!-- Stats Row -->
-          <div class="stats-grid" id="statsGrid">
-            <div class="stat-card"><div class="number" id="statTotal">—</div><div class="label">Total Clicks</div></div>
-            <div class="stat-card"><div class="number" id="stat24h">—</div><div class="label">Clicks (24h)</div></div>
-            <div class="stat-card"><div class="number" id="stat7d">—</div><div class="label">Clicks (7d)</div></div>
-            <div class="stat-card"><div class="number" id="stat30d">—</div><div class="label">Clicks (30d)</div></div>
-            <div class="stat-card"><div class="number" id="statUnique">—</div><div class="label">Unique Clickers</div></div>
-            <div class="stat-card"><div class="number" id="statTopLink">—</div><div class="label">Top Link</div></div>
-            <div class="stat-card"><div class="number" id="statTopCountry">—</div><div class="label">Top Country</div></div>
+          <div class="tab-nav">
+            <button class="active" data-tab="dashboard" onclick="switchTab('dashboard')">📊 Dashboard</button>
+            <button data-tab="articles" onclick="switchTab('articles')">📄 Articles</button>
           </div>
 
-          <!-- Chart + Affiliate Breakdown -->
-          <div class="two-col">
-            <div>
-              <h3 class="section-title">📈 Clicks by Affiliate Key</h3>
-              <div class="chart-container">
-                <canvas id="affiliateChart"></canvas>
+          <!-- DASHBOARD TAB -->
+          <div id="tab-dashboard" class="tab-content active">
+            <div class="stats-grid" id="statsGrid">
+              <div class="stat-card"><div class="number" id="statTotal">—</div><div class="label">Total Clicks</div></div>
+              <div class="stat-card"><div class="number" id="stat24h">—</div><div class="label">Clicks (24h)</div></div>
+              <div class="stat-card"><div class="number" id="stat7d">—</div><div class="label">Clicks (7d)</div></div>
+              <div class="stat-card"><div class="number" id="stat30d">—</div><div class="label">Clicks (30d)</div></div>
+              <div class="stat-card"><div class="number" id="statUnique">—</div><div class="label">Unique Clickers</div></div>
+              <div class="stat-card"><div class="number" id="statTopLink">—</div><div class="label">Top Link</div></div>
+              <div class="stat-card"><div class="number" id="statTopCountry">—</div><div class="label">Top Country</div></div>
+            </div>
+
+            <div class="two-col">
+              <div>
+                <h3 class="section-title">📈 Clicks by Affiliate Key</h3>
+                <div class="chart-container"><canvas id="affiliateChart"></canvas></div>
+              </div>
+              <div>
+                <h3 class="section-title">🏷️ Affiliate Key Breakdown</h3>
+                <div class="table-wrap">
+                  <table><thead><tr><th>Affiliate Key</th><th>Clicks</th></tr></thead>
+                  <tbody id="affiliateBreakdownBody"><tr><td colspan="2" style="text-align:center;">Loading…</td></tr></tbody></table>
+                </div>
               </div>
             </div>
-            <div>
-              <h3 class="section-title">🏷️ Affiliate Key Breakdown</h3>
-              <div class="table-wrap">
-                <table>
-                  <thead><tr><th>Affiliate Key</th><th>Clicks</th></tr></thead>
-                  <tbody id="affiliateBreakdownBody"><tr><td colspan="2" style="text-align:center;">Loading…</td></tr></tbody>
-                </table>
+
+            <div class="two-col">
+              <div>
+                <h3 class="section-title">🔗 Top Links</h3>
+                <div class="table-wrap">
+                  <table><thead><tr><th>Link</th><th>Clicks</th><th>Unique</th></tr></thead>
+                  <tbody id="topLinksBody"><tr><td colspan="3" style="text-align:center;">Loading…</td></tr></tbody></table>
+                </div>
               </div>
+              <div>
+                <h3 class="section-title">📄 Top Articles</h3>
+                <div class="table-wrap">
+                  <table><thead><tr><th>Article</th><th>Clicks</th></tr></thead>
+                  <tbody id="topArticlesBody"><tr><td colspan="2" style="text-align:center;">Loading…</td></tr></tbody></table>
+                </div>
+              </div>
+            </div>
+
+            <h3 class="section-title">🌍 Region Distribution</h3>
+            <div class="table-wrap">
+              <table><thead><tr><th>Country</th><th>Clicks</th></tr></thead>
+              <tbody id="regionBody"><tr><td colspan="2" style="text-align:center;">Loading…</td></tr></tbody></table>
+            </div>
+
+            <h3 class="section-title">🕒 Recent Clicks</h3>
+            <div class="table-wrap">
+              <table><thead><tr><th>Time</th><th>Article</th><th>Link</th><th>Affiliate Key</th><th>Country</th></tr></thead>
+              <tbody id="recentBody"><tr><td colspan="5" style="text-align:center;">Loading…</td></tr></tbody></table>
             </div>
           </div>
 
-          <!-- Top Links & Top Articles -->
-          <div class="two-col">
-            <div>
-              <h3 class="section-title">🔗 Top Links</h3>
-              <div class="table-wrap">
-                <table>
-                  <thead><tr><th>Link</th><th>Clicks</th><th>Unique</th></tr></thead>
-                  <tbody id="topLinksBody"><tr><td colspan="3" style="text-align:center;">Loading…</td></tr></tbody>
-                </table>
-              </div>
+          <!-- ARTICLES TAB -->
+          <div id="tab-articles" class="tab-content">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:12px;">
+              <h2 style="font-size:1.3rem; font-weight:700;">All Articles</h2>
+              <button class="btn-primary" onclick="openArticleModal()">+ Add New Article</button>
             </div>
-            <div>
-              <h3 class="section-title">📄 Top Articles</h3>
-              <div class="table-wrap">
-                <table>
-                  <thead><tr><th>Article</th><th>Clicks</th></tr></thead>
-                  <tbody id="topArticlesBody"><tr><td colspan="2" style="text-align:center;">Loading…</td></tr></tbody>
-                </table>
-              </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Title</th>
+                    <th>Tag</th>
+                    <th>Featured</th>
+                    <th>Views</th>
+                    <th>Created</th>
+                    <th style="text-align:center;">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="articlesTableBody">
+                  <tr><td colspan="7" style="text-align:center;">Loading articles…</td></tr>
+                </tbody>
+              </table>
             </div>
-          </div>
-
-          <!-- Region Distribution -->
-          <h3 class="section-title">🌍 Region Distribution</h3>
-          <div class="table-wrap">
-            <table>
-              <thead><tr><th>Country</th><th>Clicks</th></tr></thead>
-              <tbody id="regionBody"><tr><td colspan="2" style="text-align:center;">Loading…</td></tr></tbody>
-            </table>
-          </div>
-
-          <!-- Recent Clicks -->
-          <h3 class="section-title">🕒 Recent Clicks</h3>
-          <div class="table-wrap">
-            <table>
-              <thead><tr><th>Time</th><th>Article</th><th>Link</th><th>Affiliate Key</th><th>Country</th></tr></thead>
-              <tbody id="recentBody"><tr><td colspan="5" style="text-align:center;">Loading…</td></tr></tbody>
-            </table>
           </div>
         </div>
       `;
 
+      // Populate category dropdown
+      populateCategoryDropdown();
+
+      // Load dashboard data
       loadDashboardData();
+
+      // Load articles
+      loadArticlesList();
+
+      // Auto-refresh dashboard
+      startAutoRefresh();
     }
 
-    /* ============================================================
-       LOAD DATA
-    ============================================================ */
+    // ============================================================
+    // TAB SWITCHING
+    // ============================================================
+    function switchTab(tab) {
+      currentTab = tab;
+      document.querySelectorAll('.tab-nav button').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.tab === tab);
+      });
+      document.querySelectorAll('.tab-content').forEach(el => {
+        el.classList.toggle('active', el.id === 'tab-' + tab);
+      });
+      if (tab === 'dashboard') {
+        loadDashboardData();
+      } else if (tab === 'articles') {
+        loadArticlesList();
+      }
+    }
+
+    // ============================================================
+    // CATEGORY DROPDOWN
+    // ============================================================
+    function populateCategoryDropdown() {
+      const select = document.getElementById('articleTagInput');
+      if (!select) return;
+      select.innerHTML = '<option value="">Select a category...</option>';
+      CATEGORIES.forEach(cat => {
+        const opt = document.createElement('option');
+        opt.value = cat.tag;
+        opt.textContent = cat.name;
+        select.appendChild(opt);
+      });
+    }
+
+    // ============================================================
+    // DASHBOARD DATA
+    // ============================================================
     async function loadDashboardData() {
-      // Show loading
       ['statTotal','stat24h','stat7d','stat30d','statUnique','statTopLink','statTopCountry'].forEach(id => {
-        document.getElementById(id).textContent = '…';
+        const el = document.getElementById(id);
+        if (el) el.textContent = '…';
       });
 
       const now = new Date();
@@ -368,67 +777,56 @@
       const thirtyDaysAgo = new Date(now.getTime() - 30*24*60*60*1000);
 
       try {
-        // --- All clicks (for counts) ---
-        const { data: allClicksData, error: allError } = await supabaseClient
+        const { data: clicks, error } = await supabaseClient
           .from('click_logs')
           .select('created_at, affiliate_key, link_url, visitor_id, country_code, article_id')
           .order('created_at', { ascending: false });
 
-        if (allError) throw allError;
+        if (error) throw error;
 
-        const clicks = allClicksData || [];
-        const totalClicks = clicks.length;
+        const allClicks = clicks || [];
+        const totalClicks = allClicks.length;
 
-        // Time filters
         const dayFilter = dayAgo.toISOString();
         const sevenFilter = sevenDaysAgo.toISOString();
         const thirtyFilter = thirtyDaysAgo.toISOString();
 
-        const count24h = clicks.filter(c => c.created_at >= dayFilter).length;
-        const count7d = clicks.filter(c => c.created_at >= sevenFilter).length;
-        const count30d = clicks.filter(c => c.created_at >= thirtyFilter).length;
+        const count24h = allClicks.filter(c => c.created_at >= dayFilter).length;
+        const count7d = allClicks.filter(c => c.created_at >= sevenFilter).length;
+        const count30d = allClicks.filter(c => c.created_at >= thirtyFilter).length;
 
-        // Unique visitors (30d)
-        const uniqueSet = new Set(clicks.filter(c => c.created_at >= thirtyFilter).map(c => c.visitor_id).filter(Boolean));
+        const uniqueSet = new Set(allClicks.filter(c => c.created_at >= thirtyFilter).map(c => c.visitor_id).filter(Boolean));
         const uniqueCount = uniqueSet.size;
 
-        // Aggregate for top link, country, affiliate, article
         const linkStats = {};
         const countryStats = {};
         const affiliateStats = {};
         const articleStats = {};
 
-        clicks.forEach(row => {
-          // link
+        allClicks.forEach(row => {
           if (row.link_url) {
             if (!linkStats[row.link_url]) linkStats[row.link_url] = { total: 0, unique: new Set() };
             linkStats[row.link_url].total++;
             if (row.visitor_id) linkStats[row.link_url].unique.add(row.visitor_id);
           }
-          // country
           const cc = row.country_code || 'Unknown';
           countryStats[cc] = (countryStats[cc] || 0) + 1;
-          // affiliate
           if (row.affiliate_key) {
             affiliateStats[row.affiliate_key] = (affiliateStats[row.affiliate_key] || 0) + 1;
           }
-          // article
           if (row.article_id) {
             articleStats[row.article_id] = (articleStats[row.article_id] || 0) + 1;
           }
         });
 
-        // Top link
         const sortedLinks = Object.entries(linkStats)
           .map(([url, stats]) => ({ url, total: stats.total, unique: stats.unique.size }))
           .sort((a, b) => b.total - a.total);
         const topLink = sortedLinks.length ? (sortedLinks[0].url.length > 40 ? sortedLinks[0].url.substring(0,40)+'…' : sortedLinks[0].url) : '—';
 
-        // Top country
         const sortedCountries = Object.entries(countryStats).sort((a,b) => b[1] - a[1]);
         const topCountry = sortedCountries.length ? sortedCountries[0][0] : '—';
 
-        // Update stats
         document.getElementById('statTotal').textContent = totalClicks;
         document.getElementById('stat24h').textContent = count24h;
         document.getElementById('stat7d').textContent = count7d;
@@ -437,7 +835,7 @@
         document.getElementById('statTopLink').textContent = topLink;
         document.getElementById('statTopCountry').textContent = topCountry;
 
-        // --- Affiliate breakdown (table + chart) ---
+        // Affiliate breakdown
         const sortedAffiliates = Object.entries(affiliateStats).sort((a,b) => b[1] - a[1]);
         const tbodyAffiliate = document.getElementById('affiliateBreakdownBody');
         if (tbodyAffiliate) {
@@ -452,7 +850,7 @@
           }
         }
 
-        // --- Chart (Affiliate) ---
+        // Chart
         const labels = sortedAffiliates.map(([key]) => key);
         const dataValues = sortedAffiliates.map(([, count]) => count);
         const ctx = document.getElementById('affiliateChart')?.getContext('2d');
@@ -473,17 +871,13 @@
             options: {
               responsive: true,
               maintainAspectRatio: false,
-              plugins: {
-                legend: { display: false }
-              },
-              scales: {
-                y: { beginAtZero: true }
-              }
+              plugins: { legend: { display: false } },
+              scales: { y: { beginAtZero: true } }
             }
           });
         }
 
-        // --- Top Links table (top 10) ---
+        // Top Links
         const tbodyLinks = document.getElementById('topLinksBody');
         if (tbodyLinks) {
           if (sortedLinks.length === 0) {
@@ -498,8 +892,7 @@
           }
         }
 
-        // --- Top Articles ---
-        // Fetch article titles for the article IDs
+        // Top Articles
         const articleIds = Object.keys(articleStats).filter(id => id !== null).map(Number);
         let articleMap = {};
         if (articleIds.length > 0) {
@@ -515,7 +908,6 @@
           .filter(([id]) => id !== null)
           .map(([id, count]) => ({ id: Number(id), count, title: articleMap[id] || 'Unknown Article' }))
           .sort((a,b) => b.count - a.count);
-
         const tbodyArticles = document.getElementById('topArticlesBody');
         if (tbodyArticles) {
           if (sortedArticles.length === 0) {
@@ -530,7 +922,7 @@
           }
         }
 
-        // --- Region table ---
+        // Region
         const tbodyRegion = document.getElementById('regionBody');
         if (tbodyRegion) {
           if (sortedCountries.length === 0) {
@@ -544,8 +936,8 @@
           }
         }
 
-        // --- Recent clicks (last 30) with article titles ---
-        const recent = clicks.slice(0, 30);
+        // Recent clicks
+        const recent = allClicks.slice(0, 30);
         const recentArticleIds = recent.map(r => r.article_id).filter(id => id !== null).map(Number);
         let recentArticleMap = {};
         if (recentArticleIds.length > 0) {
@@ -557,7 +949,6 @@
             recentArts.forEach(a => { recentArticleMap[a.id] = a.title; });
           }
         }
-
         const tbodyRecent = document.getElementById('recentBody');
         if (tbodyRecent) {
           if (recent.length === 0) {
@@ -580,33 +971,230 @@
           }
         }
 
-        document.getElementById('lastUpdated').textContent = new Date().toLocaleString();
+        document.getElementById('lastUpdated')?.textContent && (document.getElementById('lastUpdated').textContent = new Date().toLocaleString());
 
       } catch (err) {
         console.error('Dashboard error:', err);
-        document.querySelector('#statsGrid').innerHTML = `<div style="grid-column:1/-1; color:var(--muted);">Error loading dashboard. Please refresh.</div>`;
+        const grid = document.getElementById('statsGrid');
+        if (grid) grid.innerHTML = `<div style="grid-column:1/-1; color:var(--muted);">Error loading dashboard. Please refresh.</div>`;
       }
     }
 
-    // Auto-refresh every 60 seconds
+    // ============================================================
+    // ARTICLES LIST (CRUD)
+    // ============================================================
+    async function loadArticlesList() {
+      const tbody = document.getElementById('articlesTableBody');
+      if (!tbody) return;
+      tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">Loading articles…</td></tr>';
+
+      try {
+        const { data: articles, error } = await supabaseClient
+          .from('articles')
+          .select('id, title, tag, featured, views, created_at, slug')
+          .order('created_at', { ascending: false });
+
+        if (error) throw error;
+
+        if (!articles || articles.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">No articles found. Create your first article!</td></tr>';
+          return;
+        }
+
+        let rows = '';
+        articles.forEach(article => {
+          const created = article.created_at ? new Date(article.created_at).toLocaleDateString() : '—';
+          const tagName = CATEGORIES.find(c => c.tag === article.tag)?.name || article.tag || '—';
+          rows += `
+            <tr>
+              <td>${article.id}</td>
+              <td><a href="../#article-${article.slug}" target="_blank" style="color:var(--yellow-darker); font-weight:600;">${article.title}</a></td>
+              <td>${tagName}</td>
+              <td><span class="badge ${article.featured ? 'badge-yes' : 'badge-no'}">${article.featured ? 'Yes' : 'No'}</span></td>
+              <td>${article.views || 0}</td>
+              <td>${created}</td>
+              <td style="text-align:center; white-space:nowrap;">
+                <button class="btn-edit btn-sm" onclick="editArticle(${article.id})">✏️ Edit</button>
+                <button class="btn-danger btn-sm" onclick="deleteArticle(${article.id})">🗑️ Delete</button>
+              </td>
+            </tr>
+          `;
+        });
+        tbody.innerHTML = rows;
+
+      } catch (err) {
+        console.error('Error loading articles:', err);
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; color:var(--muted);">⚠️ Could not load articles.</td></tr>';
+      }
+    }
+
+    // ============================================================
+    // ARTICLE MODAL
+    // ============================================================
+    function openArticleModal(articleData) {
+      const modal = document.getElementById('articleModal');
+      const isEdit = !!articleData;
+
+      document.getElementById('modalTitle').textContent = isEdit ? 'Edit Article' : 'Add New Article';
+      document.getElementById('editArticleId').value = isEdit ? articleData.id : '';
+      document.getElementById('articleTitleInput').value = isEdit ? articleData.title : '';
+      document.getElementById('articleSlugInput').value = isEdit ? articleData.slug : '';
+      document.getElementById('articleDescInput').value = isEdit ? (articleData.description || '') : '';
+      document.getElementById('articleTagInput').value = isEdit ? articleData.tag : '';
+      document.getElementById('articleImageInput').value = isEdit ? (articleData.image_url || '') : '';
+      document.getElementById('articleContentInput').value = isEdit ? (articleData.content || '') : '';
+      document.getElementById('articleFeaturedInput').checked = isEdit ? !!articleData.featured : false;
+      document.getElementById('articleViewCount').textContent = isEdit ? `Views: ${articleData.views || 0}` : 'Views: 0';
+      document.getElementById('articleCreatedAt').textContent = isEdit && articleData.created_at ? `Created: ${new Date(articleData.created_at).toLocaleDateString()}` : 'Created: —';
+      document.getElementById('modalSaveBtn').textContent = isEdit ? 'Update Article' : 'Create Article';
+
+      modal.classList.add('show');
+    }
+
+    function closeArticleModal() {
+      document.getElementById('articleModal').classList.remove('show');
+      document.getElementById('articleForm').reset();
+      document.getElementById('editArticleId').value = '';
+    }
+
+    async function editArticle(id) {
+      try {
+        const { data: article, error } = await supabaseClient
+          .from('articles')
+          .select('*')
+          .eq('id', id)
+          .single();
+
+        if (error) throw error;
+        openArticleModal(article);
+      } catch (err) {
+        console.error('Error fetching article:', err);
+        alert('Could not load article for editing.');
+      }
+    }
+
+    async function saveArticle(e) {
+      e.preventDefault();
+
+      const id = document.getElementById('editArticleId').value;
+      const title = document.getElementById('articleTitleInput').value.trim();
+      const slug = document.getElementById('articleSlugInput').value.trim();
+      const description = document.getElementById('articleDescInput').value.trim();
+      const tag = document.getElementById('articleTagInput').value;
+      const image_url = document.getElementById('articleImageInput').value.trim();
+      const content = document.getElementById('articleContentInput').value;
+      const featured = document.getElementById('articleFeaturedInput').checked;
+
+      if (!title || !slug || !tag || !content) {
+        alert('Please fill in all required fields (Title, Slug, Tag, Content).');
+        return;
+      }
+
+      // Validate slug format (no spaces)
+      if (slug.includes(' ')) {
+        alert('Slug cannot contain spaces. Use hyphens instead.');
+        return;
+      }
+
+      const articleData = {
+        title,
+        slug,
+        description: description || null,
+        tag,
+        image_url: image_url || null,
+        content,
+        featured,
+      };
+
+      try {
+        if (id) {
+          // UPDATE
+          const { error } = await supabaseClient
+            .from('articles')
+            .update(articleData)
+            .eq('id', parseInt(id));
+
+          if (error) throw error;
+          alert('Article updated successfully!');
+        } else {
+          // CREATE
+          const { error } = await supabaseClient
+            .from('articles')
+            .insert([{ ...articleData, views: 0 }]);
+
+          if (error) throw error;
+          alert('Article created successfully!');
+        }
+
+        closeArticleModal();
+        loadArticlesList();
+      } catch (err) {
+        console.error('Error saving article:', err);
+        alert('Error saving article: ' + err.message);
+      }
+    }
+
+    async function deleteArticle(id) {
+      if (!confirm('Are you sure you want to delete this article? This action cannot be undone.')) return;
+
+      try {
+        const { error } = await supabaseClient
+          .from('articles')
+          .delete()
+          .eq('id', id);
+
+        if (error) throw error;
+        alert('Article deleted successfully.');
+        loadArticlesList();
+      } catch (err) {
+        console.error('Error deleting article:', err);
+        alert('Error deleting article: ' + err.message);
+      }
+    }
+
+    // ============================================================
+    // AUTO-REFRESH
+    // ============================================================
     let refreshInterval = null;
+
     function startAutoRefresh() {
       if (refreshInterval) clearInterval(refreshInterval);
       refreshInterval = setInterval(() => {
-        if (currentUser) loadDashboardData();
+        if (currentUser && currentTab === 'dashboard') {
+          loadDashboardData();
+        } else if (currentUser && currentTab === 'articles') {
+          loadArticlesList();
+        }
       }, 60000);
     }
 
-    // Override renderDashboard to start auto-refresh
-    const originalRender = renderDashboard;
-    renderDashboard = function() {
-      originalRender();
-      startAutoRefresh();
-    };
-
-    // Start the app
+    // ============================================================
+    // START APP
+    // ============================================================
     checkSession();
-  </script>
 
+    // Close modal on overlay click
+    document.getElementById('articleModal')?.addEventListener('click', function(e) {
+      if (e.target === this) closeArticleModal();
+    });
+
+    // Auto-generate slug from title
+    document.getElementById('articleTitleInput')?.addEventListener('input', function() {
+      const slugInput = document.getElementById('articleSlugInput');
+      if (slugInput && !slugInput.dataset.userEdited) {
+        slugInput.value = this.value
+          .toLowerCase()
+          .replace(/[^a-z0-9\s-]/g, '')
+          .replace(/\s+/g, '-')
+          .replace(/-+/g, '-')
+          .replace(/^-|-$/g, '');
+      }
+    });
+
+    document.getElementById('articleSlugInput')?.addEventListener('input', function() {
+      this.dataset.userEdited = 'true';
+    });
+
+  </script>
 </body>
 </html>
