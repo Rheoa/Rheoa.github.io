@@ -506,6 +506,33 @@
       color: var(--yellow-dark);
     }
 
+    /* Affiliate badge */
+    .affiliate-badge {
+      display: inline-block;
+      font-size: 0.6rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--yellow-darker);
+      background: var(--yellow-light);
+      padding: 1px 8px;
+      border-radius: 4px;
+      margin-left: 4px;
+      border: 1px solid var(--yellow);
+      vertical-align: middle;
+      line-height: 1.4;
+      font-family: 'Inter', sans-serif;
+    }
+    .article-content .affiliate-badge {
+      font-size: 0.55rem;
+    }
+    .article-content .btn-group .affiliate-badge {
+      font-size: 0.55rem;
+      background: var(--yellow);
+      border-color: var(--yellow-darker);
+      color: var(--text);
+    }
+
     /* Buttons inside the article */
     .article-content .btn {
       display: inline-block;
@@ -920,12 +947,6 @@
     function acceptCookies() {
       localStorage.setItem('cookiesAccepted', 'true');
       document.getElementById('cookie-banner').classList.remove('show');
-      // Re-initialize features that depend on consent (like visitor ID, affiliate cache)
-      // They will be re-run on next page load; but we can also trigger them now.
-      // We'll simply reload to ensure everything is set.
-      // Alternatively, we could manually set visitorId here if needed.
-      // For simplicity, we'll let the next page load handle it.
-      // But we can immediately set visitorId if not exists.
       if (!localStorage.getItem('visitorId')) {
         const vid = crypto.randomUUID ? crypto.randomUUID() : 'visitor-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
         localStorage.setItem('visitorId', vid);
@@ -935,7 +956,6 @@
     function declineCookies() {
       localStorage.setItem('cookiesAccepted', 'false');
       document.getElementById('cookie-banner').classList.remove('show');
-      // Clear non-essential localStorage items
       const keysToRemove = ['visitorId', 'userCountry', 'userCountryTimestamp', 'affiliate_links_', 'affiliate_links'];
       for (let key in localStorage) {
         if (key.startsWith('affiliate_links_') || key === 'visitorId' || key === 'userCountry' || key === 'userCountryTimestamp') {
@@ -947,13 +967,10 @@
     function checkCookieConsent() {
       const consent = localStorage.getItem('cookiesAccepted');
       if (consent === null) {
-        // Show banner if no preference set
         document.getElementById('cookie-banner').classList.add('show');
       } else if (consent === 'true') {
         // Already accepted, do nothing
       } else {
-        // Declined, ensure non-essential items are cleared
-        // (already cleared on decline, but just in case)
         const keysToRemove = ['visitorId', 'userCountry', 'userCountryTimestamp', 'affiliate_links_', 'affiliate_links'];
         for (let key in localStorage) {
           if (key.startsWith('affiliate_links_') || key === 'visitorId' || key === 'userCountry' || key === 'userCountryTimestamp') {
@@ -963,7 +980,6 @@
       }
     }
 
-    // Check consent on load
     document.addEventListener('DOMContentLoaded', function() {
       checkCookieConsent();
     });
@@ -1097,14 +1113,11 @@
        SEO META TAG HELPERS
     ============================================================ */
     function updateMetaTags(title, description, image, url, type) {
-      // Update title
       document.title = title || 'World Discovery — Explore Amazing Places';
       
-      // Update meta description
       const metaDesc = document.getElementById('meta-description');
       if (metaDesc) metaDesc.content = description || 'Discover amazing places, hidden destinations, and fascinating travel facts.';
       
-      // Update Open Graph tags
       const ogTitle = document.getElementById('og-title');
       if (ogTitle) ogTitle.content = document.title;
       
@@ -1120,7 +1133,6 @@
       const ogType = document.getElementById('og-type');
       if (ogType && type) ogType.content = type;
       
-      // Update Twitter Card tags
       const twitterTitle = document.getElementById('twitter-title');
       if (twitterTitle) twitterTitle.content = document.title;
       
@@ -1146,7 +1158,6 @@
     ============================================================ */
 
     function navigateTo(pageKey) {
-      // Handle 404 for invalid pages
       if (!pages[pageKey]) {
         const main = document.getElementById('main-content');
         main.innerHTML = `
@@ -1179,7 +1190,6 @@
         link.classList.toggle('active', link.dataset.page === pageKey);
       });
 
-      // Reset meta tags for non-article pages
       if (pageKey !== 'article') {
         resetMetaTags();
       }
@@ -1215,7 +1225,6 @@
 
       document.getElementById('navLinks').classList.remove('open');
       
-      // Update meta tags for category page
       updateMetaTags(
         `${category.name} — World Discovery`,
         `Explore ${category.name} articles, travel guides, and destination inspiration.`,
@@ -1248,7 +1257,6 @@
        IP GEOLOCATION (with caching)
     ============================================================ */
     async function getCountryCode() {
-      // Only use cache if consent given, else fetch fresh each time
       if (hasConsent()) {
         try {
           const cached = localStorage.getItem('userCountry');
@@ -1274,7 +1282,6 @@
           let country = data[api.key];
           if (api.url.includes('country.is')) country = data.country;
           if (country && typeof country === 'string' && country.length === 2) {
-            // Only cache if consent given
             if (hasConsent()) {
               try {
                 localStorage.setItem('userCountry', country);
@@ -1305,7 +1312,6 @@
     ============================================================ */
     function getVisitorId() {
       if (!hasConsent()) {
-        // Return a temporary ID for this session (not stored)
         return 'temp-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
       }
 
@@ -1321,7 +1327,7 @@
        RENDER CARDS (with image loading placeholder)
     ============================================================ */
     function createCardHTML(article) {
-      const imageId = 'img-' + article.id + '-' + Date.now(); // unique ID for onload handler
+      const imageId = 'img-' + article.id + '-' + Date.now();
       return `
         <article class="card" data-title="${article.title.toLowerCase()}" data-tag="${(article.tag || '').toLowerCase()}" onclick="navigateToArticle('${article.slug}')">
           <div class="card-image">
@@ -1352,7 +1358,6 @@
         data.forEach(article => {
           if (article.tag) {
             counts[article.tag] = (counts[article.tag] || 0) + 1;
-            // Store one preview article per category (first one found)
             if (!previews[article.tag] && article.image_url) {
               previews[article.tag] = {
                 title: article.title,
@@ -1369,7 +1374,6 @@
             el.textContent = `${count} article${count !== 1 ? 's' : ''}`;
           }
           
-          // Show preview if available
           const previewEl = document.getElementById(`preview-${cat.id}`);
           const previewImg = document.getElementById(`preview-img-${cat.id}`);
           const previewTitle = document.getElementById(`preview-title-${cat.id}`);
@@ -1456,12 +1460,12 @@
     }
 
     /* ============================================================
-       DYNAMIC LINK REWRITING (with click tracking and caching)
+       DYNAMIC LINK REWRITING (with click tracking, caching, and badges)
     ============================================================ */
     async function rewriteDynamicLinks(articleId) {
       const country = await getCountryCode();
 
-      // Check cache only if consent given
+      // Check cache if consent given
       let links = null;
       const cacheKey = `affiliate_links_${articleId}_${country}`;
       
@@ -1478,7 +1482,7 @@
         } catch (_) {}
       }
 
-      // If not in cache (or no consent), fetch from database
+      // Fetch from database if not cached
       if (!links) {
         try {
           const { data, error } = await supabaseClient
@@ -1491,13 +1495,15 @@
             document.querySelectorAll('.dynamic-link').forEach(el => {
               el.classList.add('disabled');
               el.title = 'No affiliate link available for your region';
+              // Remove any existing badge
+              const badge = el.parentNode?.querySelector('.affiliate-badge');
+              if (badge) badge.remove();
             });
             return;
           }
 
           links = data;
 
-          // Store in cache only if consent given
           if (hasConsent()) {
             try {
               localStorage.setItem(cacheKey, JSON.stringify({
@@ -1524,7 +1530,7 @@
         if (item.country_code === 'default' && !linkMap[key]) linkMap[key] = item.link_url;
       });
 
-      // Apply links to DOM elements
+      // Apply links to DOM elements and add badges
       document.querySelectorAll('.dynamic-link').forEach(el => {
         const key = el.dataset.affiliateKey?.trim().toLowerCase();
         if (key && linkMap[key]) {
@@ -1533,9 +1539,20 @@
           el.classList.remove('disabled');
           el.removeEventListener('click', trackClickHandler);
           el.addEventListener('click', trackClickHandler);
+
+          // Add affiliate badge if not already present
+          const parent = el.parentNode;
+          if (parent && !parent.querySelector('.affiliate-badge')) {
+            const badge = document.createElement('span');
+            badge.className = 'affiliate-badge';
+            badge.textContent = '🛒 Affiliate';
+            parent.appendChild(badge);
+          }
         } else {
           el.classList.add('disabled');
           el.title = 'No affiliate link available for your region';
+          const badge = el.parentNode?.querySelector('.affiliate-badge');
+          if (badge) badge.remove();
         }
       });
     }
@@ -1554,7 +1571,6 @@
       const country = await getCountryCode();
       const visitorId = getVisitorId();
 
-      // Capture IP address
       let ipAddress = null;
       try {
         const ipRes = await fetch('https://api.ipify.org?format=json');
@@ -1587,7 +1603,6 @@
        RENDER MAP FROM EMBEDDED DATA
     ============================================================ */
     function renderMapFromData(container, places) {
-      // Destroy previous map if exists
       if (window._currentMap) {
         window._currentMap.remove();
         window._currentMap = null;
@@ -1598,7 +1613,6 @@
         return;
       }
 
-      // Calculate center (average of all markers)
       let centerLat = 0,
         centerLng = 0;
       places.forEach(p => {
@@ -1608,16 +1622,13 @@
       centerLat /= places.length;
       centerLng /= places.length;
 
-      // Create map
       const map = L.map(container).setView([centerLat, centerLng], 4.5);
 
-      // Add tile layer
       L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>, &copy; CartoDB',
         maxZoom: 19
       }).addTo(map);
 
-      // Add markers with popups
       places.forEach(place => {
         const popupContent = `
           <div style="max-width:280px;">
@@ -1632,7 +1643,6 @@
           .addTo(map);
       });
 
-      // Fit bounds to show all markers
       const group = L.featureGroup(
         places.map(p => L.marker([parseFloat(p.lat), parseFloat(p.lng)]))
       );
@@ -1642,10 +1652,8 @@
         map.setView([places[0].lat, places[0].lng], 8);
       }
 
-      // Store map reference
       window._currentMap = map;
 
-      // Fix map rendering after a tiny delay (for layout issues)
       setTimeout(() => {
         map.invalidateSize();
       }, 100);
@@ -1700,7 +1708,6 @@
           catSpan.textContent = category ? category.name : article.tag || 'Travel';
         }
 
-        // Build the article HTML with the updated view count
         let html = `
           <div class="article-header">
             <h1>${article.title}</h1>
@@ -1721,7 +1728,7 @@
 
         container.innerHTML = html;
 
-        // ⭐ UPDATE SEO META TAGS FOR ARTICLE
+        // UPDATE SEO META TAGS FOR ARTICLE
         const articleTitle = article.title || 'World Discovery';
         const articleDesc = article.description || 'Discover amazing places and hidden destinations.';
         const articleImage = article.image_url || 'https://images.pexels.com/photos/2613110/pexels-photo-2613110.jpeg?auto=compress&cs=tinysrgb&w=1200';
@@ -1735,7 +1742,7 @@
           'article'
         );
 
-        // ⭐ CHECK FOR MAP DATA IN THE CONTENT ⭐
+        // CHECK FOR MAP DATA IN THE CONTENT
         const mapDataElement = document.getElementById('mapData');
         if (mapDataElement) {
           try {
