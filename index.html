@@ -1670,7 +1670,7 @@
     }
 
     /* ============================================================
-       LOAD SINGLE ARTICLE (OPTIMIZED - explicit field selection)
+       LOAD SINGLE ARTICLE (OPTIMIZED - FIXED: removed updated_at)
     ============================================================ */
     async function loadArticle(slug) {
       const container = document.getElementById('articleContent');
@@ -1682,10 +1682,11 @@
       container.innerHTML = '<div class="loading-spinner">Loading article…</div>';
 
       try {
-        // OPTIMIZED: Explicitly select only needed fields instead of '*'
+        // OPTIMIZED: Explicitly select only needed fields
+        // FIXED: Removed 'updated_at' - column doesn't exist in the table
         const { data: article, error } = await supabaseClient
           .from('articles')
-          .select('id, title, description, image_url, tag, slug, created_at, updated_at, content, featured, views')
+          .select('id, title, description, image_url, tag, slug, created_at, content, featured, views')
           .eq('slug', slug)
           .single();
 
@@ -1766,7 +1767,7 @@
             "name": "Rheoa"
           },
           "datePublished": article.created_at ? article.created_at.split("T")[0] : new Date().toISOString().split("T")[0],
-          "dateModified": article.updated_at ? article.updated_at.split("T")[0] : new Date().toISOString().split("T")[0],
+          "dateModified": article.created_at ? article.created_at.split("T")[0] : new Date().toISOString().split("T")[0],
           "publisher": {
             "@type": "Organization",
             "name": "World Discovery"
