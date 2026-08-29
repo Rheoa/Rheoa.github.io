@@ -285,6 +285,20 @@
       border-radius: 20px;
     }
 
+    .btn-success {
+      background: #e8f5e9;
+      color: #2e7d32;
+      border: none;
+      padding: 6px 14px;
+      border-radius: 30px;
+      font-weight: 700;
+      font-size: 0.8rem;
+      cursor: pointer;
+      transition: 0.2s;
+      font-family: inherit;
+    }
+    .btn-success:hover { background: #c8e6c9; }
+
     .refresh-btn {
       background: var(--yellow);
       border: none;
@@ -424,6 +438,56 @@
       cursor: pointer;
     }
 
+    /* ===== SEO PREVIEW (NEW) ===== */
+    .seo-preview {
+      background: #f0f2f5;
+      border-radius: 8px;
+      padding: 12px 16px;
+      margin: 8px 0 4px;
+      font-family: Arial, sans-serif;
+      border-left: 4px solid var(--yellow);
+    }
+    .seo-preview .seo-title {
+      color: #1a0dab;
+      font-size: 18px;
+      line-height: 1.3;
+      text-decoration: none;
+      cursor: pointer;
+      font-weight: 400;
+      display: block;
+      margin-bottom: 2px;
+    }
+    .seo-preview .seo-title:hover {
+      text-decoration: underline;
+    }
+    .seo-preview .seo-url {
+      color: #006621;
+      font-size: 13px;
+      line-height: 1.4;
+      margin-bottom: 2px;
+      word-break: break-all;
+    }
+    .seo-preview .seo-desc {
+      color: #4d5156;
+      font-size: 13px;
+      line-height: 1.4;
+    }
+    .seo-preview .char-count {
+      font-size: 0.7rem;
+      color: var(--muted);
+      margin-top: 4px;
+      display: flex;
+      gap: 16px;
+    }
+    .seo-preview .char-count .warning {
+      color: #e65100;
+      font-weight: 700;
+    }
+    .seo-preview .char-count .good {
+      color: #2e7d32;
+      font-weight: 700;
+    }
+
     /* ===== RESPONSIVE ===== */
     @media (max-width: 700px) {
       .two-col { grid-template-columns: 1fr; }
@@ -453,7 +517,7 @@
         <div class="form-row">
           <div class="form-group">
             <label for="articleTitleInput">Title *</label>
-            <input type="text" id="articleTitleInput" placeholder="Article title" required />
+            <input type="text" id="articleTitleInput" placeholder="Article title" required oninput="updateSEOPreview()" />
           </div>
           <div class="form-group">
             <label for="articleSlugInput">Slug *</label>
@@ -464,7 +528,21 @@
 
         <div class="form-group">
           <label for="articleDescInput">Description</label>
-          <input type="text" id="articleDescInput" placeholder="Short description (shown on cards)" />
+          <input type="text" id="articleDescInput" placeholder="Short description (shown on cards)" oninput="updateSEOPreview()" />
+        </div>
+
+        <!-- ===== SEO PREVIEW (NEW) ===== -->
+        <div class="form-group">
+          <div class="seo-preview" id="seoPreview">
+            <span class="seo-title" id="seoPreviewTitle">Your Article Title</span>
+            <div class="seo-url" id="seoPreviewUrl">worlddiscovery.com / article-slug</div>
+            <div class="seo-desc" id="seoPreviewDesc">Your description will appear here. Keep it under 160 characters.</div>
+            <div class="char-count">
+              <span>🔤 Title: <span id="seoTitleCount">0</span>/60 <span id="seoTitleWarning"></span></span>
+              <span>📝 Description: <span id="seoDescCount">0</span>/160 <span id="seoDescWarning"></span></span>
+            </div>
+          </div>
+          <small style="color:var(--muted); font-size:0.75rem;">Live preview of how your article will appear in Google search results.</small>
         </div>
 
         <div class="form-row">
@@ -682,7 +760,7 @@
             <button data-tab="affiliates" onclick="switchTab('affiliates')">🔗 Affiliate Links</button>
           </div>
 
-          <!-- DASHBOARD TAB (UPDATED) -->
+          <!-- DASHBOARD TAB -->
           <div id="tab-dashboard" class="tab-content active">
             
             <!-- Date Range Picker & Export -->
@@ -707,7 +785,7 @@
               </div>
             </div>
 
-            <!-- Stats Grid (Original 7 stats) -->
+            <!-- Stats Grid -->
             <div class="stats-grid" id="statsGrid">
               <div class="stat-card"><div class="number" id="statTotal">—</div><div class="label">Total Clicks</div></div>
               <div class="stat-card"><div class="number" id="stat24h">—</div><div class="label">Clicks (24h)</div></div>
@@ -718,7 +796,6 @@
               <div class="stat-card"><div class="number" id="statTopCountry">—</div><div class="label">Top Country</div></div>
             </div>
 
-            <!-- Charts & Tables (Date-range aware) -->
             <div class="two-col">
               <div>
                 <h3 class="section-title">📈 Clicks by Affiliate Key</h3>
@@ -763,11 +840,14 @@
             </div>
           </div>
 
-          <!-- ARTICLES TAB (Unchanged) -->
+          <!-- ARTICLES TAB (UPDATED: Added Generate Sitemap button) -->
           <div id="tab-articles" class="tab-content">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:12px;">
               <h2 style="font-size:1.3rem; font-weight:700;">All Articles</h2>
-              <button class="btn-primary" onclick="openArticleModal()">+ Add New Article</button>
+              <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                <button class="btn-success btn-sm" onclick="generateSitemap()" style="padding: 6px 16px;">🔄 Generate Sitemap</button>
+                <button class="btn-primary" onclick="openArticleModal()">+ Add New Article</button>
+              </div>
             </div>
             <div class="table-wrap">
               <table>
@@ -789,7 +869,7 @@
             </div>
           </div>
 
-          <!-- AFFILIATE LINKS TAB (Unchanged) -->
+          <!-- AFFILIATE LINKS TAB -->
           <div id="tab-affiliates" class="tab-content">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:12px;">
               <h2 style="font-size:1.3rem; font-weight:700;">🔗 Affiliate Links</h2>
@@ -816,16 +896,9 @@
         </div>
       `;
 
-      // Populate category dropdown
       populateCategoryDropdown();
-
-      // Load dashboard data
       loadDashboardData();
-
-      // Load articles list
       loadArticlesList();
-
-      // Auto-refresh dashboard
       startAutoRefresh();
     }
 
@@ -865,7 +938,7 @@
     }
 
     // ============================================================
-    // DATE RANGE FILTERING (NEW)
+    // DATE RANGE FILTERING
     // ============================================================
     function setQuickFilter(range) {
       const now = new Date();
@@ -919,10 +992,9 @@
     }
 
     // ============================================================
-    // UPDATED DASHBOARD DATA (KEEPS 7 STATS + DATE-AWARE CHARTS/TABLES)
+    // DASHBOARD DATA (Unchanged from previous version)
     // ============================================================
     async function loadDashboardData() {
-      // Show loading state for stats
       ['statTotal','stat24h','stat7d','stat30d','statUnique','statTopLink','statTopCountry'].forEach(id => {
         const el = document.getElementById(id);
         if (el) el.textContent = '…';
@@ -934,7 +1006,6 @@
       const thirtyDaysAgo = new Date(now.getTime() - 30*24*60*60*1000);
 
       try {
-        // --- 1. Fetch raw data for top stats (global, unchanged logic) ---
         const { data: allClicksRaw, error } = await supabaseClient
           .from('click_logs')
           .select('created_at, affiliate_key, link_url, visitor_id, country_code, article_id')
@@ -984,14 +1055,7 @@
         document.getElementById('statTopLink').textContent = topLink;
         document.getElementById('statTopCountry').textContent = topCountry;
 
-        // --- 2. Date-aware charts and tables (try RPC first, fallback to client-side filter) ---
-        let affiliateStats = {};
-        let linkStats = {};
-        let countryStats = {};
-        let articleStats = {};
-        let recentClicks = [];
-
-        // Default date range: last 30 days if not set
+        // Date-aware charts
         if (!currentStartDate && !currentEndDate) {
           const defaultStart = new Date(now);
           defaultStart.setDate(now.getDate() - 30);
@@ -1004,6 +1068,12 @@
         const startISO = currentStartDate.toISOString();
         const endISO = currentEndDate.toISOString();
 
+        let affiliateStats = {};
+        let linkStats = {};
+        let countryStats = {};
+        let articleStats = {};
+        let recentClicks = [];
+
         // Try RPC first
         let rpcSuccess = false;
         try {
@@ -1015,26 +1085,22 @@
 
           if (!summaryError && summary) {
             rpcSuccess = true;
-            // Populate affiliateStats
             if (summary.affiliate_breakdown) {
               summary.affiliate_breakdown.forEach(item => {
                 affiliateStats[item.affiliate_key] = item.click_count;
               });
             }
-            // Populate linkStats
             if (summary.top_links) {
               summary.top_links.forEach(item => {
                 linkStats[item.link_url] = { total: item.click_count, unique: item.unique_count };
               });
             }
-            // Populate countryStats
             if (summary.country_stats) {
               summary.country_stats.forEach(item => {
                 countryStats[item.country] = item.click_count;
               });
             }
 
-            // For recent clicks & article stats, we still need raw data for this range
             const { data: rangeClicks, error: rangeError } = await supabaseClient
               .from('click_logs')
               .select('created_at, affiliate_key, link_url, visitor_id, country_code, article_id')
@@ -1056,7 +1122,6 @@
           console.warn('RPC failed, falling back to client-side filtering:', rpcErr);
         }
 
-        // Fallback: client-side filtering (if RPC failed or returned incomplete data)
         if (!rpcSuccess) {
           const filteredClicks = allClicks.filter(c => c.created_at >= startISO && c.created_at <= endISO);
           recentClicks = filteredClicks.slice(0, 30);
@@ -1077,7 +1142,6 @@
             }
           });
 
-          // Convert Sets to counts for linkStats
           const linkStatsFinal = {};
           Object.entries(linkStats).forEach(([url, stats]) => {
             linkStatsFinal[url] = { total: stats.total, unique: stats.unique.size };
@@ -1085,9 +1149,7 @@
           linkStats = linkStatsFinal;
         }
 
-        // --- 3. Render charts and tables (unchanged logic, using date-aware data) ---
-
-        // Affiliate breakdown table
+        // Render tables & charts...
         const sortedAffiliates = Object.entries(affiliateStats).sort((a,b) => b[1] - a[1]);
         const tbodyAffiliate = document.getElementById('affiliateBreakdownBody');
         if (tbodyAffiliate) {
@@ -1102,7 +1164,6 @@
           }
         }
 
-        // Chart
         const labels = sortedAffiliates.map(([key]) => key);
         const dataValues = sortedAffiliates.map(([, count]) => count);
         const ctx = document.getElementById('affiliateChart')?.getContext('2d');
@@ -1129,7 +1190,6 @@
           });
         }
 
-        // Top Links
         const sortedLinks = Object.entries(linkStats)
           .map(([url, stats]) => ({ url, total: stats.total, unique: stats.unique }))
           .sort((a, b) => b.total - a.total);
@@ -1147,7 +1207,6 @@
           }
         }
 
-        // Top Articles
         const articleIds = Object.keys(articleStats).filter(id => id !== null).map(Number);
         let articleMap = {};
         if (articleIds.length > 0) {
@@ -1177,7 +1236,6 @@
           }
         }
 
-        // Region Distribution
         const sortedCountries = Object.entries(countryStats).sort((a,b) => b[1] - a[1]);
         const tbodyRegion = document.getElementById('regionBody');
         if (tbodyRegion) {
@@ -1192,7 +1250,6 @@
           }
         }
 
-        // Recent Clicks
         const recentArticleIds = recentClicks.map(r => r.article_id).filter(id => id !== null).map(Number);
         let recentArticleMap = {};
         if (recentArticleIds.length > 0) {
@@ -1226,8 +1283,6 @@
           }
         }
 
-        document.getElementById('lastUpdated')?.textContent && (document.getElementById('lastUpdated').textContent = new Date().toLocaleString());
-
       } catch (err) {
         console.error('Dashboard error:', err);
         const grid = document.getElementById('statsGrid');
@@ -1236,7 +1291,7 @@
     }
 
     // ============================================================
-    // CSV EXPORT (NEW)
+    // CSV EXPORT
     // ============================================================
     function exportCSV(type) {
       let data = [];
@@ -1292,6 +1347,132 @@
     }
 
     // ============================================================
+    // 🆕 GENERATE SITEMAP (NEW SEO FEATURE)
+    // ============================================================
+    async function generateSitemap() {
+      if (!confirm('🔄 Generate a fresh sitemap.xml from all your articles?\n\nThis will download a file you can upload to your website root.')) return;
+
+      try {
+        const { data: articles, error } = await supabaseClient
+          .from('articles')
+          .select('slug, title, created_at')
+          .order('created_at', { ascending: false });
+
+        if (error) throw error;
+
+        const baseUrl = 'https://rheoa.github.io';
+        const now = new Date().toISOString().split('T')[0];
+
+        let xml = '<?xml version="1.0" encoding="UTF-8"?>\n';
+        xml += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n';
+
+        // Static pages
+        const staticPages = [
+          { loc: '/', priority: '1.0', changefreq: 'daily' },
+          { loc: '/privacy.html', priority: '0.3', changefreq: 'yearly' },
+          { loc: '/terms.html', priority: '0.3', changefreq: 'yearly' },
+          { loc: '/affiliate-disclosure.html', priority: '0.3', changefreq: 'yearly' },
+          { loc: '/cookie-policy.html', priority: '0.3', changefreq: 'yearly' },
+        ];
+        staticPages.forEach(page => {
+          xml += `  <url>\n    <loc>${baseUrl}${page.loc}</loc>\n    <lastmod>${now}</lastmod>\n    <changefreq>${page.changefreq}</changefreq>\n    <priority>${page.priority}</priority>\n  </url>\n`;
+        });
+
+        // Dynamic articles
+        articles.forEach(article => {
+          const lastmod = article.created_at ? article.created_at.split('T')[0] : now;
+          xml += `  <url>\n    <loc>${baseUrl}/#article-${article.slug}</loc>\n    <lastmod>${lastmod}</lastmod>\n    <changefreq>monthly</changefreq>\n    <priority>0.8</priority>\n  </url>\n`;
+        });
+
+        xml += '</urlset>';
+
+        // Download the file
+        const blob = new Blob([xml], { type: 'application/xml' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = 'sitemap.xml';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(link.href);
+
+        alert(`✅ Sitemap generated successfully with ${articles.length} articles!\n\nThe file has been downloaded. Upload it to your website root folder (where index.html lives).`);
+      } catch (err) {
+        console.error('Sitemap generation error:', err);
+        alert('❌ Error generating sitemap: ' + err.message);
+      }
+    }
+
+    // ============================================================
+    // 🆕 SEO META PREVIEW (NEW)
+    // ============================================================
+    function updateSEOPreview() {
+      const titleInput = document.getElementById('articleTitleInput');
+      const descInput = document.getElementById('articleDescInput');
+      const slugInput = document.getElementById('articleSlugInput');
+
+      const title = titleInput ? titleInput.value.trim() : 'Your Article Title';
+      const desc = descInput ? descInput.value.trim() : 'Your description will appear here. Keep it under 160 characters.';
+      const slug = slugInput ? slugInput.value.trim() : 'article-slug';
+
+      // Update preview elements
+      const previewTitle = document.getElementById('seoPreviewTitle');
+      const previewUrl = document.getElementById('seoPreviewUrl');
+      const previewDesc = document.getElementById('seoPreviewDesc');
+
+      if (previewTitle) previewTitle.textContent = title || 'Untitled Article';
+      if (previewUrl) previewUrl.textContent = `worlddiscovery.com / ${slug || 'article-slug'}`;
+      if (previewDesc) previewDesc.textContent = desc || 'No description provided.';
+
+      // Update character counts
+      const titleCount = document.getElementById('seoTitleCount');
+      const descCount = document.getElementById('seoDescCount');
+      const titleWarning = document.getElementById('seoTitleWarning');
+      const descWarning = document.getElementById('seoDescWarning');
+
+      const titleLen = title.length;
+      const descLen = desc.length;
+
+      if (titleCount) titleCount.textContent = titleLen;
+      if (descCount) descCount.textContent = descLen;
+
+      // Title warnings
+      if (titleWarning) {
+        if (titleLen > 60) {
+          titleWarning.textContent = '⚠️ Too long (max 60)';
+          titleWarning.className = 'warning';
+        } else if (titleLen < 30 && titleLen > 0) {
+          titleWarning.textContent = '💡 Try to reach 30-60 chars';
+          titleWarning.className = 'warning';
+        } else if (titleLen >= 30 && titleLen <= 60) {
+          titleWarning.textContent = '✅ Good length';
+          titleWarning.className = 'good';
+        } else {
+          titleWarning.textContent = '';
+        }
+      }
+
+      // Description warnings
+      if (descWarning) {
+        if (descLen > 160) {
+          descWarning.textContent = '⚠️ Too long (max 160)';
+          descWarning.className = 'warning';
+        } else if (descLen < 80 && descLen > 0) {
+          descWarning.textContent = '💡 Try to reach 120-160 chars';
+          descWarning.className = 'warning';
+        } else if (descLen >= 120 && descLen <= 160) {
+          descWarning.textContent = '✅ Good length';
+          descWarning.className = 'good';
+        } else if (descLen > 0) {
+          descWarning.textContent = '💡 Try to reach 120-160 chars';
+          descWarning.className = 'warning';
+        } else {
+          descWarning.textContent = '';
+        }
+      }
+    }
+
+    // ============================================================
     // ARTICLES LIST (CRUD) — UNCHANGED
     // ============================================================
     async function loadArticlesList() {
@@ -1340,7 +1521,7 @@
     }
 
     // ============================================================
-    // ARTICLE MODAL — UNCHANGED
+    // ARTICLE MODAL — UNCHANGED (except SEO preview hook)
     // ============================================================
     function openArticleModal(articleData) {
       const modal = document.getElementById('articleModal');
@@ -1358,6 +1539,9 @@
       document.getElementById('articleViewCount').textContent = isEdit ? `Views: ${articleData.views || 0}` : 'Views: 0';
       document.getElementById('articleCreatedAt').textContent = isEdit && articleData.created_at ? `Created: ${new Date(articleData.created_at).toLocaleDateString()}` : 'Created: —';
       document.getElementById('modalSaveBtn').textContent = isEdit ? 'Update Article' : 'Create Article';
+
+      // Update SEO preview after loading data
+      setTimeout(updateSEOPreview, 50);
 
       modal.classList.add('show');
     }
@@ -1654,7 +1838,7 @@
     }
 
     // ============================================================
-    // AUTO-REFRESH (UPDATED to respect date filters)
+    // AUTO-REFRESH
     // ============================================================
     let refreshInterval = null;
 
@@ -1695,11 +1879,16 @@
           .replace(/-+/g, '-')
           .replace(/^-|-$/g, '');
       }
+      updateSEOPreview();
     });
 
     document.getElementById('articleSlugInput')?.addEventListener('input', function() {
       this.dataset.userEdited = 'true';
+      updateSEOPreview();
     });
+
+    // Initialize SEO preview on page load (for modal)
+    setTimeout(updateSEOPreview, 100);
 
   </script>
 </body>
