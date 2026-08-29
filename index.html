@@ -1663,7 +1663,7 @@
     }
 
     /* ============================================================
-       LOAD SINGLE ARTICLE (with embedded map support)
+       LOAD SINGLE ARTICLE (with embedded map support + JSON-LD)
     ============================================================ */
     async function loadArticle(slug) {
       const container = document.getElementById('articleContent');
@@ -1746,6 +1746,39 @@
           articleUrl,
           'article'
         );
+
+        // ⭐ ADD JSON-LD STRUCTURED DATA FOR SEO
+        const jsonLd = {
+          "@context": "https://schema.org",
+          "@type": "Article",
+          "headline": article.title,
+          "description": article.description || "Discover amazing places, hidden destinations, and fascinating travel facts.",
+          "image": article.image_url || "https://images.pexels.com/photos/2613110/pexels-photo-2613110.jpeg?auto=compress&cs=tinysrgb&w=1200",
+          "author": {
+            "@type": "Person",
+            "name": "Rheoa"
+          },
+          "datePublished": article.created_at ? article.created_at.split("T")[0] : new Date().toISOString().split("T")[0],
+          "dateModified": article.updated_at ? article.updated_at.split("T")[0] : new Date().toISOString().split("T")[0],
+          "publisher": {
+            "@type": "Organization",
+            "name": "World Discovery"
+          },
+          "mainEntityOfPage": {
+            "@type": "WebPage",
+            "@id": window.location.href
+          }
+        };
+
+        // Remove any existing JSON-LD script
+        const existingScript = document.querySelector('script[type="application/ld+json"]');
+        if (existingScript) existingScript.remove();
+
+        // Add the JSON-LD script to the page
+        const scriptTag = document.createElement('script');
+        scriptTag.type = 'application/ld+json';
+        scriptTag.textContent = JSON.stringify(jsonLd);
+        document.head.appendChild(scriptTag);
 
         // ⭐ CHECK FOR MAP DATA IN THE CONTENT ⭐
         const mapDataElement = document.getElementById('mapData');
