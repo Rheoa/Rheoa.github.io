@@ -1,0 +1,11 @@
+# robots.txt for World Discovery
+
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /privacy.html
+Disallow: /terms.html
+Disallow: /affiliate-disclosure.html
+Disallow: /cookie-policy.html
+
+Sitemap: https://rheoa.github.io//sitemap.xml
