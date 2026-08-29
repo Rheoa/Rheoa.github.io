@@ -26,21 +26,11 @@
   <!-- ============================================================
        SECURITY HEADERS (Meta Tags)
        ============================================================ -->
-  <!-- X-Content-Type-Options: nosniff -->
   <meta http-equiv="X-Content-Type-Options" content="nosniff" />
-
-  <!-- X-Frame-Options: DENY (prevents clickjacking) -->
   <meta http-equiv="X-Frame-Options" content="DENY" />
-
-  <!-- Referrer Policy -->
   <meta name="referrer" content="strict-origin-when-cross-origin" />
-
-  <!-- Content-Security-Policy -->
-  <!-- Note: CSP via meta tag has limited support for some directives -->
   <meta http-equiv="Content-Security-Policy" 
         content="default-src 'self' https://*.supabase.co https://*.pexels.com https://*.googleapis.com https://*.gstatic.com https://unpkg.com https://cdn.jsdelivr.net https://www.pinterest.com https://api.ipify.org https://*.impactcdn.com https://utt.impactcdn.com; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://unpkg.com https://utt.impactcdn.com https://www.googletagmanager.com; style-src 'self' 'unsafe-inline' https://unpkg.com https://fonts.googleapis.com; img-src 'self' data: https://*.pexels.com https://images.pexels.com https://*.pinterest.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://*.supabase.co https://api.ipify.org https://ipapi.co https://ip-api.com https://ipinfo.io; frame-src 'self' https://www.pinterest.com;" />
-
-  <!-- Permissions Policy -->
   <meta http-equiv="Permissions-Policy" 
         content="geolocation=(), microphone=(), camera=(), payment=(), usb=(), battery=(), accelerometer=(), gyroscope=(), magnetometer=(), ambient-light-sensor=(), vibrate=(), midi=(), clipboard-read=(), clipboard-write=(), screen-wake-lock=(), serial=(), hid=(), xr-spatial-tracking=()" />
 
@@ -1132,14 +1122,11 @@
        SEO META TAG HELPERS
     ============================================================ */
     function updateMetaTags(title, description, image, url, type) {
-      // Update title
       document.title = title || 'World Discovery — Explore Amazing Places';
       
-      // Update meta description
       const metaDesc = document.getElementById('meta-description');
       if (metaDesc) metaDesc.content = description || 'Discover amazing places, hidden destinations, and fascinating travel facts.';
       
-      // Update Open Graph tags
       const ogTitle = document.getElementById('og-title');
       if (ogTitle) ogTitle.content = document.title;
       
@@ -1155,7 +1142,6 @@
       const ogType = document.getElementById('og-type');
       if (ogType && type) ogType.content = type;
       
-      // Update Twitter Card tags
       const twitterTitle = document.getElementById('twitter-title');
       if (twitterTitle) twitterTitle.content = document.title;
       
@@ -1181,7 +1167,6 @@
     ============================================================ */
 
     function navigateTo(pageKey) {
-      // Handle 404 for invalid pages
       if (!pages[pageKey]) {
         const main = document.getElementById('main-content');
         main.innerHTML = `
@@ -1214,7 +1199,6 @@
         link.classList.toggle('active', link.dataset.page === pageKey);
       });
 
-      // Reset meta tags for non-article pages
       if (pageKey !== 'article') {
         resetMetaTags();
       }
@@ -1250,7 +1234,6 @@
 
       document.getElementById('navLinks').classList.remove('open');
       
-      // Update meta tags for category page
       updateMetaTags(
         `${category.name} — World Discovery`,
         `Explore ${category.name} articles, travel guides, and destination inspiration.`,
@@ -1283,7 +1266,6 @@
        IP GEOLOCATION (with caching)
     ============================================================ */
     async function getCountryCode() {
-      // Only use cache if consent given
       if (hasConsent()) {
         try {
           const cached = localStorage.getItem('userCountry');
@@ -1309,7 +1291,6 @@
           let country = data[api.key];
           if (api.url.includes('country.is')) country = data.country;
           if (country && typeof country === 'string' && country.length === 2) {
-            // Only cache if consent given
             if (hasConsent()) {
               try {
                 localStorage.setItem('userCountry', country);
@@ -1340,7 +1321,6 @@
     ============================================================ */
     function getVisitorId() {
       if (!hasConsent()) {
-        // Return a temporary ID for this session (not stored)
         return 'temp-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
       }
 
@@ -1356,7 +1336,7 @@
        RENDER CARDS (with image loading placeholder)
     ============================================================ */
     function createCardHTML(article) {
-      const imageId = 'img-' + article.id + '-' + Date.now(); // unique ID for onload handler
+      const imageId = 'img-' + article.id + '-' + Date.now();
       return `
         <article class="card" data-title="${article.title.toLowerCase()}" data-tag="${(article.tag || '').toLowerCase()}" onclick="navigateToArticle('${article.slug}')">
           <div class="card-image">
@@ -1374,47 +1354,64 @@
     }
 
     /* ============================================================
-       LOAD CATEGORY COUNTS & PREVIEWS
+       LOAD CATEGORY COUNTS & PREVIEWS (OPTIMIZED)
     ============================================================ */
     async function loadCategoryCounts() {
+      // Check cache first (1 hour TTL)
+      const cacheKey = 'category_counts';
+      const cached = localStorage.getItem(cacheKey);
+      if (cached) {
+        try {
+          const parsed = JSON.parse(cached);
+          const age = Date.now() - parsed.timestamp;
+          if (age < 3600000) {
+            // Use cached data
+            const counts = parsed.data;
+            categories.forEach(cat => {
+              const el = document.getElementById(`count-${cat.id}`);
+              if (el) {
+                const count = counts[cat.tag] || 0;
+                el.textContent = `${count} article${count !== 1 ? 's' : ''}`;
+              }
+            });
+            return;
+          }
+        } catch (_) {}
+      }
+
       try {
-        const { data, error } = await supabaseClient.from('articles').select('id, tag, title, image_url');
+        // OPTIMIZED: Only select the 'tag' field, not all columns
+        const { data, error } = await supabaseClient
+          .from('articles')
+          .select('tag')
+          .not('tag', 'is', null);
+
         if (error || !data) return;
         
         const counts = {};
-        const previews = {};
-        
         data.forEach(article => {
           if (article.tag) {
             counts[article.tag] = (counts[article.tag] || 0) + 1;
-            // Store one preview article per category (first one found)
-            if (!previews[article.tag] && article.image_url) {
-              previews[article.tag] = {
-                title: article.title,
-                image_url: article.image_url
-              };
-            }
           }
         });
-        
+
+        // Update category cards
         categories.forEach(cat => {
           const el = document.getElementById(`count-${cat.id}`);
           if (el) {
             const count = counts[cat.tag] || 0;
             el.textContent = `${count} article${count !== 1 ? 's' : ''}`;
           }
-          
-          // Show preview if available
-          const previewEl = document.getElementById(`preview-${cat.id}`);
-          const previewImg = document.getElementById(`preview-img-${cat.id}`);
-          const previewTitle = document.getElementById(`preview-title-${cat.id}`);
-          
-          if (previewEl && previewImg && previewTitle && previews[cat.tag]) {
-            previewEl.style.display = 'block';
-            previewImg.innerHTML = `<img src="${previews[cat.tag].image_url}" alt="${previews[cat.tag].title}" style="width:100%; height:60px; object-fit:cover;" />`;
-            previewTitle.textContent = previews[cat.tag].title.length > 30 ? previews[cat.tag].title.substring(0, 30) + '…' : previews[cat.tag].title;
-          }
         });
+
+        // Cache the results (1 hour)
+        try {
+          localStorage.setItem(cacheKey, JSON.stringify({
+            data: counts,
+            timestamp: Date.now()
+          }));
+        } catch (_) {}
+
       } catch (err) { console.error(err); }
     }
 
@@ -1496,7 +1493,6 @@
     async function rewriteDynamicLinks(articleId) {
       const country = await getCountryCode();
 
-      // Check cache if consent given
       let links = null;
       const cacheKey = `affiliate_links_${articleId}_${country}`;
       
@@ -1513,7 +1509,6 @@
         } catch (_) {}
       }
 
-      // If not in cache (or no consent), fetch from database
       if (!links) {
         try {
           const { data, error } = await supabaseClient
@@ -1532,7 +1527,6 @@
 
           links = data;
 
-          // Store in cache only if consent given
           if (hasConsent()) {
             try {
               localStorage.setItem(cacheKey, JSON.stringify({
@@ -1548,7 +1542,6 @@
         }
       }
 
-      // Build link map
       const linkMap = {};
       links.forEach(item => {
         const key = item.affiliate_key.trim().toLowerCase();
@@ -1559,7 +1552,6 @@
         if (item.country_code === 'default' && !linkMap[key]) linkMap[key] = item.link_url;
       });
 
-      // Apply links to DOM elements
       document.querySelectorAll('.dynamic-link').forEach(el => {
         const key = el.dataset.affiliateKey?.trim().toLowerCase();
         if (key && linkMap[key]) {
@@ -1589,7 +1581,6 @@
       const country = await getCountryCode();
       const visitorId = getVisitorId();
 
-      // Capture IP address
       let ipAddress = null;
       try {
         const ipRes = await fetch('https://api.ipify.org?format=json');
@@ -1622,7 +1613,6 @@
        RENDER MAP FROM EMBEDDED DATA
     ============================================================ */
     function renderMapFromData(container, places) {
-      // Destroy previous map if exists
       if (window._currentMap) {
         window._currentMap.remove();
         window._currentMap = null;
@@ -1633,7 +1623,6 @@
         return;
       }
 
-      // Calculate center (average of all markers)
       let centerLat = 0,
         centerLng = 0;
       places.forEach(p => {
@@ -1643,16 +1632,13 @@
       centerLat /= places.length;
       centerLng /= places.length;
 
-      // Create map
       const map = L.map(container).setView([centerLat, centerLng], 4.5);
 
-      // Add tile layer
       L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>, &copy; CartoDB',
         maxZoom: 19
       }).addTo(map);
 
-      // Add markers with popups
       places.forEach(place => {
         const popupContent = `
           <div style="max-width:280px;">
@@ -1667,7 +1653,6 @@
           .addTo(map);
       });
 
-      // Fit bounds to show all markers
       const group = L.featureGroup(
         places.map(p => L.marker([parseFloat(p.lat), parseFloat(p.lng)]))
       );
@@ -1677,17 +1662,15 @@
         map.setView([places[0].lat, places[0].lng], 8);
       }
 
-      // Store map reference
       window._currentMap = map;
 
-      // Fix map rendering after a tiny delay (for layout issues)
       setTimeout(() => {
         map.invalidateSize();
       }, 100);
     }
 
     /* ============================================================
-       LOAD SINGLE ARTICLE (with embedded map support + JSON-LD)
+       LOAD SINGLE ARTICLE (OPTIMIZED - explicit field selection)
     ============================================================ */
     async function loadArticle(slug) {
       const container = document.getElementById('articleContent');
@@ -1699,9 +1682,10 @@
       container.innerHTML = '<div class="loading-spinner">Loading article…</div>';
 
       try {
+        // OPTIMIZED: Explicitly select only needed fields instead of '*'
         const { data: article, error } = await supabaseClient
           .from('articles')
-          .select('*')
+          .select('id, title, description, image_url, tag, slug, created_at, updated_at, content, featured, views')
           .eq('slug', slug)
           .single();
 
@@ -1735,7 +1719,6 @@
           catSpan.textContent = category ? category.name : article.tag || 'Travel';
         }
 
-        // Build the article HTML with the updated view count and affiliate pill
         let html = `
           <div class="article-header">
             <h1>${article.title}</h1>
@@ -1757,7 +1740,7 @@
 
         container.innerHTML = html;
 
-        // ⭐ UPDATE SEO META TAGS FOR ARTICLE
+        // UPDATE SEO META TAGS FOR ARTICLE
         const articleTitle = article.title || 'World Discovery';
         const articleDesc = article.description || 'Discover amazing places and hidden destinations.';
         const articleImage = article.image_url || 'https://images.pexels.com/photos/2613110/pexels-photo-2613110.jpeg?auto=compress&cs=tinysrgb&w=1200';
@@ -1771,7 +1754,7 @@
           'article'
         );
 
-        // ⭐ ADD JSON-LD STRUCTURED DATA FOR SEO
+        // ADD JSON-LD STRUCTURED DATA FOR SEO
         const jsonLd = {
           "@context": "https://schema.org",
           "@type": "Article",
@@ -1794,17 +1777,15 @@
           }
         };
 
-        // Remove any existing JSON-LD script
         const existingScript = document.querySelector('script[type="application/ld+json"]');
         if (existingScript) existingScript.remove();
 
-        // Add the JSON-LD script to the page
         const scriptTag = document.createElement('script');
         scriptTag.type = 'application/ld+json';
         scriptTag.textContent = JSON.stringify(jsonLd);
         document.head.appendChild(scriptTag);
 
-        // ⭐ CHECK FOR MAP DATA IN THE CONTENT ⭐
+        // CHECK FOR MAP DATA IN THE CONTENT
         const mapDataElement = document.getElementById('mapData');
         if (mapDataElement) {
           try {
