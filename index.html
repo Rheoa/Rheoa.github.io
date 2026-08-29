@@ -23,6 +23,30 @@
   <meta name="twitter:description" content="Discover amazing places, hidden destinations, and fascinating travel facts." id="twitter-description" />
   <meta name="twitter:image" content="https://images.pexels.com/photos/2613110/pexels-photo-2613110.jpeg?auto=compress&cs=tinysrgb&w=1200" id="twitter-image" />
 
+  <!-- ============================================================
+       SECURITY HEADERS (Meta Tags)
+       ============================================================ -->
+  <!-- X-Content-Type-Options: nosniff -->
+  <meta http-equiv="X-Content-Type-Options" content="nosniff" />
+
+  <!-- X-Frame-Options: DENY (prevents clickjacking) -->
+  <meta http-equiv="X-Frame-Options" content="DENY" />
+
+  <!-- Referrer Policy -->
+  <meta name="referrer" content="strict-origin-when-cross-origin" />
+
+  <!-- Content-Security-Policy -->
+  <!-- Note: CSP via meta tag has limited support for some directives -->
+  <meta http-equiv="Content-Security-Policy" 
+        content="default-src 'self' https://*.supabase.co https://*.pexels.com https://*.googleapis.com https://*.gstatic.com https://unpkg.com https://cdn.jsdelivr.net https://www.pinterest.com https://api.ipify.org https://*.impactcdn.com https://utt.impactcdn.com; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://unpkg.com https://utt.impactcdn.com https://www.googletagmanager.com; style-src 'self' 'unsafe-inline' https://unpkg.com https://fonts.googleapis.com; img-src 'self' data: https://*.pexels.com https://images.pexels.com https://*.pinterest.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://*.supabase.co https://api.ipify.org https://ipapi.co https://ip-api.com https://ipinfo.io; frame-src 'self' https://www.pinterest.com;" />
+
+  <!-- Permissions Policy -->
+  <meta http-equiv="Permissions-Policy" 
+        content="geolocation=(), microphone=(), camera=(), payment=(), usb=(), battery=(), accelerometer=(), gyroscope=(), magnetometer=(), ambient-light-sensor=(), vibrate=(), midi=(), clipboard-read=(), clipboard-write=(), screen-wake-lock=(), serial=(), hid=(), xr-spatial-tracking=()" />
+
+  <!-- Google Search Console Verification -->
+  <meta name="google-site-verification" content="7unpVZHBGdonyB06vWx9YIigUSi83ReKycHSDRWH2ws" />
+
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌍</text></svg>" />
 
   <!-- Impact.com tracking script -->
