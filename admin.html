@@ -509,6 +509,51 @@
   </div>
 
   <!-- ============================================================
+       MODAL (Affiliate Link Edit/Create)
+  ============================================================ -->
+  <div class="modal-overlay" id="affiliateModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 id="affiliateModalTitle">Add New Affiliate Link</h2>
+        <button class="modal-close" onclick="closeAffiliateModal()">&times;</button>
+      </div>
+      <form id="affiliateForm" onsubmit="saveAffiliateLink(event)">
+        <input type="hidden" id="editAffiliateId" value="" />
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="affiliateArticleSelect">Article *</label>
+            <select id="affiliateArticleSelect" required>
+              <option value="">Select an article...</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="affiliateCountryInput">Country Code *</label>
+            <input type="text" id="affiliateCountryInput" placeholder="e.g., US, IN, GB, or 'default'" required />
+            <small style="color:var(--muted); font-size:0.75rem;">Use 'default' as fallback for all countries.</small>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="affiliateKeyInput">Affiliate Key *</label>
+          <input type="text" id="affiliateKeyInput" placeholder="e.g., amazon_tour, pelago_tour, kkday_tour" required />
+          <small style="color:var(--muted); font-size:0.75rem;">Must match the <code>data-affiliate-key</code> in your article HTML.</small>
+        </div>
+
+        <div class="form-group">
+          <label for="affiliateUrlInput">Link URL *</label>
+          <input type="url" id="affiliateUrlInput" placeholder="https://www.amazon.com/..." required />
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="btn btn-cancel" onclick="closeAffiliateModal()">Cancel</button>
+          <button type="submit" class="btn btn-save" id="affiliateModalSaveBtn">Save Link</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ============================================================
        SCRIPTS
   ============================================================ -->
   <script src="config.js"></script>
@@ -630,6 +675,7 @@
           <div class="tab-nav">
             <button class="active" data-tab="dashboard" onclick="switchTab('dashboard')">📊 Dashboard</button>
             <button data-tab="articles" onclick="switchTab('articles')">📄 Articles</button>
+            <button data-tab="affiliates" onclick="switchTab('affiliates')">🔗 Affiliate Links</button>
           </div>
 
           <!-- DASHBOARD TAB -->
@@ -713,6 +759,31 @@
               </table>
             </div>
           </div>
+
+          <!-- AFFILIATE LINKS TAB -->
+          <div id="tab-affiliates" class="tab-content">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:12px;">
+              <h2 style="font-size:1.3rem; font-weight:700;">🔗 Affiliate Links</h2>
+              <button class="btn-primary" onclick="openAffiliateModal()">+ Add New Link</button>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Article</th>
+                    <th>Affiliate Key</th>
+                    <th>Country</th>
+                    <th>URL</th>
+                    <th style="text-align:center;">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="affiliatesTableBody">
+                  <tr><td colspan="6" style="text-align:center;">Loading affiliate links…</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
       `;
 
@@ -722,7 +793,7 @@
       // Load dashboard data
       loadDashboardData();
 
-      // Load articles
+      // Load articles list
       loadArticlesList();
 
       // Auto-refresh dashboard
@@ -744,6 +815,8 @@
         loadDashboardData();
       } else if (tab === 'articles') {
         loadArticlesList();
+      } else if (tab === 'affiliates') {
+        loadAffiliateLinks();
       }
     }
 
@@ -1153,6 +1226,211 @@
     }
 
     // ============================================================
+    // AFFILIATE LINKS CRUD (NEW FEATURE)
+    // ============================================================
+
+    // Open Modal (for Add or Edit)
+    async function openAffiliateModal(linkData) {
+      const modal = document.getElementById('affiliateModal');
+      const isEdit = !!linkData;
+
+      document.getElementById('affiliateModalTitle').textContent = isEdit ? 'Edit Affiliate Link' : 'Add New Affiliate Link';
+      document.getElementById('editAffiliateId').value = isEdit ? linkData.id : '';
+      document.getElementById('affiliateCountryInput').value = isEdit ? linkData.country_code : '';
+      document.getElementById('affiliateKeyInput').value = isEdit ? linkData.affiliate_key : '';
+      document.getElementById('affiliateUrlInput').value = isEdit ? linkData.link_url : '';
+      document.getElementById('affiliateModalSaveBtn').textContent = isEdit ? 'Update Link' : 'Create Link';
+
+      // Populate article dropdown
+      await populateArticleDropdown(isEdit ? linkData.article_id : null);
+
+      modal.classList.add('show');
+    }
+
+    function closeAffiliateModal() {
+      document.getElementById('affiliateModal').classList.remove('show');
+      document.getElementById('affiliateForm').reset();
+      document.getElementById('editAffiliateId').value = '';
+    }
+
+    // Populate the article dropdown inside the affiliate modal
+    async function populateArticleDropdown(selectedId) {
+      const select = document.getElementById('affiliateArticleSelect');
+      if (!select) return;
+
+      select.innerHTML = '<option value="">Loading articles...</option>';
+
+      try {
+        const { data: articles, error } = await supabaseClient
+          .from('articles')
+          .select('id, title')
+          .order('title', { ascending: true });
+
+        if (error) throw error;
+
+        select.innerHTML = '<option value="">Select an article...</option>';
+        if (articles) {
+          articles.forEach(article => {
+            const opt = document.createElement('option');
+            opt.value = article.id;
+            opt.textContent = `${article.title} (ID: ${article.id})`;
+            if (selectedId && article.id === selectedId) {
+              opt.selected = true;
+            }
+            select.appendChild(opt);
+          });
+        }
+      } catch (err) {
+        console.error('Error loading articles for dropdown:', err);
+        select.innerHTML = '<option value="">Error loading articles</option>';
+      }
+    }
+
+    // Save (Create or Update)
+    async function saveAffiliateLink(e) {
+      e.preventDefault();
+
+      const id = document.getElementById('editAffiliateId').value;
+      const article_id = document.getElementById('affiliateArticleSelect').value;
+      const country_code = document.getElementById('affiliateCountryInput').value.trim();
+      const affiliate_key = document.getElementById('affiliateKeyInput').value.trim();
+      const link_url = document.getElementById('affiliateUrlInput').value.trim();
+
+      if (!article_id || !country_code || !affiliate_key || !link_url) {
+        alert('Please fill in all required fields.');
+        return;
+      }
+
+      const payload = { article_id: parseInt(article_id), country_code, affiliate_key, link_url };
+
+      try {
+        if (id) {
+          // UPDATE
+          const { error } = await supabaseClient
+            .from('affiliate_links')
+            .update(payload)
+            .eq('id', parseInt(id));
+
+          if (error) throw error;
+          alert('Affiliate link updated successfully!');
+        } else {
+          // CREATE
+          const { error } = await supabaseClient
+            .from('affiliate_links')
+            .insert([payload]);
+
+          if (error) {
+            // Catch duplicate key error gracefully
+            if (error.code === '23505') {
+              alert('Duplicate link! This combination of Article, Country, and Key already exists.');
+            } else {
+              throw error;
+            }
+            return;
+          }
+          alert('Affiliate link created successfully!');
+        }
+
+        closeAffiliateModal();
+        loadAffiliateLinks(); // Refresh the table
+      } catch (err) {
+        console.error('Error saving affiliate link:', err);
+        alert('Error saving link: ' + err.message);
+      }
+    }
+
+    // Delete Affiliate Link
+    async function deleteAffiliateLink(id) {
+      if (!confirm('Are you sure you want to delete this affiliate link?')) return;
+
+      try {
+        const { error } = await supabaseClient
+          .from('affiliate_links')
+          .delete()
+          .eq('id', id);
+
+        if (error) throw error;
+        alert('Link deleted successfully.');
+        loadAffiliateLinks();
+      } catch (err) {
+        console.error('Error deleting link:', err);
+        alert('Error deleting link: ' + err.message);
+      }
+    }
+
+    // Load Affiliate Links Table
+    async function loadAffiliateLinks() {
+      const tbody = document.getElementById('affiliatesTableBody');
+      if (!tbody) return;
+
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Loading links…</td></tr>';
+
+      try {
+        // Fetch with JOIN to get article title
+        const { data: links, error } = await supabaseClient
+          .from('affiliate_links')
+          .select(`
+            id,
+            affiliate_key,
+            country_code,
+            link_url,
+            article_id,
+            articles ( id, title )
+          `)
+          .order('article_id', { ascending: true });
+
+        if (error) throw error;
+
+        if (!links || links.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">No affiliate links found.</td></tr>';
+          return;
+        }
+
+        let rows = '';
+        links.forEach(link => {
+          const articleTitle = link.articles ? link.articles.title : `Article ${link.article_id} (deleted)`;
+          const displayUrl = link.link_url.length > 40 ? link.link_url.substring(0, 40) + '…' : link.link_url;
+
+          rows += `
+            <tr>
+              <td>${link.id}</td>
+              <td><strong>${articleTitle}</strong></td>
+              <td><code>${link.affiliate_key}</code></td>
+              <td><span class="badge badge-yes">${link.country_code}</span></td>
+              <td><a href="${link.link_url}" target="_blank" title="${link.link_url}">${displayUrl}</a></td>
+              <td style="text-align:center; white-space:nowrap;">
+                <button class="btn-edit btn-sm" onclick="editAffiliateLink(${link.id})">✏️ Edit</button>
+                <button class="btn-danger btn-sm" onclick="deleteAffiliateLink(${link.id})">🗑️ Delete</button>
+              </td>
+            </tr>
+          `;
+        });
+        tbody.innerHTML = rows;
+
+      } catch (err) {
+        console.error('Error loading affiliate links:', err);
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:var(--muted);">⚠️ Could not load links.</td></tr>';
+      }
+    }
+
+    // Edit Affiliate Link (fetch existing data and open modal)
+    async function editAffiliateLink(id) {
+      try {
+        const { data: link, error } = await supabaseClient
+          .from('affiliate_links')
+          .select('*')
+          .eq('id', id)
+          .single();
+
+        if (error) throw error;
+        openAffiliateModal(link);
+      } catch (err) {
+        console.error('Error fetching affiliate link:', err);
+        alert('Could not load link for editing.');
+      }
+    }
+
+    // ============================================================
     // AUTO-REFRESH
     // ============================================================
     let refreshInterval = null;
@@ -1164,6 +1442,8 @@
           loadDashboardData();
         } else if (currentUser && currentTab === 'articles') {
           loadArticlesList();
+        } else if (currentUser && currentTab === 'affiliates') {
+          loadAffiliateLinks();
         }
       }, 60000);
     }
@@ -1173,9 +1453,14 @@
     // ============================================================
     checkSession();
 
-    // Close modal on overlay click
+    // Close article modal on overlay click
     document.getElementById('articleModal')?.addEventListener('click', function(e) {
       if (e.target === this) closeArticleModal();
+    });
+
+    // Close affiliate modal on overlay click
+    document.getElementById('affiliateModal')?.addEventListener('click', function(e) {
+      if (e.target === this) closeAffiliateModal();
     });
 
     // Auto-generate slug from title
