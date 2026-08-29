@@ -575,6 +575,10 @@
     let chartInstance = null;
     let currentTab = 'dashboard';
 
+    // Date range state
+    let currentStartDate = null;
+    let currentEndDate = null;
+
     // Categories list (same as index.html)
     const CATEGORIES = [
       { id: 'amazing-places', name: 'Amazing Places Around the World', tag: 'amazing-places' },
@@ -678,8 +682,32 @@
             <button data-tab="affiliates" onclick="switchTab('affiliates')">🔗 Affiliate Links</button>
           </div>
 
-          <!-- DASHBOARD TAB -->
+          <!-- DASHBOARD TAB (UPDATED) -->
           <div id="tab-dashboard" class="tab-content active">
+            
+            <!-- Date Range Picker & Export -->
+            <div style="background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 20px; box-shadow: var(--shadow); margin-bottom: 24px; display: flex; flex-wrap: wrap; align-items: center; gap: 12px;">
+              <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                <label style="font-weight: 700; font-size: 0.9rem;">📅 From:</label>
+                <input type="date" id="startDateInput" style="padding: 6px 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 0.9rem;" />
+                <label style="font-weight: 700; font-size: 0.9rem;">To:</label>
+                <input type="date" id="endDateInput" style="padding: 6px 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 0.9rem;" />
+                <button class="btn-primary" onclick="applyDateFilter()" style="padding: 6px 18px;">Apply</button>
+              </div>
+              <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                <button class="btn-sm" style="background: var(--yellow-light); border: 1px solid var(--yellow); border-radius: 20px; padding: 4px 12px; cursor: pointer; font-weight: 600;" onclick="setQuickFilter('today')">Today</button>
+                <button class="btn-sm" style="background: var(--yellow-light); border: 1px solid var(--yellow); border-radius: 20px; padding: 4px 12px; cursor: pointer; font-weight: 600;" onclick="setQuickFilter('7d')">Last 7 Days</button>
+                <button class="btn-sm" style="background: var(--yellow-light); border: 1px solid var(--yellow); border-radius: 20px; padding: 4px 12px; cursor: pointer; font-weight: 600;" onclick="setQuickFilter('30d')">Last 30 Days</button>
+                <button class="btn-sm" style="background: var(--yellow-light); border: 1px solid var(--yellow); border-radius: 20px; padding: 4px 12px; cursor: pointer; font-weight: 600;" onclick="setQuickFilter('90d')">Last 90 Days</button>
+                <button class="btn-sm" style="background: var(--yellow-light); border: 1px solid var(--yellow); border-radius: 20px; padding: 4px 12px; cursor: pointer; font-weight: 600;" onclick="setQuickFilter('all')">All Time</button>
+              </div>
+              <div style="margin-left: auto; display: flex; gap: 8px;">
+                <button class="btn-primary btn-sm" onclick="exportCSV('clicks')" style="padding: 4px 16px;">⬇️ Export Clicks</button>
+                <button class="btn-primary btn-sm" onclick="exportCSV('affiliates')" style="padding: 4px 16px;">⬇️ Export Affiliates</button>
+              </div>
+            </div>
+
+            <!-- Stats Grid (Original 7 stats) -->
             <div class="stats-grid" id="statsGrid">
               <div class="stat-card"><div class="number" id="statTotal">—</div><div class="label">Total Clicks</div></div>
               <div class="stat-card"><div class="number" id="stat24h">—</div><div class="label">Clicks (24h)</div></div>
@@ -690,6 +718,7 @@
               <div class="stat-card"><div class="number" id="statTopCountry">—</div><div class="label">Top Country</div></div>
             </div>
 
+            <!-- Charts & Tables (Date-range aware) -->
             <div class="two-col">
               <div>
                 <h3 class="section-title">📈 Clicks by Affiliate Key</h3>
@@ -734,7 +763,7 @@
             </div>
           </div>
 
-          <!-- ARTICLES TAB -->
+          <!-- ARTICLES TAB (Unchanged) -->
           <div id="tab-articles" class="tab-content">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:12px;">
               <h2 style="font-size:1.3rem; font-weight:700;">All Articles</h2>
@@ -760,7 +789,7 @@
             </div>
           </div>
 
-          <!-- AFFILIATE LINKS TAB -->
+          <!-- AFFILIATE LINKS TAB (Unchanged) -->
           <div id="tab-affiliates" class="tab-content">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:12px;">
               <h2 style="font-size:1.3rem; font-weight:700;">🔗 Affiliate Links</h2>
@@ -836,9 +865,64 @@
     }
 
     // ============================================================
-    // DASHBOARD DATA
+    // DATE RANGE FILTERING (NEW)
+    // ============================================================
+    function setQuickFilter(range) {
+      const now = new Date();
+      let start = new Date(now);
+      let end = new Date(now);
+
+      switch(range) {
+        case 'today':
+          start.setHours(0, 0, 0, 0);
+          break;
+        case '7d':
+          start.setDate(now.getDate() - 7);
+          break;
+        case '30d':
+          start.setDate(now.getDate() - 30);
+          break;
+        case '90d':
+          start.setDate(now.getDate() - 90);
+          break;
+        case 'all':
+          start = new Date(0);
+          break;
+        default:
+          return;
+      }
+
+      const formatDate = (d) => d.toISOString().split('T')[0];
+      document.getElementById('startDateInput').value = formatDate(start);
+      document.getElementById('endDateInput').value = formatDate(end);
+
+      applyDateFilter();
+    }
+
+    function applyDateFilter() {
+      const startVal = document.getElementById('startDateInput').value;
+      const endVal = document.getElementById('endDateInput').value;
+
+      currentStartDate = startVal ? new Date(startVal + 'T00:00:00') : null;
+      currentEndDate = endVal ? new Date(endVal + 'T23:59:59') : null;
+
+      if (!currentStartDate && !currentEndDate) {
+        const now = new Date();
+        currentStartDate = new Date(now);
+        currentStartDate.setDate(now.getDate() - 30);
+        currentEndDate = now;
+        document.getElementById('startDateInput').value = currentStartDate.toISOString().split('T')[0];
+        document.getElementById('endDateInput').value = currentEndDate.toISOString().split('T')[0];
+      }
+
+      loadDashboardData();
+    }
+
+    // ============================================================
+    // UPDATED DASHBOARD DATA (KEEPS 7 STATS + DATE-AWARE CHARTS/TABLES)
     // ============================================================
     async function loadDashboardData() {
+      // Show loading state for stats
       ['statTotal','stat24h','stat7d','stat30d','statUnique','statTopLink','statTopCountry'].forEach(id => {
         const el = document.getElementById(id);
         if (el) el.textContent = '…';
@@ -850,14 +934,15 @@
       const thirtyDaysAgo = new Date(now.getTime() - 30*24*60*60*1000);
 
       try {
-        const { data: clicks, error } = await supabaseClient
+        // --- 1. Fetch raw data for top stats (global, unchanged logic) ---
+        const { data: allClicksRaw, error } = await supabaseClient
           .from('click_logs')
           .select('created_at, affiliate_key, link_url, visitor_id, country_code, article_id')
           .order('created_at', { ascending: false });
 
         if (error) throw error;
 
-        const allClicks = clicks || [];
+        const allClicks = allClicksRaw || [];
         const totalClicks = allClicks.length;
 
         const dayFilter = dayAgo.toISOString();
@@ -871,34 +956,25 @@
         const uniqueSet = new Set(allClicks.filter(c => c.created_at >= thirtyFilter).map(c => c.visitor_id).filter(Boolean));
         const uniqueCount = uniqueSet.size;
 
-        const linkStats = {};
-        const countryStats = {};
-        const affiliateStats = {};
-        const articleStats = {};
-
+        const linkStatsGlobal = {};
+        const countryStatsGlobal = {};
         allClicks.forEach(row => {
           if (row.link_url) {
-            if (!linkStats[row.link_url]) linkStats[row.link_url] = { total: 0, unique: new Set() };
-            linkStats[row.link_url].total++;
-            if (row.visitor_id) linkStats[row.link_url].unique.add(row.visitor_id);
+            if (!linkStatsGlobal[row.link_url]) linkStatsGlobal[row.link_url] = { total: 0, unique: new Set() };
+            linkStatsGlobal[row.link_url].total++;
+            if (row.visitor_id) linkStatsGlobal[row.link_url].unique.add(row.visitor_id);
           }
           const cc = row.country_code || 'Unknown';
-          countryStats[cc] = (countryStats[cc] || 0) + 1;
-          if (row.affiliate_key) {
-            affiliateStats[row.affiliate_key] = (affiliateStats[row.affiliate_key] || 0) + 1;
-          }
-          if (row.article_id) {
-            articleStats[row.article_id] = (articleStats[row.article_id] || 0) + 1;
-          }
+          countryStatsGlobal[cc] = (countryStatsGlobal[cc] || 0) + 1;
         });
 
-        const sortedLinks = Object.entries(linkStats)
+        const sortedLinksGlobal = Object.entries(linkStatsGlobal)
           .map(([url, stats]) => ({ url, total: stats.total, unique: stats.unique.size }))
           .sort((a, b) => b.total - a.total);
-        const topLink = sortedLinks.length ? (sortedLinks[0].url.length > 40 ? sortedLinks[0].url.substring(0,40)+'…' : sortedLinks[0].url) : '—';
+        const topLink = sortedLinksGlobal.length ? (sortedLinksGlobal[0].url.length > 40 ? sortedLinksGlobal[0].url.substring(0,40)+'…' : sortedLinksGlobal[0].url) : '—';
 
-        const sortedCountries = Object.entries(countryStats).sort((a,b) => b[1] - a[1]);
-        const topCountry = sortedCountries.length ? sortedCountries[0][0] : '—';
+        const sortedCountriesGlobal = Object.entries(countryStatsGlobal).sort((a,b) => b[1] - a[1]);
+        const topCountry = sortedCountriesGlobal.length ? sortedCountriesGlobal[0][0] : '—';
 
         document.getElementById('statTotal').textContent = totalClicks;
         document.getElementById('stat24h').textContent = count24h;
@@ -908,12 +984,115 @@
         document.getElementById('statTopLink').textContent = topLink;
         document.getElementById('statTopCountry').textContent = topCountry;
 
-        // Affiliate breakdown
+        // --- 2. Date-aware charts and tables (try RPC first, fallback to client-side filter) ---
+        let affiliateStats = {};
+        let linkStats = {};
+        let countryStats = {};
+        let articleStats = {};
+        let recentClicks = [];
+
+        // Default date range: last 30 days if not set
+        if (!currentStartDate && !currentEndDate) {
+          const defaultStart = new Date(now);
+          defaultStart.setDate(now.getDate() - 30);
+          currentStartDate = defaultStart;
+          currentEndDate = now;
+          document.getElementById('startDateInput').value = defaultStart.toISOString().split('T')[0];
+          document.getElementById('endDateInput').value = now.toISOString().split('T')[0];
+        }
+
+        const startISO = currentStartDate.toISOString();
+        const endISO = currentEndDate.toISOString();
+
+        // Try RPC first
+        let rpcSuccess = false;
+        try {
+          const { data: summary, error: summaryError } = await supabaseClient
+            .rpc('get_dashboard_summary', {
+              start_date: startISO,
+              end_date: endISO
+            });
+
+          if (!summaryError && summary) {
+            rpcSuccess = true;
+            // Populate affiliateStats
+            if (summary.affiliate_breakdown) {
+              summary.affiliate_breakdown.forEach(item => {
+                affiliateStats[item.affiliate_key] = item.click_count;
+              });
+            }
+            // Populate linkStats
+            if (summary.top_links) {
+              summary.top_links.forEach(item => {
+                linkStats[item.link_url] = { total: item.click_count, unique: item.unique_count };
+              });
+            }
+            // Populate countryStats
+            if (summary.country_stats) {
+              summary.country_stats.forEach(item => {
+                countryStats[item.country] = item.click_count;
+              });
+            }
+
+            // For recent clicks & article stats, we still need raw data for this range
+            const { data: rangeClicks, error: rangeError } = await supabaseClient
+              .from('click_logs')
+              .select('created_at, affiliate_key, link_url, visitor_id, country_code, article_id')
+              .gte('created_at', startISO)
+              .lte('created_at', endISO)
+              .order('created_at', { ascending: false })
+              .limit(30);
+
+            if (!rangeError && rangeClicks) {
+              recentClicks = rangeClicks;
+              rangeClicks.forEach(row => {
+                if (row.article_id) {
+                  articleStats[row.article_id] = (articleStats[row.article_id] || 0) + 1;
+                }
+              });
+            }
+          }
+        } catch (rpcErr) {
+          console.warn('RPC failed, falling back to client-side filtering:', rpcErr);
+        }
+
+        // Fallback: client-side filtering (if RPC failed or returned incomplete data)
+        if (!rpcSuccess) {
+          const filteredClicks = allClicks.filter(c => c.created_at >= startISO && c.created_at <= endISO);
+          recentClicks = filteredClicks.slice(0, 30);
+
+          filteredClicks.forEach(row => {
+            if (row.link_url) {
+              if (!linkStats[row.link_url]) linkStats[row.link_url] = { total: 0, unique: new Set() };
+              linkStats[row.link_url].total++;
+              if (row.visitor_id) linkStats[row.link_url].unique.add(row.visitor_id);
+            }
+            const cc = row.country_code || 'Unknown';
+            countryStats[cc] = (countryStats[cc] || 0) + 1;
+            if (row.affiliate_key) {
+              affiliateStats[row.affiliate_key] = (affiliateStats[row.affiliate_key] || 0) + 1;
+            }
+            if (row.article_id) {
+              articleStats[row.article_id] = (articleStats[row.article_id] || 0) + 1;
+            }
+          });
+
+          // Convert Sets to counts for linkStats
+          const linkStatsFinal = {};
+          Object.entries(linkStats).forEach(([url, stats]) => {
+            linkStatsFinal[url] = { total: stats.total, unique: stats.unique.size };
+          });
+          linkStats = linkStatsFinal;
+        }
+
+        // --- 3. Render charts and tables (unchanged logic, using date-aware data) ---
+
+        // Affiliate breakdown table
         const sortedAffiliates = Object.entries(affiliateStats).sort((a,b) => b[1] - a[1]);
         const tbodyAffiliate = document.getElementById('affiliateBreakdownBody');
         if (tbodyAffiliate) {
           if (sortedAffiliates.length === 0) {
-            tbodyAffiliate.innerHTML = `<tr><td colspan="2" style="text-align:center;">No data.</td></tr>`;
+            tbodyAffiliate.innerHTML = `<tr><td colspan="2" style="text-align:center;">No data in selected period.</td></tr>`;
           } else {
             let rows = '';
             sortedAffiliates.forEach(([key, count]) => {
@@ -951,10 +1130,13 @@
         }
 
         // Top Links
+        const sortedLinks = Object.entries(linkStats)
+          .map(([url, stats]) => ({ url, total: stats.total, unique: stats.unique }))
+          .sort((a, b) => b.total - a.total);
         const tbodyLinks = document.getElementById('topLinksBody');
         if (tbodyLinks) {
           if (sortedLinks.length === 0) {
-            tbodyLinks.innerHTML = `<tr><td colspan="3" style="text-align:center;">No clicks yet.</td></tr>`;
+            tbodyLinks.innerHTML = `<tr><td colspan="3" style="text-align:center;">No clicks in selected period.</td></tr>`;
           } else {
             let rows = '';
             sortedLinks.slice(0,10).forEach(item => {
@@ -984,7 +1166,7 @@
         const tbodyArticles = document.getElementById('topArticlesBody');
         if (tbodyArticles) {
           if (sortedArticles.length === 0) {
-            tbodyArticles.innerHTML = `<tr><td colspan="2" style="text-align:center;">No article clicks yet.</td></tr>`;
+            tbodyArticles.innerHTML = `<tr><td colspan="2" style="text-align:center;">No article clicks in selected period.</td></tr>`;
           } else {
             let rows = '';
             sortedArticles.slice(0,10).forEach(item => {
@@ -995,11 +1177,12 @@
           }
         }
 
-        // Region
+        // Region Distribution
+        const sortedCountries = Object.entries(countryStats).sort((a,b) => b[1] - a[1]);
         const tbodyRegion = document.getElementById('regionBody');
         if (tbodyRegion) {
           if (sortedCountries.length === 0) {
-            tbodyRegion.innerHTML = `<tr><td colspan="2" style="text-align:center;">No data.</td></tr>`;
+            tbodyRegion.innerHTML = `<tr><td colspan="2" style="text-align:center;">No data in selected period.</td></tr>`;
           } else {
             let rows = '';
             sortedCountries.forEach(([country, count]) => {
@@ -1009,9 +1192,8 @@
           }
         }
 
-        // Recent clicks
-        const recent = allClicks.slice(0, 30);
-        const recentArticleIds = recent.map(r => r.article_id).filter(id => id !== null).map(Number);
+        // Recent Clicks
+        const recentArticleIds = recentClicks.map(r => r.article_id).filter(id => id !== null).map(Number);
         let recentArticleMap = {};
         if (recentArticleIds.length > 0) {
           const { data: recentArts, error: rArtError } = await supabaseClient
@@ -1024,11 +1206,11 @@
         }
         const tbodyRecent = document.getElementById('recentBody');
         if (tbodyRecent) {
-          if (recent.length === 0) {
-            tbodyRecent.innerHTML = `<tr><td colspan="5" style="text-align:center;">No clicks yet.</td></tr>`;
+          if (recentClicks.length === 0) {
+            tbodyRecent.innerHTML = `<tr><td colspan="5" style="text-align:center;">No clicks in selected period.</td></tr>`;
           } else {
             let rows = '';
-            recent.forEach(row => {
+            recentClicks.forEach(row => {
               const time = new Date(row.created_at).toLocaleString();
               const articleTitle = row.article_id ? (recentArticleMap[row.article_id] || 'Unknown') : '—';
               const displayLink = row.link_url ? (row.link_url.length > 40 ? row.link_url.substring(0,40)+'…' : row.link_url) : '—';
@@ -1054,7 +1236,63 @@
     }
 
     // ============================================================
-    // ARTICLES LIST (CRUD)
+    // CSV EXPORT (NEW)
+    // ============================================================
+    function exportCSV(type) {
+      let data = [];
+      let headers = [];
+      let filename = '';
+
+      if (type === 'clicks') {
+        const tbody = document.getElementById('recentBody');
+        const rows = tbody.querySelectorAll('tr');
+        if (rows.length === 0 || rows[0].textContent.includes('No clicks')) {
+          alert('No data to export.');
+          return;
+        }
+        headers = ['Time', 'Article', 'Link', 'Affiliate Key', 'Country'];
+        data = Array.from(rows).map(row => {
+          const cells = row.querySelectorAll('td');
+          return Array.from(cells).map(cell => cell.textContent.trim());
+        }).filter(row => row.length > 0);
+        filename = `click_logs_${new Date().toISOString().split('T')[0]}.csv`;
+      } else if (type === 'affiliates') {
+        const tbody = document.getElementById('affiliateBreakdownBody');
+        const rows = tbody.querySelectorAll('tr');
+        if (rows.length === 0 || rows[0].textContent.includes('No data')) {
+          alert('No data to export.');
+          return;
+        }
+        headers = ['Affiliate Key', 'Clicks'];
+        data = Array.from(rows).map(row => {
+          const cells = row.querySelectorAll('td');
+          return Array.from(cells).map(cell => cell.textContent.trim());
+        }).filter(row => row.length > 0);
+        filename = `affiliate_breakdown_${new Date().toISOString().split('T')[0]}.csv`;
+      } else {
+        alert('Invalid export type.');
+        return;
+      }
+
+      let csvContent = headers.join(',') + '\n';
+      data.forEach(row => {
+        const escapedRow = row.map(cell => `"${cell.replace(/"/g, '""')}"`);
+        csvContent += escapedRow.join(',') + '\n';
+      });
+
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      const url = URL.createObjectURL(blob);
+      link.href = url;
+      link.setAttribute('download', filename);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    }
+
+    // ============================================================
+    // ARTICLES LIST (CRUD) — UNCHANGED
     // ============================================================
     async function loadArticlesList() {
       const tbody = document.getElementById('articlesTableBody');
@@ -1102,7 +1340,7 @@
     }
 
     // ============================================================
-    // ARTICLE MODAL
+    // ARTICLE MODAL — UNCHANGED
     // ============================================================
     function openArticleModal(articleData) {
       const modal = document.getElementById('articleModal');
@@ -1163,7 +1401,6 @@
         return;
       }
 
-      // Validate slug format (no spaces)
       if (slug.includes(' ')) {
         alert('Slug cannot contain spaces. Use hyphens instead.');
         return;
@@ -1181,7 +1418,6 @@
 
       try {
         if (id) {
-          // UPDATE
           const { error } = await supabaseClient
             .from('articles')
             .update(articleData)
@@ -1190,7 +1426,6 @@
           if (error) throw error;
           alert('Article updated successfully!');
         } else {
-          // CREATE
           const { error } = await supabaseClient
             .from('articles')
             .insert([{ ...articleData, views: 0 }]);
@@ -1226,10 +1461,8 @@
     }
 
     // ============================================================
-    // AFFILIATE LINKS CRUD (NEW FEATURE)
+    // AFFILIATE LINKS CRUD — UNCHANGED
     // ============================================================
-
-    // Open Modal (for Add or Edit)
     async function openAffiliateModal(linkData) {
       const modal = document.getElementById('affiliateModal');
       const isEdit = !!linkData;
@@ -1241,7 +1474,6 @@
       document.getElementById('affiliateUrlInput').value = isEdit ? linkData.link_url : '';
       document.getElementById('affiliateModalSaveBtn').textContent = isEdit ? 'Update Link' : 'Create Link';
 
-      // Populate article dropdown
       await populateArticleDropdown(isEdit ? linkData.article_id : null);
 
       modal.classList.add('show');
@@ -1253,7 +1485,6 @@
       document.getElementById('editAffiliateId').value = '';
     }
 
-    // Populate the article dropdown inside the affiliate modal
     async function populateArticleDropdown(selectedId) {
       const select = document.getElementById('affiliateArticleSelect');
       if (!select) return;
@@ -1286,7 +1517,6 @@
       }
     }
 
-    // Save (Create or Update)
     async function saveAffiliateLink(e) {
       e.preventDefault();
 
@@ -1305,7 +1535,6 @@
 
       try {
         if (id) {
-          // UPDATE
           const { error } = await supabaseClient
             .from('affiliate_links')
             .update(payload)
@@ -1314,13 +1543,11 @@
           if (error) throw error;
           alert('Affiliate link updated successfully!');
         } else {
-          // CREATE
           const { error } = await supabaseClient
             .from('affiliate_links')
             .insert([payload]);
 
           if (error) {
-            // Catch duplicate key error gracefully
             if (error.code === '23505') {
               alert('Duplicate link! This combination of Article, Country, and Key already exists.');
             } else {
@@ -1332,14 +1559,13 @@
         }
 
         closeAffiliateModal();
-        loadAffiliateLinks(); // Refresh the table
+        loadAffiliateLinks();
       } catch (err) {
         console.error('Error saving affiliate link:', err);
         alert('Error saving link: ' + err.message);
       }
     }
 
-    // Delete Affiliate Link
     async function deleteAffiliateLink(id) {
       if (!confirm('Are you sure you want to delete this affiliate link?')) return;
 
@@ -1358,7 +1584,6 @@
       }
     }
 
-    // Load Affiliate Links Table
     async function loadAffiliateLinks() {
       const tbody = document.getElementById('affiliatesTableBody');
       if (!tbody) return;
@@ -1366,7 +1591,6 @@
       tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Loading links…</td></tr>';
 
       try {
-        // Fetch with JOIN to get article title
         const { data: links, error } = await supabaseClient
           .from('affiliate_links')
           .select(`
@@ -1413,7 +1637,6 @@
       }
     }
 
-    // Edit Affiliate Link (fetch existing data and open modal)
     async function editAffiliateLink(id) {
       try {
         const { data: link, error } = await supabaseClient
@@ -1431,7 +1654,7 @@
     }
 
     // ============================================================
-    // AUTO-REFRESH
+    // AUTO-REFRESH (UPDATED to respect date filters)
     // ============================================================
     let refreshInterval = null;
 
@@ -1453,12 +1676,10 @@
     // ============================================================
     checkSession();
 
-    // Close article modal on overlay click
+    // Close modals on overlay click
     document.getElementById('articleModal')?.addEventListener('click', function(e) {
       if (e.target === this) closeArticleModal();
     });
-
-    // Close affiliate modal on overlay click
     document.getElementById('affiliateModal')?.addEventListener('click', function(e) {
       if (e.target === this) closeAffiliateModal();
     });
