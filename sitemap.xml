@@ -61,9 +61,9 @@
     <priority>0.8</priority>
   </url>
 
-  <!-- ===== AUSTRALIA & OCEANIA ===== -->
+  <!-- ===== AUSTRALIA & OCEANIA (FIXED: &amp; in URL) ===== -->
   <url>
-    <loc>https://rheoa.github.io/#article-10-places-to-explore-in-australia-&-oceania</loc>
+    <loc>https://rheoa.github.io/#article-10-places-to-explore-in-australia-&amp;-oceania</loc>
     <lastmod>2026-08-29</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
