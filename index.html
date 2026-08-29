@@ -848,6 +848,44 @@
     .leaflet-popup-content strong {
       color: var(--yellow-darker);
     }
+
+    /* ============================================================
+       PAGINATION / LOAD MORE BUTTON
+    ============================================================ */
+    .load-more-wrapper {
+      text-align: center;
+      margin: 30px 0 10px;
+    }
+    .load-more-btn {
+      background: var(--yellow);
+      color: var(--text);
+      border: none;
+      padding: 12px 40px;
+      border-radius: 30px;
+      font-weight: 700;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: 0.2s;
+      font-family: inherit;
+      box-shadow: var(--shadow);
+    }
+    .load-more-btn:hover {
+      background: var(--yellow-dark);
+      transform: translateY(-2px);
+    }
+    .load-more-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+    .load-more-btn .spinner {
+      display: inline-block;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
   </style>
 </head>
 
@@ -1066,6 +1104,10 @@
             <div class="card-grid" id="latestGrid">
               <div class="loading-spinner">Loading latest articles…</div>
             </div>
+            <!-- 🆕 Load More Button for Latest -->
+            <div class="load-more-wrapper" id="latestLoadMoreWrapper">
+              <button class="load-more-btn" id="loadMoreLatestBtn" onclick="loadMoreLatest()">Load More</button>
+            </div>
           </div>
         `,
 
@@ -1078,6 +1120,10 @@
             <p style="color: var(--muted); margin-bottom: 20px;" id="categoryDescription">Explore articles in this category.</p>
             <div class="card-grid" id="categoryGrid">
               <div class="loading-spinner">Loading articles…</div>
+            </div>
+            <!-- 🆕 Load More Button for Category -->
+            <div class="load-more-wrapper" id="categoryLoadMoreWrapper">
+              <button class="load-more-btn" id="loadMoreCategoryBtn" onclick="loadMoreCategory()">Load More</button>
             </div>
             <a href="#" class="back-home" onclick="navigateTo('home'); return false;">← Back to Home</a>
           </div>
@@ -1117,6 +1163,23 @@
     let currentPage = 'home';
     let currentCategoryId = null;
     let map = null;
+
+    // ============================================================
+    // PAGINATION STATE (NEW)
+    // ============================================================
+    const LATEST_LIMIT = 6;
+    let latestOffset = 0;
+    let latestTotal = null; // null means we don't know yet
+    let latestSearch = '';
+    let isLoadingLatest = false;
+    let hasMoreLatest = true;
+
+    const CATEGORY_LIMIT = 6;
+    let categoryOffset = 0;
+    let categoryTotal = null;
+    let currentCategoryTag = '';
+    let isLoadingCategory = false;
+    let hasMoreCategory = true;
 
     /* ============================================================
        SEO META TAG HELPERS
@@ -1204,9 +1267,17 @@
       }
 
       if (pageKey === 'home') {
+        // Reset pagination for latest
+        latestOffset = 0;
+        latestSearch = '';
+        hasMoreLatest = true;
+        latestTotal = null;
+        document.getElementById('searchInput').value = '';
         loadCategoryCounts();
         loadFeaturedArticles();
-        loadLatestArticles();
+        loadLatestArticles(false); // fresh load, not append
+        // Show load more button (it will be hidden if no more)
+        document.getElementById('latestLoadMoreWrapper').style.display = 'block';
       }
 
       document.getElementById('navLinks').classList.remove('open');
@@ -1218,6 +1289,11 @@
 
       currentCategoryId = categoryId;
       currentPage = 'category';
+      currentCategoryTag = category.tag;
+      // Reset category pagination
+      categoryOffset = 0;
+      hasMoreCategory = true;
+      categoryTotal = null;
 
       const main = document.getElementById('main-content');
       main.innerHTML = pages.category;
@@ -1226,7 +1302,7 @@
       document.getElementById('categoryTitle').textContent = `${category.icon} ${category.name}`;
       document.getElementById('categoryDescription').textContent = `Articles tagged with "${category.name}".`;
 
-      loadCategoryArticles(category.tag);
+      loadCategoryArticles(false); // fresh load
 
       document.querySelectorAll('.nav-links a').forEach(link => {
         link.classList.toggle('active', link.dataset.page === 'home');
@@ -1357,7 +1433,6 @@
        LOAD CATEGORY COUNTS & PREVIEWS (OPTIMIZED)
     ============================================================ */
     async function loadCategoryCounts() {
-      // Check cache first (1 hour TTL)
       const cacheKey = 'category_counts';
       const cached = localStorage.getItem(cacheKey);
       if (cached) {
@@ -1365,7 +1440,6 @@
           const parsed = JSON.parse(cached);
           const age = Date.now() - parsed.timestamp;
           if (age < 3600000) {
-            // Use cached data
             const counts = parsed.data;
             categories.forEach(cat => {
               const el = document.getElementById(`count-${cat.id}`);
@@ -1380,7 +1454,6 @@
       }
 
       try {
-        // OPTIMIZED: Only select the 'tag' field, not all columns
         const { data, error } = await supabaseClient
           .from('articles')
           .select('tag')
@@ -1395,7 +1468,6 @@
           }
         });
 
-        // Update category cards
         categories.forEach(cat => {
           const el = document.getElementById(`count-${cat.id}`);
           if (el) {
@@ -1404,7 +1476,6 @@
           }
         });
 
-        // Cache the results (1 hour)
         try {
           localStorage.setItem(cacheKey, JSON.stringify({
             data: counts,
@@ -1416,7 +1487,7 @@
     }
 
     /* ============================================================
-       LOAD FEATURED / LATEST / CATEGORY ARTICLES
+       LOAD FEATURED ARTICLES (unchanged – no pagination)
     ============================================================ */
     async function loadFeaturedArticles() {
       const grid = document.getElementById('featuredGrid');
@@ -1447,44 +1518,222 @@
       } catch (err) { console.error(err); grid.innerHTML = `<p style="color: var(--muted); padding: 20px;">⚠️ Could not load articles.</p>`; }
     }
 
-    async function loadLatestArticles() {
+    /* ============================================================
+       LOAD LATEST ARTICLES (with pagination & search)
+    ============================================================ */
+    async function loadLatestArticles(append = false) {
       const grid = document.getElementById('latestGrid');
       if (!grid) return;
-      grid.innerHTML = '<div class="loading-spinner">Loading latest articles…</div>';
+      
+      if (isLoadingLatest) return;
+      isLoadingLatest = true;
+      
+      // Show loading spinner only on first load or when appending and grid is empty
+      if (!append) {
+        grid.innerHTML = '<div class="loading-spinner">Loading latest articles…</div>';
+        // Reset offset if not appending
+        latestOffset = 0;
+        hasMoreLatest = true;
+        latestTotal = null;
+      } else {
+        // Show a small "loading" indicator at the bottom of the grid (we'll use a spinner in the button)
+        // The button will show a spinner via its text.
+      }
+      
+      const btn = document.getElementById('loadMoreLatestBtn');
+      if (btn) {
+        btn.disabled = true;
+        btn.textContent = '⏳ Loading…';
+      }
+
       try {
-        const { data: articles, error } = await supabaseClient
+        let query = supabaseClient
           .from('articles')
-          .select('*')
+          .select('*', { count: 'exact' })
           .order('created_at', { ascending: false })
-          .limit(6);
-        if (error || !articles || articles.length === 0) {
-          grid.innerHTML = `<p style="color: var(--muted); padding: 20px;">No articles published yet.</p>`;
-          return;
+          .range(latestOffset, latestOffset + LATEST_LIMIT - 1);
+
+        // Apply search filter if any
+        if (latestSearch.trim() !== '') {
+          const searchTerm = `%${latestSearch.trim()}%`;
+          query = query.or(`title.ilike.${searchTerm},tag.ilike.${searchTerm}`);
         }
-        let html = '';
-        articles.forEach(article => { html += createCardHTML(article); });
-        grid.innerHTML = html;
-      } catch (err) { console.error(err); grid.innerHTML = `<p style="color: var(--muted); padding: 20px;">⚠️ Could not load articles.</p>`; }
+
+        const { data: articles, error, count } = await query;
+
+        if (error) throw error;
+        
+        // Update total count
+        latestTotal = count !== undefined ? count : null;
+        
+        // Determine if we have more results
+        if (articles.length < LATEST_LIMIT) {
+          hasMoreLatest = false;
+        } else if (latestTotal !== null) {
+          hasMoreLatest = (latestOffset + articles.length) < latestTotal;
+        } else {
+          // If we got exactly the limit, assume there might be more (we'll check on next load)
+          hasMoreLatest = articles.length === LATEST_LIMIT;
+        }
+
+        if (!append) {
+          // Replace grid
+          if (articles.length === 0) {
+            grid.innerHTML = `<p style="color: var(--muted); padding: 20px;">No articles found${latestSearch ? ' matching your search' : ''}.</p>`;
+          } else {
+            let html = '';
+            articles.forEach(article => { html += createCardHTML(article); });
+            grid.innerHTML = html;
+          }
+        } else {
+          // Append to existing grid
+          if (articles.length === 0) {
+            // No more articles – hide load more button
+            hasMoreLatest = false;
+          } else {
+            let html = '';
+            articles.forEach(article => { html += createCardHTML(article); });
+            grid.insertAdjacentHTML('beforeend', html);
+          }
+        }
+
+        // Update load more button visibility
+        const wrapper = document.getElementById('latestLoadMoreWrapper');
+        if (wrapper) {
+          if (hasMoreLatest) {
+            wrapper.style.display = 'block';
+          } else {
+            wrapper.style.display = 'none';
+          }
+        }
+
+        // Update offset for next load
+        latestOffset += articles.length;
+
+      } catch (err) {
+        console.error('Error loading latest articles:', err);
+        if (!append) {
+          grid.innerHTML = `<p style="color: var(--muted); padding: 20px;">⚠️ Could not load articles.</p>`;
+        }
+      } finally {
+        isLoadingLatest = false;
+        if (btn) {
+          btn.disabled = false;
+          btn.textContent = 'Load More';
+        }
+      }
     }
 
-    async function loadCategoryArticles(tag) {
+    function loadMoreLatest() {
+      if (hasMoreLatest && !isLoadingLatest) {
+        loadLatestArticles(true);
+      }
+    }
+
+    /* ============================================================
+       LOAD CATEGORY ARTICLES (with pagination)
+    ============================================================ */
+    async function loadCategoryArticles(append = false) {
       const grid = document.getElementById('categoryGrid');
       if (!grid) return;
-      grid.innerHTML = '<div class="loading-spinner">Loading articles…</div>';
+      
+      if (isLoadingCategory) return;
+      isLoadingCategory = true;
+      
+      if (!append) {
+        grid.innerHTML = '<div class="loading-spinner">Loading articles…</div>';
+        categoryOffset = 0;
+        hasMoreCategory = true;
+        categoryTotal = null;
+      }
+      
+      const btn = document.getElementById('loadMoreCategoryBtn');
+      if (btn) {
+        btn.disabled = true;
+        btn.textContent = '⏳ Loading…';
+      }
+
       try {
-        const { data: articles, error } = await supabaseClient
+        let query = supabaseClient
           .from('articles')
-          .select('*')
-          .eq('tag', tag)
-          .order('created_at', { ascending: false });
-        if (error || !articles || articles.length === 0) {
-          grid.innerHTML = `<p style="color: var(--muted); padding: 20px;">No articles in this category yet.</p>`;
-          return;
+          .select('*', { count: 'exact' })
+          .eq('tag', currentCategoryTag)
+          .order('created_at', { ascending: false })
+          .range(categoryOffset, categoryOffset + CATEGORY_LIMIT - 1);
+
+        const { data: articles, error, count } = await query;
+
+        if (error) throw error;
+        
+        categoryTotal = count !== undefined ? count : null;
+        
+        if (articles.length < CATEGORY_LIMIT) {
+          hasMoreCategory = false;
+        } else if (categoryTotal !== null) {
+          hasMoreCategory = (categoryOffset + articles.length) < categoryTotal;
+        } else {
+          hasMoreCategory = articles.length === CATEGORY_LIMIT;
         }
-        let html = '';
-        articles.forEach(article => { html += createCardHTML(article); });
-        grid.innerHTML = html;
-      } catch (err) { console.error(err); grid.innerHTML = `<p style="color: var(--muted); padding: 20px;">⚠️ Could not load articles.</p>`; }
+
+        if (!append) {
+          if (articles.length === 0) {
+            grid.innerHTML = `<p style="color: var(--muted); padding: 20px;">No articles in this category yet.</p>`;
+          } else {
+            let html = '';
+            articles.forEach(article => { html += createCardHTML(article); });
+            grid.innerHTML = html;
+          }
+        } else {
+          if (articles.length === 0) {
+            hasMoreCategory = false;
+          } else {
+            let html = '';
+            articles.forEach(article => { html += createCardHTML(article); });
+            grid.insertAdjacentHTML('beforeend', html);
+          }
+        }
+
+        const wrapper = document.getElementById('categoryLoadMoreWrapper');
+        if (wrapper) {
+          if (hasMoreCategory) {
+            wrapper.style.display = 'block';
+          } else {
+            wrapper.style.display = 'none';
+          }
+        }
+
+        categoryOffset += articles.length;
+
+      } catch (err) {
+        console.error('Error loading category articles:', err);
+        if (!append) {
+          grid.innerHTML = `<p style="color: var(--muted); padding: 20px;">⚠️ Could not load articles.</p>`;
+        }
+      } finally {
+        isLoadingCategory = false;
+        if (btn) {
+          btn.disabled = false;
+          btn.textContent = 'Load More';
+        }
+      }
+    }
+
+    function loadMoreCategory() {
+      if (hasMoreCategory && !isLoadingCategory) {
+        loadCategoryArticles(true);
+      }
+    }
+
+    /* ============================================================
+       SEARCH FILTER (now triggers server-side search)
+    ============================================================ */
+    function filterArticles() {
+      const query = document.getElementById('searchInput')?.value.trim() || '';
+      latestSearch = query;
+      // Reset pagination and reload with search
+      latestOffset = 0;
+      hasMoreLatest = true;
+      loadLatestArticles(false);
     }
 
     /* ============================================================
@@ -1670,7 +1919,7 @@
     }
 
     /* ============================================================
-       LOAD SINGLE ARTICLE (OPTIMIZED - FIXED: removed updated_at)
+       LOAD SINGLE ARTICLE (OPTIMIZED)
     ============================================================ */
     async function loadArticle(slug) {
       const container = document.getElementById('articleContent');
@@ -1682,8 +1931,6 @@
       container.innerHTML = '<div class="loading-spinner">Loading article…</div>';
 
       try {
-        // OPTIMIZED: Explicitly select only needed fields
-        // FIXED: Removed 'updated_at' - column doesn't exist in the table
         const { data: article, error } = await supabaseClient
           .from('articles')
           .select('id, title, description, image_url, tag, slug, created_at, content, featured, views')
@@ -1703,7 +1950,7 @@
           return;
         }
 
-        // ✅ Atomic view increment - safe for concurrent users
+        // Atomic view increment
         const { data: viewData, error: viewError } = await supabaseClient
           .rpc('increment_views', { article_id_param: article.id });
 
@@ -1809,20 +2056,6 @@
         container.innerHTML = `<p style="color: var(--muted); padding: 20px;">⚠️ Could not load the article.</p>`;
         resetMetaTags();
       }
-    }
-
-    /* ============================================================
-       SEARCH FILTER
-    ============================================================ */
-    function filterArticles() {
-      const query = document.getElementById('searchInput')?.value.toLowerCase().trim() || '';
-      const cards = document.querySelectorAll('.card');
-      cards.forEach(card => {
-        const title = card.dataset.title || '';
-        const tag = card.dataset.tag || '';
-        const match = title.includes(query) || tag.includes(query);
-        card.style.display = match ? '' : 'none';
-      });
     }
 
     /* ============================================================
