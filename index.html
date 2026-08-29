@@ -584,6 +584,93 @@
     }
 
     /* ============================================================
+       COOKIE BANNER
+       ============================================================ */
+    #cookie-banner {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: var(--surface);
+      border-top: 4px solid var(--yellow);
+      padding: 16px 24px;
+      z-index: 2000;
+      box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.1);
+      display: none;
+      transition: transform 0.3s ease;
+    }
+    #cookie-banner.show {
+      display: block;
+    }
+    .cookie-banner-inner {
+      max-width: var(--max-width);
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+    .cookie-banner-text {
+      flex: 1;
+      font-size: 0.9rem;
+      color: var(--muted);
+      line-height: 1.5;
+      min-width: 200px;
+    }
+    .cookie-banner-text a {
+      color: var(--yellow-darker);
+      font-weight: 600;
+      text-decoration: underline;
+      text-underline-offset: 2px;
+    }
+    .cookie-banner-text a:hover {
+      color: var(--yellow-dark);
+    }
+    .cookie-banner-buttons {
+      display: flex;
+      gap: 12px;
+      flex-shrink: 0;
+    }
+    .cookie-banner-buttons button {
+      padding: 8px 24px;
+      border: none;
+      border-radius: 30px;
+      font-weight: 700;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: 0.2s;
+      font-family: inherit;
+    }
+    .cookie-banner-buttons .btn-accept {
+      background: var(--yellow);
+      color: var(--text);
+    }
+    .cookie-banner-buttons .btn-accept:hover {
+      background: var(--yellow-dark);
+    }
+    .cookie-banner-buttons .btn-decline {
+      background: transparent;
+      color: var(--text);
+      border: 2px solid var(--border);
+    }
+    .cookie-banner-buttons .btn-decline:hover {
+      border-color: var(--yellow);
+      background: var(--yellow-light);
+    }
+
+    @media (max-width: 700px) {
+      .cookie-banner-inner {
+        flex-direction: column;
+        align-items: stretch;
+        text-align: center;
+      }
+      .cookie-banner-buttons {
+        justify-content: center;
+      }
+    }
+
+    /* ============================================================
        FOOTER
        ============================================================ */
     footer {
@@ -765,6 +852,23 @@
   </main>
 
   <!-- ============================================================
+       COOKIE BANNER
+  ============================================================ -->
+  <div id="cookie-banner" class="cookie-banner">
+    <div class="cookie-banner-inner">
+      <div class="cookie-banner-text">
+        🍪 We use localStorage to improve your experience. By continuing, you agree to our 
+        <a href="privacy.html" target="_blank">Privacy Policy</a> and 
+        <a href="cookie-policy.html" target="_blank">Cookie Policy</a>.
+      </div>
+      <div class="cookie-banner-buttons">
+        <button class="btn-decline" onclick="declineCookies()">Decline</button>
+        <button class="btn-accept" onclick="acceptCookies()">Accept</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
        FOOTER
   ============================================================ -->
   <footer>
@@ -781,6 +885,10 @@
               <li><a href="#" onclick="navigateTo('home'); return false;">Home</a></li>
               <li><a href="#" onclick="navigateTo('about'); return false;">About</a></li>
               <li><a href="#" onclick="navigateTo('contact'); return false;">Contact</a></li>
+              <li><a href="privacy.html" target="_blank">Privacy</a></li>
+              <li><a href="terms.html" target="_blank">Terms</a></li>
+              <li><a href="affiliate-disclosure.html" target="_blank">Affiliate</a></li>
+              <li><a href="cookie-policy.html" target="_blank">Cookies</a></li>
             </ul>
           </div>
         </div>
@@ -802,6 +910,64 @@
   </script>
 
   <script>
+    /* ============================================================
+       COOKIE CONSENT
+    ============================================================ */
+    function hasConsent() {
+      return localStorage.getItem('cookiesAccepted') === 'true';
+    }
+
+    function acceptCookies() {
+      localStorage.setItem('cookiesAccepted', 'true');
+      document.getElementById('cookie-banner').classList.remove('show');
+      // Re-initialize features that depend on consent (like visitor ID, affiliate cache)
+      // They will be re-run on next page load; but we can also trigger them now.
+      // We'll simply reload to ensure everything is set.
+      // Alternatively, we could manually set visitorId here if needed.
+      // For simplicity, we'll let the next page load handle it.
+      // But we can immediately set visitorId if not exists.
+      if (!localStorage.getItem('visitorId')) {
+        const vid = crypto.randomUUID ? crypto.randomUUID() : 'visitor-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+        localStorage.setItem('visitorId', vid);
+      }
+    }
+
+    function declineCookies() {
+      localStorage.setItem('cookiesAccepted', 'false');
+      document.getElementById('cookie-banner').classList.remove('show');
+      // Clear non-essential localStorage items
+      const keysToRemove = ['visitorId', 'userCountry', 'userCountryTimestamp', 'affiliate_links_', 'affiliate_links'];
+      for (let key in localStorage) {
+        if (key.startsWith('affiliate_links_') || key === 'visitorId' || key === 'userCountry' || key === 'userCountryTimestamp') {
+          localStorage.removeItem(key);
+        }
+      }
+    }
+
+    function checkCookieConsent() {
+      const consent = localStorage.getItem('cookiesAccepted');
+      if (consent === null) {
+        // Show banner if no preference set
+        document.getElementById('cookie-banner').classList.add('show');
+      } else if (consent === 'true') {
+        // Already accepted, do nothing
+      } else {
+        // Declined, ensure non-essential items are cleared
+        // (already cleared on decline, but just in case)
+        const keysToRemove = ['visitorId', 'userCountry', 'userCountryTimestamp', 'affiliate_links_', 'affiliate_links'];
+        for (let key in localStorage) {
+          if (key.startsWith('affiliate_links_') || key === 'visitorId' || key === 'userCountry' || key === 'userCountryTimestamp') {
+            localStorage.removeItem(key);
+          }
+        }
+      }
+    }
+
+    // Check consent on load
+    document.addEventListener('DOMContentLoaded', function() {
+      checkCookieConsent();
+    });
+
     /* ============================================================
        SUPABASE INIT
     ============================================================ */
@@ -1082,14 +1248,17 @@
        IP GEOLOCATION (with caching)
     ============================================================ */
     async function getCountryCode() {
-      try {
-        const cached = localStorage.getItem('userCountry');
-        const cachedTime = localStorage.getItem('userCountryTimestamp');
-        if (cached && cachedTime) {
-          const age = Date.now() - parseInt(cachedTime, 10);
-          if (age < 3600000) return cached;
-        }
-      } catch (_) {}
+      // Only use cache if consent given, else fetch fresh each time
+      if (hasConsent()) {
+        try {
+          const cached = localStorage.getItem('userCountry');
+          const cachedTime = localStorage.getItem('userCountryTimestamp');
+          if (cached && cachedTime) {
+            const age = Date.now() - parseInt(cachedTime, 10);
+            if (age < 3600000) return cached;
+          }
+        } catch (_) {}
+      }
 
       const apis = [
         { url: 'https://ipapi.co/json/', key: 'country_code' },
@@ -1105,10 +1274,13 @@
           let country = data[api.key];
           if (api.url.includes('country.is')) country = data.country;
           if (country && typeof country === 'string' && country.length === 2) {
-            try {
-              localStorage.setItem('userCountry', country);
-              localStorage.setItem('userCountryTimestamp', String(Date.now()));
-            } catch (_) {}
+            // Only cache if consent given
+            if (hasConsent()) {
+              try {
+                localStorage.setItem('userCountry', country);
+                localStorage.setItem('userCountryTimestamp', String(Date.now()));
+              } catch (_) {}
+            }
             return country.toUpperCase();
           }
         } catch (e) { continue; }
@@ -1132,6 +1304,11 @@
        VISITOR ID (for unique clickers)
     ============================================================ */
     function getVisitorId() {
+      if (!hasConsent()) {
+        // Return a temporary ID for this session (not stored)
+        return 'temp-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+      }
+
       let vid = localStorage.getItem('visitorId');
       if (!vid) {
         vid = crypto.randomUUID ? crypto.randomUUID() : 'visitor-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
@@ -1284,25 +1461,24 @@
     async function rewriteDynamicLinks(articleId) {
       const country = await getCountryCode();
 
-      // Check cache first
-      const cacheKey = `affiliate_links_${articleId}_${country}`;
+      // Check cache only if consent given
       let links = null;
-      let fromCache = false;
-
-      try {
-        const cached = localStorage.getItem(cacheKey);
-        if (cached) {
-          const parsed = JSON.parse(cached);
-          const age = Date.now() - parsed.timestamp;
-          // Cache for 1 hour (3600000 ms)
-          if (age < 3600000) {
-            links = parsed.data;
-            fromCache = true;
+      const cacheKey = `affiliate_links_${articleId}_${country}`;
+      
+      if (hasConsent()) {
+        try {
+          const cached = localStorage.getItem(cacheKey);
+          if (cached) {
+            const parsed = JSON.parse(cached);
+            const age = Date.now() - parsed.timestamp;
+            if (age < 3600000) {
+              links = parsed.data;
+            }
           }
-        }
-      } catch (_) {}
+        } catch (_) {}
+      }
 
-      // If not in cache, fetch from database
+      // If not in cache (or no consent), fetch from database
       if (!links) {
         try {
           const { data, error } = await supabaseClient
@@ -1321,13 +1497,15 @@
 
           links = data;
 
-          // Store in cache
-          try {
-            localStorage.setItem(cacheKey, JSON.stringify({
-              data: links,
-              timestamp: Date.now()
-            }));
-          } catch (_) {}
+          // Store in cache only if consent given
+          if (hasConsent()) {
+            try {
+              localStorage.setItem(cacheKey, JSON.stringify({
+                data: links,
+                timestamp: Date.now()
+              }));
+            } catch (_) {}
+          }
 
         } catch (err) {
           console.error('Error fetching affiliate links:', err);
