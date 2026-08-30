@@ -1386,7 +1386,7 @@
         `,
 
       // ============================================================
-      // 🆕 SHOP PAGE (NEW)
+      // SHOP PAGE
       // ============================================================
       shop: `
           <div class="container shop-page">
@@ -1436,7 +1436,7 @@
     let hasMoreCategory = true;
 
     // ============================================================
-    // SHOP PAGINATION STATE (NEW)
+    // SHOP PAGINATION STATE
     // ============================================================
     const PRODUCT_LIMIT = 8;
     let shopOffset = 0;
@@ -1701,10 +1701,10 @@
     }
 
     // ============================================================
-    // SHOP FUNCTIONS (NEW)
+    // SHOP FUNCTIONS (FIXED)
     // ============================================================
 
-    // Render stars for ratings
+    // Render stars
     function renderStars(rating) {
       if (!rating || rating === 0) return '☆☆☆☆☆';
       const full = Math.floor(rating);
@@ -1718,13 +1718,15 @@
       const imageId = 'prod-img-' + product.id + '-' + Date.now();
       const isRecommended = product.is_recommended;
       const ratingStars = renderStars(product.rating);
+      const affiliateKey = product.affiliate_key || 'default';
+      const affiliateUrl = product.affiliate_url || '#';
       
       return `
         <div class="product-card ${isRecommended ? 'recommended' : ''}" data-product-id="${product.id}">
           ${isRecommended ? '<div class="recommended-badge">⭐ Rheoa Recommended</div>' : ''}
           <div class="product-image">
             <div class="image-placeholder" id="placeholder-${imageId}"></div>
-            <img id="${imageId}" src="${product.image_url}" alt="${product.name}" loading="lazy" onload="this.classList.add('loaded'); document.getElementById('placeholder-${imageId}').classList.add('hidden');" />
+            <img id="${imageId}" src="${product.image_url || 'https://via.placeholder.com/400x300?text=No+Image'}" alt="${product.name}" loading="lazy" onload="this.classList.add('loaded'); document.getElementById('placeholder-${imageId}').classList.add('hidden');" />
           </div>
           <div class="product-body">
             <h3>${product.name}</h3>
@@ -1734,10 +1736,10 @@
             </div>
             <p class="product-description">${product.description || ''}</p>
             <div class="product-actions">
-              <a href="#" class="btn-buy dynamic-link-product" 
-                 data-affiliate-key="${product.affiliate_key || 'default'}" 
+              <a href="${affiliateUrl}" class="btn-buy dynamic-link-product" 
+                 data-affiliate-key="${affiliateKey}" 
                  data-product-id="${product.id}"
-                 onclick="handleProductClick(event, ${product.id}, '${product.affiliate_key || 'default'}')">Buy Now →</a>
+                 onclick="handleProductClick(event, ${product.id}, '${affiliateKey}')">Buy Now →</a>
               <span class="product-views">👁️ ${product.views || 0}</span>
             </div>
           </div>
@@ -1767,6 +1769,7 @@
         container.innerHTML = html;
       } catch (err) {
         console.error('Error loading shop categories:', err);
+        container.innerHTML = '<button class="active" data-category="all" onclick="loadShopProducts(\'all\')">All</button>';
       }
     }
 
@@ -1793,25 +1796,35 @@
       }
 
       // Update active category tab
-      document.querySelectorAll('.shop-categories button').forEach(btn => {
-        btn.classList.toggle('active', btn.dataset.category === categorySlug);
+      document.querySelectorAll('.shop-categories button').forEach(b => {
+        b.classList.toggle('active', b.dataset.category === categorySlug);
       });
 
       try {
+        // Step 1: If category is not 'all', get the category ID
+        let categoryId = null;
+        if (categorySlug !== 'all') {
+          const { data: catData, error: catError } = await supabaseClient
+            .from('product_categories')
+            .select('id')
+            .eq('slug', categorySlug)
+            .single();
+          if (catError) throw catError;
+          if (catData) categoryId = catData.id;
+        }
+
+        // Step 2: Query products with optional category filter
         let query = supabaseClient
           .from('products')
-          .select(`
-            *,
-            product_categories!inner ( slug )
-          `, { count: 'exact' })
+          .select('*', { count: 'exact' })
           .eq('status', 'published')
           .order('is_recommended', { ascending: false })
           .order('sort_order', { ascending: true })
           .order('created_at', { ascending: false })
           .range(shopOffset, shopOffset + PRODUCT_LIMIT - 1);
 
-        if (categorySlug !== 'all') {
-          query = query.eq('product_categories.slug', categorySlug);
+        if (categoryId !== null) {
+          query = query.eq('category_id', categoryId);
         }
 
         const { data: products, error, count } = await query;
@@ -1828,7 +1841,7 @@
           hasMoreProducts = products.length === PRODUCT_LIMIT;
         }
 
-        // Fetch affiliate links for each product
+        // Step 3: Fetch affiliate links for these products
         if (products && products.length > 0) {
           const productIds = products.map(p => p.id);
           const { data: affiliateLinks, error: linkError } = await supabaseClient
@@ -1837,11 +1850,11 @@
             .in('product_id', productIds);
 
           if (!linkError && affiliateLinks) {
-            // Attach affiliate links to products
+            // Attach a default affiliate link to each product
             products.forEach(product => {
               const links = affiliateLinks.filter(al => al.product_id === product.id);
               product.affiliate_links = links;
-              // Set a default affiliate_key and affiliate_url for rendering
+              // Find a 'default' link, or fallback to the first one
               const defaultLink = links.find(l => l.country_code === 'default');
               if (defaultLink) {
                 product.affiliate_key = defaultLink.affiliate_key;
@@ -1849,11 +1862,22 @@
               } else if (links.length > 0) {
                 product.affiliate_key = links[0].affiliate_key;
                 product.affiliate_url = links[0].link_url;
+              } else {
+                product.affiliate_key = 'none';
+                product.affiliate_url = '#';
               }
+            });
+          } else {
+            // No affiliate links found – set default values
+            products.forEach(product => {
+              product.affiliate_links = [];
+              product.affiliate_key = 'none';
+              product.affiliate_url = '#';
             });
           }
         }
 
+        // Step 4: Render products
         if (!append) {
           if (products.length === 0) {
             grid.innerHTML = `<p style="color: var(--muted); padding: 20px;">No products found in this category.</p>`;
@@ -1861,7 +1885,7 @@
             let html = '';
             products.forEach(product => { html += createProductCardHTML(product); });
             grid.innerHTML = html;
-            // Rewrite affiliate links after rendering
+            // Rewrite affiliate links after DOM update
             setTimeout(() => {
               rewriteProductLinks();
             }, 100);
@@ -1879,19 +1903,15 @@
           }
         }
 
-        // Update load more button
+        // Update Load More button visibility
         const wrapper = document.getElementById('shopLoadMoreWrapper');
         if (wrapper) {
-          if (hasMoreProducts) {
-            wrapper.style.display = 'block';
-          } else {
-            wrapper.style.display = 'none';
-          }
+          wrapper.style.display = hasMoreProducts ? 'block' : 'none';
         }
 
         shopOffset += products.length;
 
-        // Increment views for loaded products (in background)
+        // Increment views in background
         products.forEach(product => {
           if (product.id) {
             supabaseClient.rpc('increment_product_views', { product_id_param: product.id })
@@ -1901,9 +1921,7 @@
 
       } catch (err) {
         console.error('Error loading products:', err);
-        if (!append) {
-          grid.innerHTML = `<p style="color: var(--muted); padding: 20px;">⚠️ Could not load products.</p>`;
-        }
+        grid.innerHTML = `<p style="color: var(--muted); padding: 20px;">⚠️ Could not load products. ${err.message}</p>`;
       } finally {
         isLoadingProducts = false;
         if (btn) {
@@ -1919,9 +1937,7 @@
       }
     }
 
-    // ============================================================
-    // PRODUCT AFFILIATE LINK REWRITING (Country-Specific)
-    // ============================================================
+    // Rewrite product affiliate links (country-specific)
     async function rewriteProductLinks() {
       const country = await getCountryCode();
       const links = document.querySelectorAll('.dynamic-link-product');
@@ -1938,7 +1954,7 @@
         .in('product_id', productIds.map(Number));
 
       if (error || !affiliateLinks) {
-        console.warn('Could not fetch product affiliate links');
+        console.warn('Could not fetch product affiliate links, keeping default links.');
         return;
       }
 
@@ -1947,7 +1963,6 @@
       affiliateLinks.forEach(link => {
         const key = link.product_id;
         if (!linkMap[key]) linkMap[key] = {};
-        // Prefer country-specific over default
         if (link.country_code === country) {
           linkMap[key][link.affiliate_key] = link.link_url;
         } else if (link.country_code === 'default' && !linkMap[key][link.affiliate_key]) {
@@ -1965,7 +1980,7 @@
           el.target = '_blank';
           el.rel = 'noopener';
         } else {
-          // Fallback: use the first available link for this product
+          // Fallback: try the first available key for this product
           if (linkMap[productId]) {
             const firstKey = Object.keys(linkMap[productId])[0];
             if (firstKey) {
@@ -1973,21 +1988,13 @@
               el.classList.remove('disabled');
               el.target = '_blank';
               el.rel = 'noopener';
-            } else {
-              el.classList.add('disabled');
-              el.title = 'No affiliate link available';
             }
-          } else {
-            el.classList.add('disabled');
-            el.title = 'No affiliate link available';
           }
         }
       });
     }
 
-    // ============================================================
-    // PRODUCT CLICK HANDLER
-    // ============================================================
+    // Product click handler
     async function handleProductClick(e, productId, affiliateKey) {
       e.preventDefault();
       const link = e.currentTarget;
