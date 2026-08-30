@@ -522,18 +522,6 @@
       padding: 12px 32px;
       font-size: 1rem;
     }
-    .modal-affiliate-pill {
-      display: inline-block;
-      background: var(--yellow-light);
-      color: var(--yellow-darker);
-      font-size: 0.7rem;
-      font-weight: 700;
-      padding: 4px 14px;
-      border-radius: 30px;
-      border: 1px solid var(--yellow);
-      letter-spacing: 0.02em;
-      align-self: center;
-    }
 
     /* ============================================================
        FOOTER (same as index.html)
@@ -684,7 +672,7 @@
   </main>
 
   <!-- ============================================================
-       PRODUCT DETAIL MODAL
+       PRODUCT DETAIL MODAL (affiliate pill removed)
   ============================================================ -->
   <div class="modal-overlay" id="productModal">
     <div class="modal">
@@ -703,7 +691,6 @@
       </div>
       <div class="modal-actions">
         <a href="#" class="btn-buy dynamic-link-product" id="modalProductBuyBtn" target="_blank" rel="noopener">Buy Now →</a>
-        <span class="modal-affiliate-pill">🛒 Contains affiliate link</span>
       </div>
     </div>
   </div>
@@ -853,7 +840,7 @@
     }
 
     // ============================================================
-    // PRODUCT CARD HTML (with click handler for modal)
+    // PRODUCT CARD HTML
     // ============================================================
     function createProductCardHTML(product) {
       const imageId = 'prod-img-' + product.id + '-' + Date.now();
@@ -894,7 +881,7 @@
     }
 
     // ============================================================
-    // PRODUCT MODAL FUNCTIONS
+    // PRODUCT MODAL FUNCTIONS (FIXED VIEW INCREMENT)
     // ============================================================
     let currentModalProductId = null;
 
@@ -926,7 +913,7 @@
           affiliateKey = affiliateLinks[0].affiliate_key;
         }
 
-        // Populate modal
+        // Populate modal with current data
         document.getElementById('modalProductTitle').textContent = product.name;
         document.getElementById('modalProductImage').src = product.image_url || 'https://via.placeholder.com/400x300?text=No+Image';
         document.getElementById('modalProductImage').alt = product.name;
@@ -959,24 +946,47 @@
         // Show modal
         modal.classList.add('show');
 
-        // Increment view count
+        // ----- INCREMENT VIEW COUNT -----
         try {
+          // Call the RPC to increment and get the new count
           const { data: newViews, error: viewError } = await supabaseClient
             .rpc('increment_product_views', { product_id_param: productId });
-          if (!viewError) {
+
+          if (viewError) {
+            console.warn('View increment RPC error:', viewError);
+            // Fallback: increment locally by 1
+            const currentViews = parseInt(document.getElementById('modalProductViews').textContent) || 0;
+            const newCount = currentViews + 1;
+            document.getElementById('modalProductViews').textContent = newCount;
+            // Update card if present
+            const card = document.querySelector(`.product-card[data-product-id="${productId}"]`);
+            if (card) {
+              const viewsSpan = card.querySelector('.product-stats span:first-child');
+              if (viewsSpan) viewsSpan.textContent = `👁️ ${newCount}`;
+            }
+          } else if (newViews !== null && newViews !== undefined) {
+            // Success – update modal and card
             document.getElementById('modalProductViews').textContent = newViews;
-            // Update the card view count as well
             const card = document.querySelector(`.product-card[data-product-id="${productId}"]`);
             if (card) {
               const viewsSpan = card.querySelector('.product-stats span:first-child');
               if (viewsSpan) viewsSpan.textContent = `👁️ ${newViews}`;
             }
           }
-        } catch (viewErr) {
-          console.warn('View increment failed:', viewErr);
+        } catch (err) {
+          console.error('View increment failed:', err);
+          // Fallback: increment locally by 1
+          const currentViews = parseInt(document.getElementById('modalProductViews').textContent) || 0;
+          const newCount = currentViews + 1;
+          document.getElementById('modalProductViews').textContent = newCount;
+          const card = document.querySelector(`.product-card[data-product-id="${productId}"]`);
+          if (card) {
+            const viewsSpan = card.querySelector('.product-stats span:first-child');
+            if (viewsSpan) viewsSpan.textContent = `👁️ ${newCount}`;
+          }
         }
 
-        // Try to rewrite the buy link based on country
+        // Rewrite the buy link based on country (after a short delay)
         setTimeout(() => {
           rewriteModalLink();
         }, 100);
@@ -1200,8 +1210,7 @@
 
         shopOffset += products.length;
 
-        // Increment views in background (for initial load, but we'll track via modal)
-        // No need to increment views on load – only on modal open.
+        // No view increment on load – only on modal open.
 
       } catch (err) {
         console.error('Error loading products:', err);
