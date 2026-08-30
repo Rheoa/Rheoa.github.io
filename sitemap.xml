@@ -4,9 +4,17 @@
   <!-- Homepage -->
   <url>
     <loc>https://rheoa.github.io/</loc>
-    <lastmod>2026-08-29</lastmod>
+    <lastmod>2026-08-30</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
+  </url>
+
+  <!-- ===== SHOP PAGE (NEW) ===== -->
+  <url>
+    <loc>https://rheoa.github.io/shop.html</loc>
+    <lastmod>2026-08-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
   </url>
 
   <!-- ===== AFRICA ===== -->
@@ -61,7 +69,7 @@
     <priority>0.8</priority>
   </url>
 
-  <!-- ===== AUSTRALIA & OCEANIA (FIXED: &amp; in URL) ===== -->
+  <!-- ===== AUSTRALIA & OCEANIA ===== -->
   <url>
     <loc>https://rheoa.github.io/#article-10-places-to-explore-in-australia-&amp;-oceania</loc>
     <lastmod>2026-08-29</lastmod>
