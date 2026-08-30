@@ -23,6 +23,10 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,600;14..32,800&display=swap" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 
+  <!-- ===== LEAFLET (for map) ===== -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
   <style>
     :root {
       --yellow: #ffdb10;
@@ -198,6 +202,41 @@
       box-shadow: var(--shadow);
       margin-bottom: 20px;
       height: 300px;
+    }
+
+    /* ===== MAP ===== */
+    #clickMap {
+      height: 500px;
+      width: 100%;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      background: #f0f2f5;
+      margin-bottom: 20px;
+    }
+    .leaflet-control-attribution {
+      font-size: 0.7rem;
+    }
+    .leaflet-popup-content {
+      font-family: 'Inter', sans-serif;
+    }
+    .map-legend {
+      background: white;
+      padding: 8px 12px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+      font-size: 0.8rem;
+      line-height: 1.5;
+    }
+    .map-legend .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .map-legend .legend-circle {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      border: 1px solid #333;
     }
 
     /* ===== LOGIN ===== */
@@ -498,6 +537,7 @@
       .modal .form-row { grid-template-columns: 1fr; }
       .modal { padding: 20px; }
       .tab-nav button { padding: 8px 16px; font-size: 0.8rem; }
+      #clickMap { height: 300px; }
     }
   </style>
 </head>
@@ -802,6 +842,7 @@
     let currentUser = null;
     let chartInstance = null;
     let currentTab = 'dashboard';
+    let clickMap = null;
 
     // Date range state (for dashboard)
     let currentStartDate = null;
@@ -830,6 +871,204 @@
       { id: 'hidden-gems', name: 'Hidden Travel Gems', tag: 'hidden-gems' },
       { id: 'world-discovery', name: 'World Discovery', tag: 'world-discovery' }
     ];
+
+    // Country coordinates for the map
+    const countryCoords = {
+      'AF': { lat: 33.9391, lng: 67.7100, name: 'Afghanistan' },
+      'AL': { lat: 41.1533, lng: 20.1683, name: 'Albania' },
+      'DZ': { lat: 28.0339, lng: 1.6596, name: 'Algeria' },
+      'AD': { lat: 42.5063, lng: 1.5218, name: 'Andorra' },
+      'AO': { lat: -11.2027, lng: 17.8739, name: 'Angola' },
+      'AG': { lat: 17.0608, lng: -61.7964, name: 'Antigua and Barbuda' },
+      'AR': { lat: -38.4161, lng: -63.6167, name: 'Argentina' },
+      'AM': { lat: 40.0691, lng: 45.0382, name: 'Armenia' },
+      'AU': { lat: -25.2744, lng: 133.7751, name: 'Australia' },
+      'AT': { lat: 47.5162, lng: 14.5501, name: 'Austria' },
+      'AZ': { lat: 40.1431, lng: 47.5769, name: 'Azerbaijan' },
+      'BS': { lat: 25.0343, lng: -77.3963, name: 'Bahamas' },
+      'BH': { lat: 26.0667, lng: 50.5577, name: 'Bahrain' },
+      'BD': { lat: 23.6850, lng: 90.3563, name: 'Bangladesh' },
+      'BB': { lat: 13.1939, lng: -59.5432, name: 'Barbados' },
+      'BY': { lat: 53.7098, lng: 27.9534, name: 'Belarus' },
+      'BE': { lat: 50.8503, lng: 4.3517, name: 'Belgium' },
+      'BZ': { lat: 17.1899, lng: -88.4976, name: 'Belize' },
+      'BJ': { lat: 9.3077, lng: 2.3158, name: 'Benin' },
+      'BT': { lat: 27.5142, lng: 90.4336, name: 'Bhutan' },
+      'BO': { lat: -16.2902, lng: -63.5887, name: 'Bolivia' },
+      'BA': { lat: 43.9159, lng: 17.6791, name: 'Bosnia and Herzegovina' },
+      'BW': { lat: -22.3285, lng: 24.6849, name: 'Botswana' },
+      'BR': { lat: -14.2350, lng: -51.9253, name: 'Brazil' },
+      'BN': { lat: 4.5353, lng: 114.7277, name: 'Brunei' },
+      'BG': { lat: 42.7339, lng: 25.4858, name: 'Bulgaria' },
+      'BF': { lat: 12.2383, lng: -1.5616, name: 'Burkina Faso' },
+      'BI': { lat: -3.3731, lng: 29.9189, name: 'Burundi' },
+      'KH': { lat: 12.5657, lng: 104.9910, name: 'Cambodia' },
+      'CM': { lat: 7.3697, lng: 12.3547, name: 'Cameroon' },
+      'CA': { lat: 56.1304, lng: -106.3468, name: 'Canada' },
+      'CV': { lat: 16.5388, lng: -23.0418, name: 'Cape Verde' },
+      'CF': { lat: 6.6111, lng: 20.9394, name: 'Central African Republic' },
+      'TD': { lat: 15.4542, lng: 18.7322, name: 'Chad' },
+      'CL': { lat: -35.6751, lng: -71.5430, name: 'Chile' },
+      'CN': { lat: 35.8617, lng: 104.1954, name: 'China' },
+      'CO': { lat: 4.5709, lng: -74.2973, name: 'Colombia' },
+      'KM': { lat: -11.6455, lng: 43.3333, name: 'Comoros' },
+      'CG': { lat: -0.2280, lng: 15.8277, name: 'Congo (Brazzaville)' },
+      'CD': { lat: -4.0383, lng: 21.7587, name: 'Congo (Kinshasa)' },
+      'CR': { lat: 9.7489, lng: -83.7534, name: 'Costa Rica' },
+      'HR': { lat: 45.1000, lng: 15.2000, name: 'Croatia' },
+      'CU': { lat: 21.5218, lng: -77.7812, name: 'Cuba' },
+      'CY': { lat: 35.1264, lng: 33.4299, name: 'Cyprus' },
+      'CZ': { lat: 49.8175, lng: 15.4730, name: 'Czech Republic' },
+      'DK': { lat: 56.2639, lng: 9.5018, name: 'Denmark' },
+      'DJ': { lat: 11.8251, lng: 42.5903, name: 'Djibouti' },
+      'DM': { lat: 15.4150, lng: -61.3710, name: 'Dominica' },
+      'DO': { lat: 18.7357, lng: -70.1627, name: 'Dominican Republic' },
+      'EC': { lat: -1.8312, lng: -78.1834, name: 'Ecuador' },
+      'EG': { lat: 26.8206, lng: 30.8025, name: 'Egypt' },
+      'SV': { lat: 13.7942, lng: -88.8965, name: 'El Salvador' },
+      'GQ': { lat: 1.6508, lng: 10.2679, name: 'Equatorial Guinea' },
+      'ER': { lat: 15.1794, lng: 39.7823, name: 'Eritrea' },
+      'EE': { lat: 58.5953, lng: 25.0136, name: 'Estonia' },
+      'SZ': { lat: -26.5225, lng: 31.4659, name: 'Eswatini' },
+      'ET': { lat: 9.1450, lng: 40.4897, name: 'Ethiopia' },
+      'FJ': { lat: -17.7134, lng: 178.0650, name: 'Fiji' },
+      'FI': { lat: 61.9241, lng: 25.7482, name: 'Finland' },
+      'FR': { lat: 46.6034, lng: 1.8883, name: 'France' },
+      'GA': { lat: -0.8037, lng: 11.6094, name: 'Gabon' },
+      'GM': { lat: 13.4432, lng: -15.3101, name: 'Gambia' },
+      'GE': { lat: 42.3154, lng: 43.3569, name: 'Georgia' },
+      'DE': { lat: 51.1657, lng: 10.4515, name: 'Germany' },
+      'GH': { lat: 7.9465, lng: -1.0232, name: 'Ghana' },
+      'GR': { lat: 39.0742, lng: 21.8243, name: 'Greece' },
+      'GD': { lat: 12.1165, lng: -61.6790, name: 'Grenada' },
+      'GT': { lat: 15.7835, lng: -90.2308, name: 'Guatemala' },
+      'GN': { lat: 9.9456, lng: -9.6966, name: 'Guinea' },
+      'GW': { lat: 11.8037, lng: -15.1804, name: 'Guinea-Bissau' },
+      'GY': { lat: 4.8604, lng: -58.9302, name: 'Guyana' },
+      'HT': { lat: 18.9712, lng: -72.2852, name: 'Haiti' },
+      'HN': { lat: 15.2000, lng: -86.2419, name: 'Honduras' },
+      'HU': { lat: 47.1625, lng: 19.5033, name: 'Hungary' },
+      'IS': { lat: 64.9631, lng: -19.0208, name: 'Iceland' },
+      'IN': { lat: 20.5937, lng: 78.9629, name: 'India' },
+      'ID': { lat: -0.7893, lng: 113.9213, name: 'Indonesia' },
+      'IR': { lat: 32.4279, lng: 53.6880, name: 'Iran' },
+      'IQ': { lat: 33.2232, lng: 43.6793, name: 'Iraq' },
+      'IE': { lat: 53.4129, lng: -8.2439, name: 'Ireland' },
+      'IL': { lat: 31.0461, lng: 34.8516, name: 'Israel' },
+      'IT': { lat: 41.8719, lng: 12.5674, name: 'Italy' },
+      'JM': { lat: 18.1096, lng: -77.2975, name: 'Jamaica' },
+      'JP': { lat: 36.2048, lng: 138.2529, name: 'Japan' },
+      'JO': { lat: 30.5852, lng: 36.2384, name: 'Jordan' },
+      'KZ': { lat: 48.0196, lng: 66.9237, name: 'Kazakhstan' },
+      'KE': { lat: -1.2864, lng: 36.8172, name: 'Kenya' },
+      'KI': { lat: -3.3704, lng: -168.7340, name: 'Kiribati' },
+      'KP': { lat: 40.3399, lng: 127.5101, name: 'North Korea' },
+      'KR': { lat: 36.5000, lng: 127.7500, name: 'South Korea' },
+      'XK': { lat: 42.6026, lng: 20.9030, name: 'Kosovo' },
+      'KW': { lat: 29.3759, lng: 47.9774, name: 'Kuwait' },
+      'KG': { lat: 41.2044, lng: 74.7661, name: 'Kyrgyzstan' },
+      'LA': { lat: 19.8563, lng: 102.4955, name: 'Laos' },
+      'LV': { lat: 56.8796, lng: 24.6032, name: 'Latvia' },
+      'LB': { lat: 33.8547, lng: 35.8623, name: 'Lebanon' },
+      'LS': { lat: -29.6100, lng: 28.2336, name: 'Lesotho' },
+      'LR': { lat: 6.4281, lng: -9.4295, name: 'Liberia' },
+      'LY': { lat: 26.3351, lng: 17.2283, name: 'Libya' },
+      'LI': { lat: 47.1660, lng: 9.5554, name: 'Liechtenstein' },
+      'LT': { lat: 55.1694, lng: 23.8813, name: 'Lithuania' },
+      'LU': { lat: 49.8153, lng: 6.1296, name: 'Luxembourg' },
+      'MG': { lat: -18.7669, lng: 46.8691, name: 'Madagascar' },
+      'MW': { lat: -13.2543, lng: 34.3015, name: 'Malawi' },
+      'MY': { lat: 4.2105, lng: 101.9758, name: 'Malaysia' },
+      'MV': { lat: 3.2028, lng: 73.2207, name: 'Maldives' },
+      'ML': { lat: 17.5707, lng: -3.9962, name: 'Mali' },
+      'MT': { lat: 35.9375, lng: 14.3754, name: 'Malta' },
+      'MH': { lat: 7.1315, lng: 171.1845, name: 'Marshall Islands' },
+      'MR': { lat: 21.0079, lng: -10.9408, name: 'Mauritania' },
+      'MU': { lat: -20.3484, lng: 57.5522, name: 'Mauritius' },
+      'MX': { lat: 23.6345, lng: -102.5528, name: 'Mexico' },
+      'FM': { lat: 7.4256, lng: 150.5508, name: 'Micronesia' },
+      'MD': { lat: 47.4116, lng: 28.3699, name: 'Moldova' },
+      'MC': { lat: 43.7503, lng: 7.4128, name: 'Monaco' },
+      'MN': { lat: 46.8625, lng: 103.8467, name: 'Mongolia' },
+      'ME': { lat: 42.7087, lng: 19.3744, name: 'Montenegro' },
+      'MA': { lat: 31.7917, lng: -7.0926, name: 'Morocco' },
+      'MZ': { lat: -18.6657, lng: 35.5296, name: 'Mozambique' },
+      'MM': { lat: 21.9162, lng: 95.9560, name: 'Myanmar (Burma)' },
+      'NA': { lat: -22.9576, lng: 18.4904, name: 'Namibia' },
+      'NR': { lat: -0.5228, lng: 166.9325, name: 'Nauru' },
+      'NP': { lat: 28.3949, lng: 84.1240, name: 'Nepal' },
+      'NL': { lat: 52.1326, lng: 5.2913, name: 'Netherlands' },
+      'NZ': { lat: -40.9006, lng: 174.8860, name: 'New Zealand' },
+      'NI': { lat: 12.8654, lng: -85.2072, name: 'Nicaragua' },
+      'NE': { lat: 17.6078, lng: 8.0817, name: 'Niger' },
+      'NG': { lat: 9.0820, lng: 8.6753, name: 'Nigeria' },
+      'NO': { lat: 60.4720, lng: 8.4689, name: 'Norway' },
+      'OM': { lat: 21.4735, lng: 55.9754, name: 'Oman' },
+      'PK': { lat: 30.3753, lng: 69.3451, name: 'Pakistan' },
+      'PW': { lat: 7.5150, lng: 134.5825, name: 'Palau' },
+      'PA': { lat: 8.5380, lng: -80.7821, name: 'Panama' },
+      'PG': { lat: -6.3150, lng: 143.9555, name: 'Papua New Guinea' },
+      'PY': { lat: -23.4425, lng: -58.4438, name: 'Paraguay' },
+      'PE': { lat: -9.1900, lng: -75.0152, name: 'Peru' },
+      'PH': { lat: 12.8797, lng: 121.7740, name: 'Philippines' },
+      'PL': { lat: 51.9194, lng: 19.1451, name: 'Poland' },
+      'PT': { lat: 39.3999, lng: -8.2245, name: 'Portugal' },
+      'QA': { lat: 25.3548, lng: 51.1839, name: 'Qatar' },
+      'RO': { lat: 45.9432, lng: 24.9668, name: 'Romania' },
+      'RU': { lat: 61.5240, lng: 105.3188, name: 'Russia' },
+      'RW': { lat: -1.9403, lng: 29.8739, name: 'Rwanda' },
+      'KN': { lat: 17.3578, lng: -62.7830, name: 'Saint Kitts and Nevis' },
+      'LC': { lat: 13.9094, lng: -60.9789, name: 'Saint Lucia' },
+      'VC': { lat: 13.2523, lng: -61.1971, name: 'Saint Vincent and the Grenadines' },
+      'WS': { lat: -13.7590, lng: -172.1046, name: 'Samoa' },
+      'SM': { lat: 43.9424, lng: 12.4578, name: 'San Marino' },
+      'ST': { lat: 0.1864, lng: 6.6131, name: 'Sao Tome and Principe' },
+      'SA': { lat: 23.8859, lng: 45.0792, name: 'Saudi Arabia' },
+      'SN': { lat: 14.4974, lng: -14.4524, name: 'Senegal' },
+      'RS': { lat: 44.0165, lng: 21.0059, name: 'Serbia' },
+      'SC': { lat: -4.6796, lng: 55.4920, name: 'Seychelles' },
+      'SL': { lat: 8.4606, lng: -11.7799, name: 'Sierra Leone' },
+      'SG': { lat: 1.3521, lng: 103.8198, name: 'Singapore' },
+      'SK': { lat: 48.6690, lng: 19.6990, name: 'Slovakia' },
+      'SI': { lat: 46.1512, lng: 14.9955, name: 'Slovenia' },
+      'SB': { lat: -9.6457, lng: 160.1562, name: 'Solomon Islands' },
+      'SO': { lat: 5.1521, lng: 46.1996, name: 'Somalia' },
+      'ZA': { lat: -30.5595, lng: 22.9375, name: 'South Africa' },
+      'SS': { lat: 6.8770, lng: 31.3070, name: 'South Sudan' },
+      'ES': { lat: 40.4637, lng: -3.7492, name: 'Spain' },
+      'LK': { lat: 7.8731, lng: 80.7718, name: 'Sri Lanka' },
+      'SD': { lat: 12.8628, lng: 30.2176, name: 'Sudan' },
+      'SR': { lat: 3.9193, lng: -56.0278, name: 'Suriname' },
+      'SE': { lat: 60.1282, lng: 18.6435, name: 'Sweden' },
+      'CH': { lat: 46.8182, lng: 8.2275, name: 'Switzerland' },
+      'SY': { lat: 34.8021, lng: 38.9968, name: 'Syria' },
+      'TW': { lat: 23.6978, lng: 120.9605, name: 'Taiwan' },
+      'TJ': { lat: 38.8610, lng: 71.2761, name: 'Tajikistan' },
+      'TZ': { lat: -6.3690, lng: 34.8888, name: 'Tanzania' },
+      'TH': { lat: 15.8700, lng: 100.9925, name: 'Thailand' },
+      'TL': { lat: -8.8742, lng: 125.7275, name: 'Timor-Leste' },
+      'TG': { lat: 8.6195, lng: 0.8248, name: 'Togo' },
+      'TO': { lat: -21.1782, lng: -175.1982, name: 'Tonga' },
+      'TT': { lat: 10.6918, lng: -61.2225, name: 'Trinidad and Tobago' },
+      'TN': { lat: 33.8869, lng: 9.5375, name: 'Tunisia' },
+      'TR': { lat: 38.9637, lng: 35.2433, name: 'Turkey' },
+      'TM': { lat: 38.9697, lng: 59.5563, name: 'Turkmenistan' },
+      'TV': { lat: -7.1095, lng: 177.6493, name: 'Tuvalu' },
+      'UG': { lat: 1.3733, lng: 32.2903, name: 'Uganda' },
+      'UA': { lat: 48.3794, lng: 31.1656, name: 'Ukraine' },
+      'AE': { lat: 23.4241, lng: 53.8478, name: 'United Arab Emirates' },
+      'GB': { lat: 55.3781, lng: -3.4360, name: 'United Kingdom' },
+      'US': { lat: 37.0902, lng: -95.7129, name: 'United States' },
+      'UY': { lat: -32.5228, lng: -55.7658, name: 'Uruguay' },
+      'UZ': { lat: 41.3775, lng: 64.5853, name: 'Uzbekistan' },
+      'VU': { lat: -15.3767, lng: 166.9592, name: 'Vanuatu' },
+      'VA': { lat: 41.9029, lng: 12.4534, name: 'Vatican City' },
+      'VE': { lat: 6.4238, lng: -66.5897, name: 'Venezuela' },
+      'VN': { lat: 14.0583, lng: 108.2772, name: 'Vietnam' },
+      'YE': { lat: 15.5527, lng: 48.5164, name: 'Yemen' },
+      'ZM': { lat: -13.1339, lng: 27.8493, name: 'Zambia' },
+      'ZW': { lat: -19.0154, lng: 29.1549, name: 'Zimbabwe' }
+    };
 
     // ============================================================
     // AUTH
@@ -890,7 +1129,7 @@
     }
 
     // ============================================================
-    // RENDER ADMIN (UPDATED WITH SHOP TAB)
+    // RENDER ADMIN
     // ============================================================
     function renderAdmin() {
       const app = document.getElementById('app');
@@ -911,7 +1150,7 @@
             <button data-tab="shop" onclick="switchTab('shop')">🛍️ Shop</button>
           </div>
 
-          <!-- DASHBOARD TAB (unchanged) -->
+          <!-- DASHBOARD TAB -->
           <div id="tab-dashboard" class="tab-content active">
             <div style="background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 20px; box-shadow: var(--shadow); margin-bottom: 24px; display: flex; flex-wrap: wrap; align-items: center; gap: 12px;">
               <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
@@ -944,6 +1183,13 @@
               <div class="stat-card"><div class="number" id="statTopCountry">—</div><div class="label">Top Country</div></div>
             </div>
 
+            <!-- Map -->
+            <h3 class="section-title">🌍 Geographic Click Distribution</h3>
+            <div id="clickMap"></div>
+            <div style="text-align: right; font-size: 0.8rem; color: var(--muted); margin-top: -10px; margin-bottom: 20px;">
+              Circle size = click volume | Click on a circle for details
+            </div>
+
             <div class="two-col">
               <div><h3 class="section-title">📈 Clicks by Affiliate Key</h3><div class="chart-container"><canvas id="affiliateChart"></canvas></div></div>
               <div><h3 class="section-title">🏷️ Affiliate Key Breakdown</h3><div class="table-wrap"><table><thead><tr><th>Affiliate Key</th><th>Clicks</th></tr></thead><tbody id="affiliateBreakdownBody"><tr><td colspan="2" style="text-align:center;">Loading…</td></tr></tbody></table></div></div>
@@ -961,7 +1207,7 @@
             <div class="table-wrap"><table><thead><tr><th>Time</th><th>Article</th><th>Link</th><th>Affiliate Key</th><th>Country</th></tr></thead><tbody id="recentBody"><tr><td colspan="5" style="text-align:center;">Loading…</td></tr></tbody></table></div>
           </div>
 
-          <!-- ARTICLES TAB (unchanged) -->
+          <!-- ARTICLES TAB -->
           <div id="tab-articles" class="tab-content">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:12px;">
               <h2 style="font-size:1.3rem; font-weight:700;">All Articles</h2>
@@ -990,7 +1236,7 @@
             </div>
           </div>
 
-          <!-- AFFILIATE LINKS TAB (unchanged) -->
+          <!-- AFFILIATE LINKS TAB -->
           <div id="tab-affiliates" class="tab-content">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:12px;">
               <h2 style="font-size:1.3rem; font-weight:700;">🔗 Affiliate Links</h2>
@@ -1015,7 +1261,7 @@
             </div>
           </div>
 
-          <!-- SHOP TAB (NEW) -->
+          <!-- SHOP TAB -->
           <div id="tab-shop" class="tab-content">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:12px;">
               <h2 style="font-size:1.3rem; font-weight:700;">🛍️ Shop Management</h2>
@@ -1025,7 +1271,6 @@
               </div>
             </div>
 
-            <!-- Categories Table -->
             <h3 style="font-size:1.1rem; font-weight:700; margin:20px 0 10px;">Categories</h3>
             <div class="table-wrap">
               <table>
@@ -1038,7 +1283,6 @@
               </table>
             </div>
 
-            <!-- Products Table -->
             <h3 style="font-size:1.1rem; font-weight:700; margin:30px 0 10px;">Products</h3>
             <div style="display:flex; gap:12px; flex-wrap:wrap; margin-bottom:12px;">
               <label style="font-weight:600; font-size:0.9rem; display:flex; align-items:center; gap:8px;">
@@ -1071,20 +1315,11 @@
         </div>
       `;
 
-      // Populate article category dropdown
       populateArticleCategoryDropdown();
-
-      // Load dashboard data
       loadDashboardData();
-
-      // Load articles list
       loadArticlesList();
-
-      // Load shop data (categories & products)
       loadShopCategories();
       loadShopProducts();
-
-      // Auto-refresh
       startAutoRefresh();
     }
 
@@ -1101,6 +1336,7 @@
       });
       if (tab === 'dashboard') {
         loadDashboardData();
+        setTimeout(() => { if (clickMap) clickMap.invalidateSize(); }, 300);
       } else if (tab === 'articles') {
         loadArticlesList();
       } else if (tab === 'affiliates') {
@@ -1127,7 +1363,7 @@
     }
 
     // ============================================================
-    // DATE RANGE FILTERING (unchanged)
+    // DATE RANGE FILTERING
     // ============================================================
     function setQuickFilter(range) {
       const now = new Date();
@@ -1164,69 +1400,929 @@
     }
 
     // ============================================================
-    // DASHBOARD DATA (unchanged — kept as is from previous)
+    // DASHBOARD DATA (FULL)
     // ============================================================
     async function loadDashboardData() {
-      // ... (full existing function — omitted for brevity, but fully included in the final file)
-      // In practice we would include the full function, but since it's long I'll indicate it's present.
-      // For the final file, we'll include the complete function.
+      ['statTotal','stat24h','stat7d','stat30d','statUnique','statTopLink','statTopCountry'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = '…';
+      });
+
+      const now = new Date();
+      const dayAgo = new Date(now.getTime() - 24*60*60*1000);
+      const sevenDaysAgo = new Date(now.getTime() - 7*24*60*60*1000);
+      const thirtyDaysAgo = new Date(now.getTime() - 30*24*60*60*1000);
+
+      try {
+        const { data: allClicksRaw, error } = await supabaseClient
+          .from('click_logs')
+          .select('created_at, affiliate_key, link_url, visitor_id, country_code, article_id')
+          .order('created_at', { ascending: false });
+
+        if (error) throw error;
+
+        const allClicks = allClicksRaw || [];
+        const totalClicks = allClicks.length;
+
+        const dayFilter = dayAgo.toISOString();
+        const sevenFilter = sevenDaysAgo.toISOString();
+        const thirtyFilter = thirtyDaysAgo.toISOString();
+
+        const count24h = allClicks.filter(c => c.created_at >= dayFilter).length;
+        const count7d = allClicks.filter(c => c.created_at >= sevenFilter).length;
+        const count30d = allClicks.filter(c => c.created_at >= thirtyFilter).length;
+
+        const uniqueSet = new Set(allClicks.filter(c => c.created_at >= thirtyFilter).map(c => c.visitor_id).filter(Boolean));
+        const uniqueCount = uniqueSet.size;
+
+        const linkStatsGlobal = {};
+        const countryStatsGlobal = {};
+        allClicks.forEach(row => {
+          if (row.link_url) {
+            if (!linkStatsGlobal[row.link_url]) linkStatsGlobal[row.link_url] = { total: 0, unique: new Set() };
+            linkStatsGlobal[row.link_url].total++;
+            if (row.visitor_id) linkStatsGlobal[row.link_url].unique.add(row.visitor_id);
+          }
+          const cc = row.country_code || 'Unknown';
+          countryStatsGlobal[cc] = (countryStatsGlobal[cc] || 0) + 1;
+        });
+
+        const sortedLinksGlobal = Object.entries(linkStatsGlobal)
+          .map(([url, stats]) => ({ url, total: stats.total, unique: stats.unique.size }))
+          .sort((a, b) => b.total - a.total);
+        const topLink = sortedLinksGlobal.length ? (sortedLinksGlobal[0].url.length > 40 ? sortedLinksGlobal[0].url.substring(0,40)+'…' : sortedLinksGlobal[0].url) : '—';
+
+        const sortedCountriesGlobal = Object.entries(countryStatsGlobal).sort((a,b) => b[1] - a[1]);
+        const topCountry = sortedCountriesGlobal.length ? sortedCountriesGlobal[0][0] : '—';
+
+        document.getElementById('statTotal').textContent = totalClicks;
+        document.getElementById('stat24h').textContent = count24h;
+        document.getElementById('stat7d').textContent = count7d;
+        document.getElementById('stat30d').textContent = count30d;
+        document.getElementById('statUnique').textContent = uniqueCount;
+        document.getElementById('statTopLink').textContent = topLink;
+        document.getElementById('statTopCountry').textContent = topCountry;
+
+        // Date-aware charts
+        if (!currentStartDate && !currentEndDate) {
+          const defaultStart = new Date(now);
+          defaultStart.setDate(now.getDate() - 30);
+          currentStartDate = defaultStart;
+          currentEndDate = now;
+          document.getElementById('startDateInput').value = defaultStart.toISOString().split('T')[0];
+          document.getElementById('endDateInput').value = now.toISOString().split('T')[0];
+        }
+
+        const startISO = currentStartDate.toISOString();
+        const endISO = currentEndDate.toISOString();
+
+        let affiliateStats = {};
+        let linkStats = {};
+        let countryStats = {};
+        let articleStats = {};
+        let recentClicks = [];
+
+        // Try RPC first
+        let rpcSuccess = false;
+        try {
+          const { data: summary, error: summaryError } = await supabaseClient
+            .rpc('get_dashboard_summary', {
+              start_date: startISO,
+              end_date: endISO
+            });
+
+          if (!summaryError && summary) {
+            rpcSuccess = true;
+            if (summary.affiliate_breakdown) {
+              summary.affiliate_breakdown.forEach(item => {
+                affiliateStats[item.affiliate_key] = item.click_count;
+              });
+            }
+            if (summary.top_links) {
+              summary.top_links.forEach(item => {
+                linkStats[item.link_url] = { total: item.click_count, unique: item.unique_count };
+              });
+            }
+            if (summary.country_stats) {
+              summary.country_stats.forEach(item => {
+                countryStats[item.country] = item.click_count;
+              });
+            }
+
+            const { data: rangeClicks, error: rangeError } = await supabaseClient
+              .from('click_logs')
+              .select('created_at, affiliate_key, link_url, visitor_id, country_code, article_id')
+              .gte('created_at', startISO)
+              .lte('created_at', endISO)
+              .order('created_at', { ascending: false })
+              .limit(30);
+
+            if (!rangeError && rangeClicks) {
+              recentClicks = rangeClicks;
+              rangeClicks.forEach(row => {
+                if (row.article_id) {
+                  articleStats[row.article_id] = (articleStats[row.article_id] || 0) + 1;
+                }
+              });
+            }
+          }
+        } catch (rpcErr) {
+          console.warn('RPC failed, falling back to client-side filtering:', rpcErr);
+        }
+
+        if (!rpcSuccess) {
+          const filteredClicks = allClicks.filter(c => c.created_at >= startISO && c.created_at <= endISO);
+          recentClicks = filteredClicks.slice(0, 30);
+
+          filteredClicks.forEach(row => {
+            if (row.link_url) {
+              if (!linkStats[row.link_url]) linkStats[row.link_url] = { total: 0, unique: new Set() };
+              linkStats[row.link_url].total++;
+              if (row.visitor_id) linkStats[row.link_url].unique.add(row.visitor_id);
+            }
+            const cc = row.country_code || 'Unknown';
+            countryStats[cc] = (countryStats[cc] || 0) + 1;
+            if (row.affiliate_key) {
+              affiliateStats[row.affiliate_key] = (affiliateStats[row.affiliate_key] || 0) + 1;
+            }
+            if (row.article_id) {
+              articleStats[row.article_id] = (articleStats[row.article_id] || 0) + 1;
+            }
+          });
+
+          const linkStatsFinal = {};
+          Object.entries(linkStats).forEach(([url, stats]) => {
+            linkStatsFinal[url] = { total: stats.total, unique: stats.unique.size };
+          });
+          linkStats = linkStatsFinal;
+        }
+
+        // Render map
+        const countryStatsArray = Object.entries(countryStats).map(([country, count]) => ({ country, click_count: count }));
+        renderClickMap(countryStatsArray);
+
+        // Render affiliate breakdown
+        const sortedAffiliates = Object.entries(affiliateStats).sort((a,b) => b[1] - a[1]);
+        const tbodyAffiliate = document.getElementById('affiliateBreakdownBody');
+        if (tbodyAffiliate) {
+          if (sortedAffiliates.length === 0) {
+            tbodyAffiliate.innerHTML = `<tr><td colspan="2" style="text-align:center;">No data in selected period.</td></tr>`;
+          } else {
+            let rows = '';
+            sortedAffiliates.forEach(([key, count]) => {
+              rows += `<tr><td><code>${key}</code></td><td>${count}</td></tr>`;
+            });
+            tbodyAffiliate.innerHTML = rows;
+          }
+        }
+
+        // Chart
+        const labels = sortedAffiliates.map(([key]) => key);
+        const dataValues = sortedAffiliates.map(([, count]) => count);
+        const ctx = document.getElementById('affiliateChart')?.getContext('2d');
+        if (ctx) {
+          if (chartInstance) chartInstance.destroy();
+          chartInstance = new Chart(ctx, {
+            type: 'bar',
+            data: {
+              labels: labels,
+              datasets: [{
+                label: 'Clicks',
+                data: dataValues,
+                backgroundColor: '#ffdb10',
+                borderColor: '#b39b00',
+                borderWidth: 1
+              }]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: { legend: { display: false } },
+              scales: { y: { beginAtZero: true } }
+            }
+          });
+        }
+
+        // Top Links
+        const sortedLinks = Object.entries(linkStats)
+          .map(([url, stats]) => ({ url, total: stats.total, unique: stats.unique }))
+          .sort((a, b) => b.total - a.total);
+        const tbodyLinks = document.getElementById('topLinksBody');
+        if (tbodyLinks) {
+          if (sortedLinks.length === 0) {
+            tbodyLinks.innerHTML = `<tr><td colspan="3" style="text-align:center;">No clicks in selected period.</td></tr>`;
+          } else {
+            let rows = '';
+            sortedLinks.slice(0,10).forEach(item => {
+              const display = item.url.length > 50 ? item.url.substring(0,50)+'…' : item.url;
+              rows += `<tr><td><a href="${item.url}" target="_blank">${display}</a></td><td>${item.total}</td><td>${item.unique}</td></tr>`;
+            });
+            tbodyLinks.innerHTML = rows;
+          }
+        }
+
+        // Top Articles
+        const articleIds = Object.keys(articleStats).filter(id => id !== null).map(Number);
+        let articleMap = {};
+        if (articleIds.length > 0) {
+          const { data: articles, error: artError } = await supabaseClient
+            .from('articles')
+            .select('id, title')
+            .in('id', articleIds);
+          if (!artError && articles) {
+            articles.forEach(a => { articleMap[a.id] = a.title; });
+          }
+        }
+        const sortedArticles = Object.entries(articleStats)
+          .filter(([id]) => id !== null)
+          .map(([id, count]) => ({ id: Number(id), count, title: articleMap[id] || 'Unknown Article' }))
+          .sort((a,b) => b.count - a.count);
+        const tbodyArticles = document.getElementById('topArticlesBody');
+        if (tbodyArticles) {
+          if (sortedArticles.length === 0) {
+            tbodyArticles.innerHTML = `<tr><td colspan="2" style="text-align:center;">No article clicks in selected period.</td></tr>`;
+          } else {
+            let rows = '';
+            sortedArticles.slice(0,10).forEach(item => {
+              const titleDisplay = item.title.length > 40 ? item.title.substring(0,40)+'…' : item.title;
+              rows += `<tr><td>${titleDisplay}</td><td>${item.count}</td></tr>`;
+            });
+            tbodyArticles.innerHTML = rows;
+          }
+        }
+
+        // Region Distribution
+        const sortedCountries = Object.entries(countryStats).sort((a,b) => b[1] - a[1]);
+        const tbodyRegion = document.getElementById('regionBody');
+        if (tbodyRegion) {
+          if (sortedCountries.length === 0) {
+            tbodyRegion.innerHTML = `<tr><td colspan="2" style="text-align:center;">No data in selected period.</td></tr>`;
+          } else {
+            let rows = '';
+            sortedCountries.forEach(([country, count]) => {
+              rows += `<tr><td>${country}</td><td>${count}</td></tr>`;
+            });
+            tbodyRegion.innerHTML = rows;
+          }
+        }
+
+        // Recent Clicks
+        const recentArticleIds = recentClicks.map(r => r.article_id).filter(id => id !== null).map(Number);
+        let recentArticleMap = {};
+        if (recentArticleIds.length > 0) {
+          const { data: recentArts, error: rArtError } = await supabaseClient
+            .from('articles')
+            .select('id, title')
+            .in('id', recentArticleIds);
+          if (!rArtError && recentArts) {
+            recentArts.forEach(a => { recentArticleMap[a.id] = a.title; });
+          }
+        }
+        const tbodyRecent = document.getElementById('recentBody');
+        if (tbodyRecent) {
+          if (recentClicks.length === 0) {
+            tbodyRecent.innerHTML = `<tr><td colspan="5" style="text-align:center;">No clicks in selected period.</td></tr>`;
+          } else {
+            let rows = '';
+            recentClicks.forEach(row => {
+              const time = new Date(row.created_at).toLocaleString();
+              const articleTitle = row.article_id ? (recentArticleMap[row.article_id] || 'Unknown') : '—';
+              const displayLink = row.link_url ? (row.link_url.length > 40 ? row.link_url.substring(0,40)+'…' : row.link_url) : '—';
+              rows += `<tr>
+                <td>${time}</td>
+                <td>${articleTitle}</td>
+                <td><a href="${row.link_url || '#'}" target="_blank">${displayLink}</a></td>
+                <td><code>${row.affiliate_key || '—'}</code></td>
+                <td>${row.country_code || 'Unknown'}</td>
+              </tr>`;
+            });
+            tbodyRecent.innerHTML = rows;
+          }
+        }
+
+      } catch (err) {
+        console.error('Dashboard error:', err);
+        const grid = document.getElementById('statsGrid');
+        if (grid) grid.innerHTML = `<div style="grid-column:1/-1; color:var(--muted);">Error loading dashboard. Please refresh.</div>`;
+      }
     }
 
-    // For the actual file, we'll include the complete loadDashboardData function.
-    // Since we are building the final code, we'll include it fully.
+    // ============================================================
+    // RENDER CLICK MAP
+    // ============================================================
+    function renderClickMap(countryStats) {
+      const mapContainer = document.getElementById('clickMap');
+      if (!mapContainer) return;
+
+      if (clickMap) {
+        clickMap.remove();
+        clickMap = null;
+      }
+
+      if (!countryStats || countryStats.length === 0) {
+        mapContainer.innerHTML = `
+          <div style="display:flex; align-items:center; justify-content:center; height:100%; color:var(--muted); background:#f7f9fc; border-radius:var(--radius);">
+            <span>No click data available for the selected period.</span>
+          </div>
+        `;
+        return;
+      }
+
+      const validCountries = countryStats
+        .filter(item => item.click_count > 0 && countryCoords[item.country.toUpperCase()])
+        .map(item => ({
+          ...item,
+          coords: countryCoords[item.country.toUpperCase()]
+        }));
+
+      if (validCountries.length === 0) {
+        mapContainer.innerHTML = `
+          <div style="display:flex; align-items:center; justify-content:center; height:100%; color:var(--muted); background:#f7f9fc; border-radius:var(--radius);">
+            <span>No clicks recorded from countries with known coordinates.</span>
+          </div>
+        `;
+        return;
+      }
+
+      try {
+        clickMap = L.map(mapContainer).setView([20, 0], 2);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+          maxZoom: 19,
+          minZoom: 1
+        }).addTo(clickMap);
+
+        const maxClicks = Math.max(...validCountries.map(item => item.click_count), 1);
+
+        validCountries.forEach(item => {
+          const { lat, lng, name } = item.coords;
+          const count = item.click_count;
+          const radius = Math.max(8, Math.min(50, 8 + Math.sqrt(count / maxClicks) * 42));
+          const hue = 40 - (count / maxClicks) * 20;
+          const lightness = 70 - (count / maxClicks) * 30;
+          const color = `hsl(${hue}, 100%, ${lightness}%)`;
+          const borderColor = `hsl(${hue}, 100%, ${Math.max(20, lightness - 20)}%)`;
+
+          L.circleMarker([lat, lng], {
+            radius: radius,
+            fillColor: color,
+            color: borderColor,
+            weight: 1.5,
+            opacity: 0.8,
+            fillOpacity: 0.85
+          })
+          .bindPopup(`
+            <div style="font-family: Inter, sans-serif; min-width: 120px;">
+              <strong>${name}</strong><br />
+              <span style="font-size: 1.1rem; font-weight: 700; color: var(--yellow-darker);">${count} click${count !== 1 ? 's' : ''}</span>
+            </div>
+          `)
+          .addTo(clickMap);
+        });
+
+        const legend = L.control({ position: 'bottomright' });
+        legend.onAdd = function() {
+          const div = L.DomUtil.create('div', 'map-legend');
+          const sizes = [
+            { label: 'Low', radius: 10 },
+            { label: 'Medium', radius: 20 },
+            { label: 'High', radius: 35 },
+            { label: 'Very High', radius: 50 }
+          ];
+          let html = '<div style="font-weight:700; margin-bottom:6px;">Click Volume</div>';
+          sizes.forEach(size => {
+            html += `
+              <div class="legend-item">
+                <span class="legend-circle" style="width:${size.radius}px; height:${size.radius}px; background:hsl(30, 100%, 55%); border-color:#333;"></span>
+                ${size.label}
+              </div>
+            `;
+          });
+          div.innerHTML = html;
+          return div;
+        };
+        legend.addTo(clickMap);
+
+        setTimeout(() => { if (clickMap) clickMap.invalidateSize(); }, 200);
+
+      } catch (err) {
+        console.error('Map rendering error:', err);
+        mapContainer.innerHTML = `
+          <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; color:var(--muted); background:#f7f9fc; border-radius:var(--radius); padding:20px; text-align:center;">
+            <span style="font-size:1.2rem; margin-bottom:8px;">⚠️ Could not load map</span>
+            <span style="font-size:0.9rem;">${err.message || 'Please try again later.'}</span>
+          </div>
+        `;
+        clickMap = null;
+      }
+    }
 
     // ============================================================
-    // CSV EXPORT (unchanged)
+    // CSV EXPORT
     // ============================================================
     function exportCSV(type) {
-      // ... (full function included in final file)
+      let data = [];
+      let headers = [];
+      let filename = '';
+
+      if (type === 'clicks') {
+        const tbody = document.getElementById('recentBody');
+        const rows = tbody.querySelectorAll('tr');
+        if (rows.length === 0 || rows[0].textContent.includes('No clicks')) {
+          alert('No data to export.');
+          return;
+        }
+        headers = ['Time', 'Article', 'Link', 'Affiliate Key', 'Country'];
+        data = Array.from(rows).map(row => {
+          const cells = row.querySelectorAll('td');
+          return Array.from(cells).map(cell => cell.textContent.trim());
+        }).filter(row => row.length > 0);
+        filename = `click_logs_${new Date().toISOString().split('T')[0]}.csv`;
+      } else if (type === 'affiliates') {
+        const tbody = document.getElementById('affiliateBreakdownBody');
+        const rows = tbody.querySelectorAll('tr');
+        if (rows.length === 0 || rows[0].textContent.includes('No data')) {
+          alert('No data to export.');
+          return;
+        }
+        headers = ['Affiliate Key', 'Clicks'];
+        data = Array.from(rows).map(row => {
+          const cells = row.querySelectorAll('td');
+          return Array.from(cells).map(cell => cell.textContent.trim());
+        }).filter(row => row.length > 0);
+        filename = `affiliate_breakdown_${new Date().toISOString().split('T')[0]}.csv`;
+      } else {
+        alert('Invalid export type.');
+        return;
+      }
+
+      let csvContent = headers.join(',') + '\n';
+      data.forEach(row => {
+        const escapedRow = row.map(cell => `"${cell.replace(/"/g, '""')}"`);
+        csvContent += escapedRow.join(',') + '\n';
+      });
+
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      const url = URL.createObjectURL(blob);
+      link.href = url;
+      link.setAttribute('download', filename);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
     }
 
     // ============================================================
-    // GENERATE SITEMAP (unchanged)
+    // GENERATE SITEMAP
     // ============================================================
     async function generateSitemap() {
-      // ... (full function included in final file)
+      if (!confirm('🔄 Generate a fresh sitemap.xml from all your articles?\n\nThis will download a file you can upload to your website root.')) return;
+
+      try {
+        const { data: articles, error } = await supabaseClient
+          .from('articles')
+          .select('slug, title, created_at')
+          .order('created_at', { ascending: false });
+
+        if (error) throw error;
+
+        const baseUrl = 'https://rheoa.github.io';
+        const now = new Date().toISOString().split('T')[0];
+
+        let xml = '<?xml version="1.0" encoding="UTF-8"?>\n';
+        xml += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n';
+
+        const staticPages = [
+          { loc: '/', priority: '1.0', changefreq: 'daily' },
+          { loc: '/privacy.html', priority: '0.3', changefreq: 'yearly' },
+          { loc: '/terms.html', priority: '0.3', changefreq: 'yearly' },
+          { loc: '/affiliate-disclosure.html', priority: '0.3', changefreq: 'yearly' },
+          { loc: '/cookie-policy.html', priority: '0.3', changefreq: 'yearly' },
+        ];
+        staticPages.forEach(page => {
+          xml += `  <url>\n    <loc>${baseUrl}${page.loc}</loc>\n    <lastmod>${now}</lastmod>\n    <changefreq>${page.changefreq}</changefreq>\n    <priority>${page.priority}</priority>\n  </url>\n`;
+        });
+
+        articles.forEach(article => {
+          const lastmod = article.created_at ? article.created_at.split('T')[0] : now;
+          xml += `  <url>\n    <loc>${baseUrl}/#article-${article.slug}</loc>\n    <lastmod>${lastmod}</lastmod>\n    <changefreq>monthly</changefreq>\n    <priority>0.8</priority>\n  </url>\n`;
+        });
+
+        xml += '</urlset>';
+
+        const blob = new Blob([xml], { type: 'application/xml' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = 'sitemap.xml';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(link.href);
+
+        alert(`✅ Sitemap generated successfully with ${articles.length} articles!\n\nThe file has been downloaded. Upload it to your website root folder.`);
+      } catch (err) {
+        console.error('Sitemap generation error:', err);
+        alert('❌ Error generating sitemap: ' + err.message);
+      }
     }
 
     // ============================================================
-    // SEO PREVIEW (unchanged)
+    // SEO META PREVIEW
     // ============================================================
     function updateSEOPreview() {
-      // ... (full function included in final file)
+      const titleInput = document.getElementById('articleTitleInput');
+      const descInput = document.getElementById('articleDescInput');
+      const slugInput = document.getElementById('articleSlugInput');
+
+      const title = titleInput ? titleInput.value.trim() : 'Your Article Title';
+      const desc = descInput ? descInput.value.trim() : 'Your description will appear here. Keep it under 160 characters.';
+      const slug = slugInput ? slugInput.value.trim() : 'article-slug';
+
+      const previewTitle = document.getElementById('seoPreviewTitle');
+      const previewUrl = document.getElementById('seoPreviewUrl');
+      const previewDesc = document.getElementById('seoPreviewDesc');
+
+      if (previewTitle) previewTitle.textContent = title || 'Untitled Article';
+      if (previewUrl) previewUrl.textContent = `worlddiscovery.com / ${slug || 'article-slug'}`;
+      if (previewDesc) previewDesc.textContent = desc || 'No description provided.';
+
+      const titleCount = document.getElementById('seoTitleCount');
+      const descCount = document.getElementById('seoDescCount');
+      const titleWarning = document.getElementById('seoTitleWarning');
+      const descWarning = document.getElementById('seoDescWarning');
+
+      const titleLen = title.length;
+      const descLen = desc.length;
+
+      if (titleCount) titleCount.textContent = titleLen;
+      if (descCount) descCount.textContent = descLen;
+
+      if (titleWarning) {
+        if (titleLen > 60) {
+          titleWarning.textContent = '⚠️ Too long (max 60)';
+          titleWarning.className = 'warning';
+        } else if (titleLen < 30 && titleLen > 0) {
+          titleWarning.textContent = '💡 Try to reach 30-60 chars';
+          titleWarning.className = 'warning';
+        } else if (titleLen >= 30 && titleLen <= 60) {
+          titleWarning.textContent = '✅ Good length';
+          titleWarning.className = 'good';
+        } else {
+          titleWarning.textContent = '';
+        }
+      }
+
+      if (descWarning) {
+        if (descLen > 160) {
+          descWarning.textContent = '⚠️ Too long (max 160)';
+          descWarning.className = 'warning';
+        } else if (descLen < 80 && descLen > 0) {
+          descWarning.textContent = '💡 Try to reach 120-160 chars';
+          descWarning.className = 'warning';
+        } else if (descLen >= 120 && descLen <= 160) {
+          descWarning.textContent = '✅ Good length';
+          descWarning.className = 'good';
+        } else if (descLen > 0) {
+          descWarning.textContent = '💡 Try to reach 120-160 chars';
+          descWarning.className = 'warning';
+        } else {
+          descWarning.textContent = '';
+        }
+      }
     }
 
     // ============================================================
-    // ARTICLES LIST (unchanged)
+    // ARTICLES LIST (FULL)
     // ============================================================
     async function loadArticlesList() {
-      // ... (full function included in final file)
+      const tbody = document.getElementById('articlesTableBody');
+      if (!tbody) return;
+      tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">Loading articles…</td></tr>';
+
+      try {
+        const { data: articles, error } = await supabaseClient
+          .from('articles')
+          .select('id, title, tag, featured, views, created_at, slug')
+          .order('created_at', { ascending: false });
+
+        if (error) throw error;
+
+        if (!articles || articles.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">No articles found. Create your first article!</td></tr>';
+          return;
+        }
+
+        let rows = '';
+        articles.forEach(article => {
+          const created = article.created_at ? new Date(article.created_at).toLocaleDateString() : '—';
+          const tagName = CATEGORIES.find(c => c.tag === article.tag)?.name || article.tag || '—';
+          rows += `
+            <tr>
+              <td>${article.id}</td>
+              <td><a href="../#article-${article.slug}" target="_blank" style="color:var(--yellow-darker); font-weight:600;">${article.title}</a></td>
+              <td>${tagName}</td>
+              <td><span class="badge ${article.featured ? 'badge-yes' : 'badge-no'}">${article.featured ? 'Yes' : 'No'}</span></td>
+              <td>${article.views || 0}</td>
+              <td>${created}</td>
+              <td style="text-align:center; white-space:nowrap;">
+                <button class="btn-edit btn-sm" onclick="editArticle(${article.id})">✏️ Edit</button>
+                <button class="btn-danger btn-sm" onclick="deleteArticle(${article.id})">🗑️ Delete</button>
+              </td>
+            </tr>
+          `;
+        });
+        tbody.innerHTML = rows;
+
+      } catch (err) {
+        console.error('Error loading articles:', err);
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; color:var(--muted);">⚠️ Could not load articles.</td></tr>';
+      }
     }
 
     // ============================================================
-    // ARTICLE MODAL (unchanged)
+    // ARTICLE MODAL (FULL)
     // ============================================================
     function openArticleModal(articleData) {
-      // ... (full function included in final file)
+      const modal = document.getElementById('articleModal');
+      const isEdit = !!articleData;
+
+      document.getElementById('modalTitle').textContent = isEdit ? 'Edit Article' : 'Add New Article';
+      document.getElementById('editArticleId').value = isEdit ? articleData.id : '';
+      document.getElementById('articleTitleInput').value = isEdit ? articleData.title : '';
+      document.getElementById('articleSlugInput').value = isEdit ? articleData.slug : '';
+      document.getElementById('articleDescInput').value = isEdit ? (articleData.description || '') : '';
+      document.getElementById('articleTagInput').value = isEdit ? articleData.tag : '';
+      document.getElementById('articleImageInput').value = isEdit ? (articleData.image_url || '') : '';
+      document.getElementById('articleContentInput').value = isEdit ? (articleData.content || '') : '';
+      document.getElementById('articleFeaturedInput').checked = isEdit ? !!articleData.featured : false;
+      document.getElementById('articleViewCount').textContent = isEdit ? `Views: ${articleData.views || 0}` : 'Views: 0';
+      document.getElementById('articleCreatedAt').textContent = isEdit && articleData.created_at ? `Created: ${new Date(articleData.created_at).toLocaleDateString()}` : 'Created: —';
+      document.getElementById('modalSaveBtn').textContent = isEdit ? 'Update Article' : 'Create Article';
+
+      setTimeout(updateSEOPreview, 50);
+      modal.classList.add('show');
     }
-    function closeArticleModal() { /* ... */ }
-    async function editArticle(id) { /* ... */ }
-    async function saveArticle(e) { /* ... */ }
-    async function deleteArticle(id) { /* ... */ }
+
+    function closeArticleModal() {
+      document.getElementById('articleModal').classList.remove('show');
+      document.getElementById('articleForm').reset();
+      document.getElementById('editArticleId').value = '';
+    }
+
+    async function editArticle(id) {
+      try {
+        const { data: article, error } = await supabaseClient
+          .from('articles')
+          .select('*')
+          .eq('id', id)
+          .single();
+        if (error) throw error;
+        openArticleModal(article);
+      } catch (err) {
+        console.error('Error fetching article:', err);
+        alert('Could not load article for editing.');
+      }
+    }
+
+    async function saveArticle(e) {
+      e.preventDefault();
+      const id = document.getElementById('editArticleId').value;
+      const title = document.getElementById('articleTitleInput').value.trim();
+      const slug = document.getElementById('articleSlugInput').value.trim();
+      const description = document.getElementById('articleDescInput').value.trim();
+      const tag = document.getElementById('articleTagInput').value;
+      const image_url = document.getElementById('articleImageInput').value.trim();
+      const content = document.getElementById('articleContentInput').value;
+      const featured = document.getElementById('articleFeaturedInput').checked;
+
+      if (!title || !slug || !tag || !content) {
+        alert('Please fill in all required fields (Title, Slug, Tag, Content).');
+        return;
+      }
+      if (slug.includes(' ')) {
+        alert('Slug cannot contain spaces. Use hyphens instead.');
+        return;
+      }
+
+      const articleData = { title, slug, description: description || null, tag, image_url: image_url || null, content, featured };
+
+      try {
+        if (id) {
+          const { error } = await supabaseClient
+            .from('articles')
+            .update(articleData)
+            .eq('id', parseInt(id));
+          if (error) throw error;
+          alert('Article updated successfully!');
+        } else {
+          const { error } = await supabaseClient
+            .from('articles')
+            .insert([{ ...articleData, views: 0 }]);
+          if (error) throw error;
+          alert('Article created successfully!');
+        }
+        closeArticleModal();
+        loadArticlesList();
+      } catch (err) {
+        console.error('Error saving article:', err);
+        alert('Error saving article: ' + err.message);
+      }
+    }
+
+    async function deleteArticle(id) {
+      if (!confirm('Are you sure you want to delete this article? This action cannot be undone.')) return;
+      try {
+        const { error } = await supabaseClient
+          .from('articles')
+          .delete()
+          .eq('id', id);
+        if (error) throw error;
+        alert('Article deleted successfully.');
+        loadArticlesList();
+      } catch (err) {
+        console.error('Error deleting article:', err);
+        alert('Error deleting article: ' + err.message);
+      }
+    }
 
     // ============================================================
-    // AFFILIATE LINKS (for articles) — unchanged
+    // AFFILIATE LINKS (for articles) — FULL
     // ============================================================
-    async function openAffiliateModal(linkData) { /* ... */ }
-    function closeAffiliateModal() { /* ... */ }
-    async function populateArticleDropdown(selectedId) { /* ... */ }
-    async function saveAffiliateLink(e) { /* ... */ }
-    async function deleteAffiliateLink(id) { /* ... */ }
-    async function loadAffiliateLinks() { /* ... */ }
-    async function editAffiliateLink(id) { /* ... */ }
+    async function openAffiliateModal(linkData) {
+      const modal = document.getElementById('affiliateModal');
+      const isEdit = !!linkData;
+
+      document.getElementById('affiliateModalTitle').textContent = isEdit ? 'Edit Affiliate Link' : 'Add New Affiliate Link';
+      document.getElementById('editAffiliateId').value = isEdit ? linkData.id : '';
+      document.getElementById('affiliateCountryInput').value = isEdit ? linkData.country_code : '';
+      document.getElementById('affiliateKeyInput').value = isEdit ? linkData.affiliate_key : '';
+      document.getElementById('affiliateUrlInput').value = isEdit ? linkData.link_url : '';
+      document.getElementById('affiliateModalSaveBtn').textContent = isEdit ? 'Update Link' : 'Create Link';
+
+      await populateArticleDropdown(isEdit ? linkData.article_id : null);
+      modal.classList.add('show');
+    }
+
+    function closeAffiliateModal() {
+      document.getElementById('affiliateModal').classList.remove('show');
+      document.getElementById('affiliateForm').reset();
+      document.getElementById('editAffiliateId').value = '';
+    }
+
+    async function populateArticleDropdown(selectedId) {
+      const select = document.getElementById('affiliateArticleSelect');
+      if (!select) return;
+      select.innerHTML = '<option value="">Loading articles...</option>';
+      try {
+        const { data: articles, error } = await supabaseClient
+          .from('articles')
+          .select('id, title')
+          .order('title', { ascending: true });
+        if (error) throw error;
+        select.innerHTML = '<option value="">Select an article...</option>';
+        if (articles) {
+          articles.forEach(article => {
+            const opt = document.createElement('option');
+            opt.value = article.id;
+            opt.textContent = `${article.title} (ID: ${article.id})`;
+            if (selectedId && article.id === selectedId) opt.selected = true;
+            select.appendChild(opt);
+          });
+        }
+      } catch (err) {
+        console.error('Error loading articles for dropdown:', err);
+        select.innerHTML = '<option value="">Error loading articles</option>';
+      }
+    }
+
+    async function saveAffiliateLink(e) {
+      e.preventDefault();
+      const id = document.getElementById('editAffiliateId').value;
+      const article_id = document.getElementById('affiliateArticleSelect').value;
+      const country_code = document.getElementById('affiliateCountryInput').value.trim();
+      const affiliate_key = document.getElementById('affiliateKeyInput').value.trim();
+      const link_url = document.getElementById('affiliateUrlInput').value.trim();
+
+      if (!article_id || !country_code || !affiliate_key || !link_url) {
+        alert('Please fill in all required fields.');
+        return;
+      }
+
+      const payload = { article_id: parseInt(article_id), country_code, affiliate_key, link_url };
+
+      try {
+        if (id) {
+          const { error } = await supabaseClient
+            .from('affiliate_links')
+            .update(payload)
+            .eq('id', parseInt(id));
+          if (error) throw error;
+          alert('Affiliate link updated successfully!');
+        } else {
+          const { error } = await supabaseClient
+            .from('affiliate_links')
+            .insert([payload]);
+          if (error) {
+            if (error.code === '23505') {
+              alert('Duplicate link! This combination of Article, Country, and Key already exists.');
+            } else throw error;
+            return;
+          }
+          alert('Affiliate link created successfully!');
+        }
+        closeAffiliateModal();
+        loadAffiliateLinks();
+      } catch (err) {
+        console.error('Error saving affiliate link:', err);
+        alert('Error saving link: ' + err.message);
+      }
+    }
+
+    async function deleteAffiliateLink(id) {
+      if (!confirm('Are you sure you want to delete this affiliate link?')) return;
+      try {
+        const { error } = await supabaseClient
+          .from('affiliate_links')
+          .delete()
+          .eq('id', id);
+        if (error) throw error;
+        alert('Link deleted successfully.');
+        loadAffiliateLinks();
+      } catch (err) {
+        console.error('Error deleting link:', err);
+        alert('Error deleting link: ' + err.message);
+      }
+    }
+
+    async function loadAffiliateLinks() {
+      const tbody = document.getElementById('affiliatesTableBody');
+      if (!tbody) return;
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Loading links…</td></tr>';
+
+      try {
+        const { data: links, error } = await supabaseClient
+          .from('affiliate_links')
+          .select(`
+            id,
+            affiliate_key,
+            country_code,
+            link_url,
+            article_id,
+            articles ( id, title )
+          `)
+          .order('article_id', { ascending: true });
+
+        if (error) throw error;
+
+        if (!links || links.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">No affiliate links found.</td></tr>';
+          return;
+        }
+
+        let rows = '';
+        links.forEach(link => {
+          const articleTitle = link.articles ? link.articles.title : `Article ${link.article_id} (deleted)`;
+          const displayUrl = link.link_url.length > 40 ? link.link_url.substring(0, 40) + '…' : link.link_url;
+          rows += `
+            <tr>
+              <td>${link.id}</td>
+              <td><strong>${articleTitle}</strong></td>
+              <td><code>${link.affiliate_key}</code></td>
+              <td><span class="badge badge-yes">${link.country_code}</span></td>
+              <td><a href="${link.link_url}" target="_blank" title="${link.link_url}">${displayUrl}</a></td>
+              <td style="text-align:center; white-space:nowrap;">
+                <button class="btn-edit btn-sm" onclick="editAffiliateLink(${link.id})">✏️ Edit</button>
+                <button class="btn-danger btn-sm" onclick="deleteAffiliateLink(${link.id})">🗑️ Delete</button>
+              </td>
+            </tr>
+          `;
+        });
+        tbody.innerHTML = rows;
+
+      } catch (err) {
+        console.error('Error loading affiliate links:', err);
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:var(--muted);">⚠️ Could not load links.</td></tr>';
+      }
+    }
+
+    async function editAffiliateLink(id) {
+      try {
+        const { data: link, error } = await supabaseClient
+          .from('affiliate_links')
+          .select('*')
+          .eq('id', id)
+          .single();
+        if (error) throw error;
+        openAffiliateModal(link);
+      } catch (err) {
+        console.error('Error fetching affiliate link:', err);
+        alert('Could not load link for editing.');
+      }
+    }
 
     // ============================================================
-    // 🆕 SHOP MANAGEMENT FUNCTIONS
+    // SHOP MANAGEMENT FUNCTIONS
     // ============================================================
 
     // ---------- Categories ----------
@@ -1265,7 +2361,6 @@
         });
         tbody.innerHTML = rows;
 
-        // Also update the filter dropdown and product modal category select
         populateCategoryFilterDropdown(categories);
         populateProductCategorySelect(categories);
 
@@ -1278,7 +2373,6 @@
     function populateCategoryFilterDropdown(categories) {
       const select = document.getElementById('productCategoryFilter');
       if (!select) return;
-      // Keep the "All" option, then add categories
       select.innerHTML = '<option value="all">All</option>';
       if (categories) {
         categories.forEach(cat => {
@@ -1304,18 +2398,15 @@
       }
     }
 
-    // Category Modal
     function openCategoryModal(categoryData) {
       const modal = document.getElementById('categoryModal');
       const isEdit = !!categoryData;
-
       document.getElementById('categoryModalTitle').textContent = isEdit ? 'Edit Category' : 'Add New Category';
       document.getElementById('editCategoryId').value = isEdit ? categoryData.id : '';
       document.getElementById('categoryNameInput').value = isEdit ? categoryData.name : '';
       document.getElementById('categorySlugInput').value = isEdit ? categoryData.slug : '';
       document.getElementById('categorySortOrderInput').value = isEdit ? categoryData.sort_order : '0';
       document.getElementById('categoryModalSaveBtn').textContent = isEdit ? 'Update Category' : 'Create Category';
-
       modal.classList.add('show');
     }
 
@@ -1375,7 +2466,7 @@
         }
         closeCategoryModal();
         loadShopCategories();
-        loadShopProducts(); // refresh products too (filter dropdown)
+        loadShopProducts();
       } catch (err) {
         console.error('Error saving category:', err);
         alert('Error saving category: ' + err.message);
@@ -1465,11 +2556,9 @@
       }
     }
 
-    // Product Modal
     function openProductModal(productData) {
       const modal = document.getElementById('productModal');
       const isEdit = !!productData;
-
       document.getElementById('productModalTitle').textContent = isEdit ? 'Edit Product' : 'Add New Product';
       document.getElementById('editProductId').value = isEdit ? productData.id : '';
       document.getElementById('productCategorySelect').value = isEdit ? productData.category_id : '';
@@ -1482,7 +2571,6 @@
       document.getElementById('productRecommendedInput').checked = isEdit ? !!productData.is_recommended : false;
       document.getElementById('productStatusInput').value = isEdit ? productData.status : 'published';
       document.getElementById('productModalSaveBtn').textContent = isEdit ? 'Update Product' : 'Create Product';
-
       modal.classList.add('show');
     }
 
@@ -1586,7 +2674,7 @@
 
     // ---------- Product Affiliate Links ----------
     async function manageProductAffiliateLinks(productId) {
-      // Fetch product name to display in modal title
+      // Fetch product name
       const { data: product, error } = await supabaseClient
         .from('products')
         .select('name')
@@ -1597,22 +2685,198 @@
         return;
       }
 
-      // We'll reuse the product affiliate modal but we need to list existing links in a table inside the modal?
-      // To keep it simple, we'll open a separate modal with a list of links and add/edit/delete buttons.
-      // We'll implement a simple inline approach: we'll open a modal with a table of existing links and a button to add new.
-      // For brevity, we'll use a simple prompt-style approach, but we'll implement a proper modal.
+      // Fetch existing affiliate links
+      const { data: links, error: linkError } = await supabaseClient
+        .from('product_affiliate_links')
+        .select('*')
+        .eq('product_id', productId)
+        .order('country_code', { ascending: true });
 
-      // Let's create a custom prompt: we'll use a confirmation dialog with a list of links.
-      // Actually, we'll use the existing productAffiliateModal for add/edit, and a separate list in the modal.
-      // To avoid overcomplicating, we'll fetch links and display in a table within the modal,
-      // and provide add/edit/delete buttons.
+      if (linkError) {
+        alert('Could not load affiliate links.');
+        return;
+      }
 
-      // We'll implement a new modal specifically for managing product affiliate links.
-      // For simplicity, we'll use a modal with a table.
+      // Build a modal or use a prompt-based approach
+      // For simplicity, we'll open a modal with a table of links and add/edit/delete buttons
+      // We'll use the existing productAffiliateModal
 
-      // We'll implement this fully.
-      // Since the code is getting long, we'll include the full implementation in the final file.
-      // For now, we'll put a placeholder and will include full code in the final output.
+      // Show a list in a simple alert for now (we'll use the modal approach)
+      // Actually, we'll implement a proper modal.
+      // We'll set the product ID in the hidden field and open the modal.
+      // The modal will display existing links in a table (we'll render dynamically).
+
+      // We'll implement the modal with a table for existing links.
+      // For this implementation, we'll open the productAffiliateModal and render links inside it.
+
+      // Let's create a quick UI inside the modal using a div.
+      // We'll fetch and display links when the modal opens.
+
+      document.getElementById('productAffiliateProductId').value = productId;
+      document.getElementById('productAffiliateModalTitle').textContent = `Affiliate Links for "${product.name}"`;
+      document.getElementById('editProductAffiliateId').value = '';
+      document.getElementById('productAffiliateCountryInput').value = '';
+      document.getElementById('productAffiliateKeyInput').value = '';
+      document.getElementById('productAffiliateUrlInput').value = '';
+      document.getElementById('productAffiliateModalSaveBtn').textContent = 'Add Link';
+
+      // Show existing links in a table inside the modal
+      // We'll add a container inside the modal for the links list
+      // Let's dynamically add a table above the form
+
+      const modal = document.getElementById('productAffiliateModal');
+      
+      // Check if a links table already exists in the modal
+      let linksContainer = document.getElementById('productAffiliateLinksList');
+      if (!linksContainer) {
+        // Create the container
+        linksContainer = document.createElement('div');
+        linksContainer.id = 'productAffiliateLinksList';
+        linksContainer.style.marginBottom = '16px';
+        // Insert it before the form
+        const form = document.getElementById('productAffiliateForm');
+        form.parentNode.insertBefore(linksContainer, form);
+      }
+
+      // Render the links table
+      if (links && links.length > 0) {
+        let html = `
+          <div style="overflow-x:auto; margin-bottom:12px; border:1px solid var(--border); border-radius:8px; padding:8px;">
+            <table style="width:100%; font-size:0.85rem;">
+              <thead><tr>
+                <th>ID</th>
+                <th>Country</th>
+                <th>Key</th>
+                <th>URL</th>
+                <th style="text-align:center;">Actions</th>
+              </tr></thead>
+              <tbody>
+        `;
+        links.forEach(link => {
+          const displayUrl = link.link_url.length > 30 ? link.link_url.substring(0,30) + '…' : link.link_url;
+          html += `
+            <tr>
+              <td>${link.id}</td>
+              <td><span class="badge badge-yes">${link.country_code}</span></td>
+              <td><code>${link.affiliate_key}</code></td>
+              <td><a href="${link.link_url}" target="_blank" title="${link.link_url}">${displayUrl}</a></td>
+              <td style="text-align:center; white-space:nowrap;">
+                <button class="btn-edit btn-sm" onclick="editProductAffiliateLink(${link.id})">✏️</button>
+                <button class="btn-danger btn-sm" onclick="deleteProductAffiliateLink(${link.id})">🗑️</button>
+              </td>
+            </tr>
+          `;
+        });
+        html += `</tbody></table></div>`;
+        linksContainer.innerHTML = html;
+      } else {
+        linksContainer.innerHTML = `<p style="color:var(--muted); font-size:0.9rem; margin-bottom:12px;">No affiliate links yet. Add one below.</p>`;
+      }
+
+      modal.classList.add('show');
+    }
+
+    function closeProductAffiliateModal() {
+      document.getElementById('productAffiliateModal').classList.remove('show');
+      document.getElementById('productAffiliateForm').reset();
+      document.getElementById('editProductAffiliateId').value = '';
+      document.getElementById('productAffiliateProductId').value = '';
+      // Remove the links list container to avoid duplicates
+      const container = document.getElementById('productAffiliateLinksList');
+      if (container) container.remove();
+    }
+
+    async function saveProductAffiliateLink(e) {
+      e.preventDefault();
+      const id = document.getElementById('editProductAffiliateId').value;
+      const product_id = document.getElementById('productAffiliateProductId').value;
+      const country_code = document.getElementById('productAffiliateCountryInput').value.trim();
+      const affiliate_key = document.getElementById('productAffiliateKeyInput').value.trim();
+      const link_url = document.getElementById('productAffiliateUrlInput').value.trim();
+
+      if (!product_id || !country_code || !affiliate_key || !link_url) {
+        alert('Please fill in all required fields.');
+        return;
+      }
+
+      const payload = { product_id: parseInt(product_id), country_code, affiliate_key, link_url };
+
+      try {
+        if (id) {
+          const { error } = await supabaseClient
+            .from('product_affiliate_links')
+            .update(payload)
+            .eq('id', parseInt(id));
+          if (error) throw error;
+          alert('Affiliate link updated successfully!');
+        } else {
+          const { error } = await supabaseClient
+            .from('product_affiliate_links')
+            .insert([payload]);
+          if (error) {
+            if (error.code === '23505') {
+              alert('Duplicate link! This combination of Product, Country, and Key already exists.');
+            } else throw error;
+            return;
+          }
+          alert('Affiliate link created successfully!');
+        }
+        closeProductAffiliateModal();
+        // Refresh the product list and also the links view
+        loadShopProducts();
+        // Re-open the links modal to show updated list
+        manageProductAffiliateLinks(parseInt(product_id));
+      } catch (err) {
+        console.error('Error saving product affiliate link:', err);
+        alert('Error saving link: ' + err.message);
+      }
+    }
+
+    async function editProductAffiliateLink(id) {
+      try {
+        const { data: link, error } = await supabaseClient
+          .from('product_affiliate_links')
+          .select('*')
+          .eq('id', id)
+          .single();
+        if (error) throw error;
+        document.getElementById('editProductAffiliateId').value = link.id;
+        document.getElementById('productAffiliateProductId').value = link.product_id;
+        document.getElementById('productAffiliateCountryInput').value = link.country_code;
+        document.getElementById('productAffiliateKeyInput').value = link.affiliate_key;
+        document.getElementById('productAffiliateUrlInput').value = link.link_url;
+        document.getElementById('productAffiliateModalSaveBtn').textContent = 'Update Link';
+      } catch (err) {
+        console.error('Error fetching product affiliate link:', err);
+        alert('Could not load link for editing.');
+      }
+    }
+
+    async function deleteProductAffiliateLink(id) {
+      if (!confirm('Are you sure you want to delete this affiliate link?')) return;
+      try {
+        const { data: link, error: fetchError } = await supabaseClient
+          .from('product_affiliate_links')
+          .select('product_id')
+          .eq('id', id)
+          .single();
+        if (fetchError) throw fetchError;
+
+        const { error } = await supabaseClient
+          .from('product_affiliate_links')
+          .delete()
+          .eq('id', id);
+        if (error) throw error;
+        alert('Link deleted successfully.');
+        // Refresh the product list and the links view
+        loadShopProducts();
+        if (link) {
+          manageProductAffiliateLinks(link.product_id);
+        }
+      } catch (err) {
+        console.error('Error deleting product affiliate link:', err);
+        alert('Error deleting link: ' + err.message);
+      }
     }
 
     // ============================================================
