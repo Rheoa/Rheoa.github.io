@@ -6,7 +6,7 @@
   <title>Admin Dashboard — World Discovery</title>
 
   <!-- ============================================================
-       SECURITY HEADERS (Meta Tags) — UPDATED connect-src
+       SECURITY HEADERS (Meta Tags)
        ============================================================ -->
   <meta http-equiv="X-Content-Type-Options" content="nosniff" />
   <meta http-equiv="X-Frame-Options" content="DENY" />
@@ -213,25 +213,6 @@
     }
     .leaflet-popup-content {
       font-family: 'Inter', sans-serif;
-    }
-    .map-legend {
-      background: white;
-      padding: 8px 12px;
-      border-radius: 8px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-      font-size: 0.8rem;
-      line-height: 1.5;
-    }
-    .map-legend .legend-item {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-    .map-legend .legend-circle {
-      width: 16px;
-      height: 16px;
-      border-radius: 50%;
-      border: 1px solid #333;
     }
 
     /* ===== LOGIN ===== */
@@ -722,7 +703,7 @@
     ];
 
     // ============================================================
-    // COUNTRY COORDINATES DICTIONARY (for marker map)
+    // COUNTRY COORDINATES DICTIONARY (for marker pins)
     // ============================================================
     const countryCoords = {
       'AF': { lat: 33.9391, lng: 67.7100, name: 'Afghanistan' },
@@ -1036,11 +1017,11 @@
               <div class="stat-card"><div class="number" id="statTopCountry">—</div><div class="label">Top Country</div></div>
             </div>
 
-            <!-- 🆕 Geographic Map (Marker-based with simple background) -->
+            <!-- Geographic Map (Simple Marker Pins) -->
             <h3 class="section-title">🌍 Geographic Click Distribution</h3>
             <div id="clickMap"></div>
             <div style="text-align: right; font-size: 0.8rem; color: var(--muted); margin-top: -10px; margin-bottom: 20px;">
-              Circle size = click volume | Click on a circle for details
+              Click on a pin to see the click count
             </div>
 
             <div class="two-col">
@@ -1400,7 +1381,7 @@
           linkStats = linkStatsFinal;
         }
 
-        // 🆕 Render the geographic map with countryStats (marker-based)
+        // 🆕 Render the geographic map with simple marker pins
         const countryStatsArray = Object.entries(countryStats).map(([country, count]) => ({ country, click_count: count }));
         renderClickMap(countryStatsArray);
 
@@ -1546,7 +1527,7 @@
     }
 
     // ============================================================
-    // 🆕 RENDER CLICK MAP (MARKER-BASED WITH SIMPLE TILE LAYER)
+    // 🆕 RENDER CLICK MAP (SIMPLE MARKER PINS — NO BUBBLES, NO COLOR CODING)
     // ============================================================
     function renderClickMap(countryStats) {
       const mapContainer = document.getElementById('clickMap');
@@ -1586,73 +1567,40 @@
       }
 
       try {
-        // Create a new map with a very basic and reliable tile layer
+        // Create a new map
         clickMap = L.map(mapContainer).setView([20, 0], 2);
 
-        // Use the standard OpenStreetMap tile layer — it's widely available and reliable
+        // Use standard OpenStreetMap tile layer
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
           attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
           maxZoom: 19,
           minZoom: 1
         }).addTo(clickMap);
 
-        // Find max clicks for scaling
-        const maxClicks = Math.max(...validCountries.map(item => item.click_count), 1);
+        // Create a custom marker icon (simple red pin)
+        const redPin = L.icon({
+          iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+          shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+          iconSize: [25, 41],
+          iconAnchor: [12, 41],
+          popupAnchor: [1, -34],
+          shadowSize: [41, 41]
+        });
 
-        // Add markers
+        // Add standard markers for each country
         validCountries.forEach(item => {
           const { lat, lng, name } = item.coords;
           const count = item.click_count;
 
-          // Scale radius: min 8px, max 50px (sqrt scaling for better visual)
-          const radius = Math.max(8, Math.min(50, 8 + Math.sqrt(count / maxClicks) * 42));
-          
-          // Color: from yellow (low) to dark red (high) using HSL
-          const hue = 40 - (count / maxClicks) * 20; // 40 (yellow) to 20 (red)
-          const lightness = 70 - (count / maxClicks) * 30; // 70% to 40%
-          const color = `hsl(${hue}, 100%, ${lightness}%)`;
-          const borderColor = `hsl(${hue}, 100%, ${Math.max(20, lightness - 20)}%)`;
-
-          L.circleMarker([lat, lng], {
-            radius: radius,
-            fillColor: color,
-            color: borderColor,
-            weight: 1.5,
-            opacity: 0.8,
-            fillOpacity: 0.85
-          })
-          .bindPopup(`
-            <div style="font-family: Inter, sans-serif; min-width: 120px;">
-              <strong>${name}</strong><br />
-              <span style="font-size: 1.1rem; font-weight: 700; color: var(--yellow-darker);">${count} click${count !== 1 ? 's' : ''}</span>
-            </div>
-          `)
-          .addTo(clickMap);
-        });
-
-        // Add a legend
-        const legend = L.control({ position: 'bottomright' });
-        legend.onAdd = function() {
-          const div = L.DomUtil.create('div', 'map-legend');
-          const sizes = [
-            { label: 'Low', radius: 10 },
-            { label: 'Medium', radius: 20 },
-            { label: 'High', radius: 35 },
-            { label: 'Very High', radius: 50 }
-          ];
-          let html = '<div style="font-weight:700; margin-bottom:6px;">Click Volume</div>';
-          sizes.forEach(size => {
-            html += `
-              <div class="legend-item">
-                <span class="legend-circle" style="width:${size.radius}px; height:${size.radius}px; background:hsl(30, 100%, 55%); border-color:#333;"></span>
-                ${size.label}
+          L.marker([lat, lng], { icon: redPin })
+            .bindPopup(`
+              <div style="font-family: Inter, sans-serif; min-width: 120px;">
+                <strong>${name}</strong><br />
+                <span style="font-size: 1.1rem; font-weight: 700; color: var(--yellow-darker);">${count} click${count !== 1 ? 's' : ''}</span>
               </div>
-            `;
-          });
-          div.innerHTML = html;
-          return div;
-        };
-        legend.addTo(clickMap);
+            `)
+            .addTo(clickMap);
+        });
 
         // Invalidate size after map render
         setTimeout(() => {
