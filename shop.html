@@ -152,7 +152,7 @@
        ============================================================ */
     .shop-hero {
       text-align: center;
-      padding: 10px 0 20px;
+      padding: 10px 0 10px;
       position: relative;
     }
     .shop-hero h1 {
@@ -165,6 +165,33 @@
       color: var(--muted);
       max-width: 600px;
       margin: 8px auto 0;
+    }
+
+    .affiliate-pill-shop {
+      display: inline-block;
+      background: var(--yellow-light);
+      color: var(--yellow-darker);
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 4px 14px;
+      border-radius: 30px;
+      border: 1px solid var(--yellow);
+      letter-spacing: 0.02em;
+      margin-top: 8px;
+    }
+
+    .affiliate-disclosure-shop {
+      margin-top: 40px;
+      padding: 16px 20px;
+      background: var(--yellow-light);
+      border: 1px solid var(--yellow);
+      border-radius: var(--radius);
+      font-size: 0.85rem;
+      color: var(--muted);
+      text-align: center;
+    }
+    .affiliate-disclosure-shop strong {
+      color: var(--text);
     }
 
     /* Shop Categories Tabs */
@@ -216,6 +243,7 @@
       transition: 0.25s ease;
       box-shadow: var(--shadow);
       position: relative;
+      cursor: pointer;
     }
     .product-card:hover {
       transform: translateY(-4px);
@@ -335,15 +363,24 @@
       cursor: pointer;
       font-family: inherit;
       text-decoration: none;
+      position: relative;
+      z-index: 2;
     }
     .btn-buy:hover {
       background: var(--yellow-dark);
       border-color: var(--yellow-dark);
     }
-    .product-views {
+    .product-stats {
+      display: flex;
+      gap: 12px;
       font-size: 0.7rem;
       color: var(--muted);
-      margin-left: auto;
+      margin-top: 6px;
+    }
+    .product-stats span {
+      display: flex;
+      align-items: center;
+      gap: 4px;
     }
 
     /* Load More */
@@ -372,6 +409,130 @@
       opacity: 0.5;
       cursor: not-allowed;
       transform: none;
+    }
+
+    /* ============================================================
+       PRODUCT MODAL
+       ============================================================ */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.6);
+      z-index: 3000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      backdrop-filter: blur(6px);
+    }
+    .modal-overlay.show {
+      display: flex;
+    }
+    .modal-overlay .modal {
+      background: var(--surface);
+      border-radius: var(--radius);
+      max-width: 700px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+      padding: 32px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      animation: modalFadeIn 0.3s ease;
+    }
+    @keyframes modalFadeIn {
+      from { opacity: 0; transform: scale(0.95) translateY(10px); }
+      to { opacity: 1; transform: scale(1) translateY(0); }
+    }
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 16px;
+    }
+    .modal-header h2 {
+      font-size: 1.6rem;
+      font-weight: 800;
+      line-height: 1.2;
+      padding-right: 20px;
+    }
+    .modal-close {
+      background: none;
+      border: none;
+      font-size: 2rem;
+      cursor: pointer;
+      color: var(--muted);
+      padding: 0 4px;
+      line-height: 1;
+      flex-shrink: 0;
+    }
+    .modal-close:hover {
+      color: var(--text);
+    }
+    .modal-image {
+      width: 100%;
+      max-height: 350px;
+      overflow: hidden;
+      border-radius: var(--radius);
+      background: #f0f0f0;
+      margin-bottom: 16px;
+    }
+    .modal-image img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      max-height: 350px;
+    }
+    .modal-rating {
+      color: #f5a623;
+      font-size: 1.1rem;
+      margin-bottom: 8px;
+    }
+    .modal-rating .rating-text {
+      color: var(--muted);
+      font-size: 0.85rem;
+    }
+    .modal-description {
+      color: var(--text);
+      font-size: 1rem;
+      line-height: 1.7;
+      margin: 12px 0 16px;
+    }
+    .modal-stats {
+      display: flex;
+      gap: 20px;
+      font-size: 0.9rem;
+      color: var(--muted);
+      margin-bottom: 16px;
+    }
+    .modal-stats span {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .modal-actions {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 8px;
+    }
+    .modal-actions .btn-buy {
+      padding: 12px 32px;
+      font-size: 1rem;
+    }
+    .modal-affiliate-pill {
+      display: inline-block;
+      background: var(--yellow-light);
+      color: var(--yellow-darker);
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 4px 14px;
+      border-radius: 30px;
+      border: 1px solid var(--yellow);
+      letter-spacing: 0.02em;
+      align-self: center;
     }
 
     /* ============================================================
@@ -439,6 +600,12 @@
         justify-content: flex-start;
         overflow-x: auto;
       }
+      .modal-overlay .modal {
+        padding: 20px;
+      }
+      .modal-header h2 {
+        font-size: 1.3rem;
+      }
     }
     @media (max-width: 480px) {
       .product-grid {
@@ -490,6 +657,7 @@
       <div class="shop-hero">
         <h1>🌍 Travel Shop</h1>
         <p>Curated travel gear we've tested and loved — handpicked just for you.</p>
+        <span class="affiliate-pill-shop">🛒 Contains affiliate links</span>
       </div>
 
       <!-- Category Tabs -->
@@ -507,8 +675,38 @@
       <div class="load-more-wrapper" id="shopLoadMoreWrapper">
         <button class="load-more-btn" id="loadMoreBtn" onclick="loadMoreProducts()">Load More</button>
       </div>
+
+      <!-- Affiliate Disclosure -->
+      <div class="affiliate-disclosure-shop">
+        <strong>Affiliate disclosure:</strong> Some links on this page may be affiliate links. If you make a purchase through one of these links, Rheoa may earn a commission at no additional cost to you.
+      </div>
     </div>
   </main>
+
+  <!-- ============================================================
+       PRODUCT DETAIL MODAL
+  ============================================================ -->
+  <div class="modal-overlay" id="productModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 id="modalProductTitle">Product Name</h2>
+        <button class="modal-close" onclick="closeProductModal()">&times;</button>
+      </div>
+      <div class="modal-image">
+        <img id="modalProductImage" src="" alt="" />
+      </div>
+      <div class="modal-rating" id="modalProductRating">★★★★☆ <span class="rating-text">(4.5)</span></div>
+      <div class="modal-description" id="modalProductDescription">Full description goes here.</div>
+      <div class="modal-stats">
+        <span>👁️ <span id="modalProductViews">0</span> views</span>
+        <span>🛒 <span id="modalProductPurchased">0</span> purchased</span>
+      </div>
+      <div class="modal-actions">
+        <a href="#" class="btn-buy dynamic-link-product" id="modalProductBuyBtn" target="_blank" rel="noopener">Buy Now →</a>
+        <span class="modal-affiliate-pill">🛒 Contains affiliate link</span>
+      </div>
+    </div>
+  </div>
 
   <!-- ============================================================
        FOOTER (same as index.html)
@@ -655,7 +853,7 @@
     }
 
     // ============================================================
-    // PRODUCT CARD HTML (FIXED: added referrerpolicy and onerror)
+    // PRODUCT CARD HTML (with click handler for modal)
     // ============================================================
     function createProductCardHTML(product) {
       const imageId = 'prod-img-' + product.id + '-' + Date.now();
@@ -663,9 +861,11 @@
       const ratingStars = renderStars(product.rating);
       const affiliateKey = product.affiliate_key || 'default';
       const affiliateUrl = product.affiliate_url || '#';
-      
+      const views = product.views || 0;
+      const purchased = product.purchased_count || 0;
+
       return `
-        <div class="product-card ${isRecommended ? 'recommended' : ''}" data-product-id="${product.id}">
+        <div class="product-card ${isRecommended ? 'recommended' : ''}" data-product-id="${product.id}" onclick="openProductModal(${product.id})">
           ${isRecommended ? '<div class="recommended-badge">⭐ Rheoa Recommended</div>' : ''}
           <div class="product-image">
             <div class="image-placeholder" id="placeholder-${imageId}"></div>
@@ -682,12 +882,163 @@
               <a href="${affiliateUrl}" class="btn-buy dynamic-link-product" 
                  data-affiliate-key="${affiliateKey}" 
                  data-product-id="${product.id}"
-                 onclick="handleProductClick(event, ${product.id}, '${affiliateKey}')">Buy Now →</a>
-              <span class="product-views">👁️ ${product.views || 0}</span>
+                 onclick="event.stopPropagation(); handleProductClick(event, ${product.id}, '${affiliateKey}')">Buy Now →</a>
+              <div class="product-stats">
+                <span>👁️ ${views}</span>
+                <span>🛒 ${purchased}</span>
+              </div>
             </div>
           </div>
         </div>
       `;
+    }
+
+    // ============================================================
+    // PRODUCT MODAL FUNCTIONS
+    // ============================================================
+    let currentModalProductId = null;
+
+    async function openProductModal(productId) {
+      const modal = document.getElementById('productModal');
+      
+      try {
+        // Fetch product details
+        const { data: product, error } = await supabaseClient
+          .from('products')
+          .select('*')
+          .eq('id', productId)
+          .single();
+
+        if (error) throw error;
+
+        // Get affiliate link for this product (default)
+        const { data: affiliateLinks, error: linkError } = await supabaseClient
+          .from('product_affiliate_links')
+          .select('*')
+          .eq('product_id', productId)
+          .eq('country_code', 'default')
+          .limit(1);
+
+        let affiliateUrl = '#';
+        let affiliateKey = 'default';
+        if (!linkError && affiliateLinks && affiliateLinks.length > 0) {
+          affiliateUrl = affiliateLinks[0].link_url;
+          affiliateKey = affiliateLinks[0].affiliate_key;
+        }
+
+        // Populate modal
+        document.getElementById('modalProductTitle').textContent = product.name;
+        document.getElementById('modalProductImage').src = product.image_url || 'https://via.placeholder.com/400x300?text=No+Image';
+        document.getElementById('modalProductImage').alt = product.name;
+        document.getElementById('modalProductRating').innerHTML = `${renderStars(product.rating)} <span class="rating-text">(${product.rating || 'No ratings'})</span>`;
+        document.getElementById('modalProductDescription').textContent = product.description || 'No description available.';
+        document.getElementById('modalProductViews').textContent = product.views || 0;
+        document.getElementById('modalProductPurchased').textContent = product.purchased_count || 0;
+
+        // Set buy button
+        const buyBtn = document.getElementById('modalProductBuyBtn');
+        buyBtn.href = affiliateUrl;
+        buyBtn.dataset.productId = productId;
+        buyBtn.dataset.affiliateKey = affiliateKey;
+        buyBtn.onclick = function(e) {
+          e.stopPropagation();
+          handleProductClick(e, productId, affiliateKey);
+        };
+        if (affiliateUrl === '#') {
+          buyBtn.classList.add('disabled');
+          buyBtn.style.opacity = '0.5';
+          buyBtn.style.pointerEvents = 'none';
+        } else {
+          buyBtn.classList.remove('disabled');
+          buyBtn.style.opacity = '1';
+          buyBtn.style.pointerEvents = 'auto';
+        }
+
+        currentModalProductId = productId;
+
+        // Show modal
+        modal.classList.add('show');
+
+        // Increment view count
+        try {
+          const { data: newViews, error: viewError } = await supabaseClient
+            .rpc('increment_product_views', { product_id_param: productId });
+          if (!viewError) {
+            document.getElementById('modalProductViews').textContent = newViews;
+            // Update the card view count as well
+            const card = document.querySelector(`.product-card[data-product-id="${productId}"]`);
+            if (card) {
+              const viewsSpan = card.querySelector('.product-stats span:first-child');
+              if (viewsSpan) viewsSpan.textContent = `👁️ ${newViews}`;
+            }
+          }
+        } catch (viewErr) {
+          console.warn('View increment failed:', viewErr);
+        }
+
+        // Try to rewrite the buy link based on country
+        setTimeout(() => {
+          rewriteModalLink();
+        }, 100);
+
+      } catch (err) {
+        console.error('Error loading product details:', err);
+        alert('Could not load product details.');
+      }
+    }
+
+    function closeProductModal() {
+      document.getElementById('productModal').classList.remove('show');
+      currentModalProductId = null;
+    }
+
+    // Close modal on overlay click
+    document.getElementById('productModal')?.addEventListener('click', function(e) {
+      if (e.target === this) closeProductModal();
+    });
+
+    // Close modal on Escape key
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') closeProductModal();
+    });
+
+    async function rewriteModalLink() {
+      const country = await getCountryCode();
+      const buyBtn = document.getElementById('modalProductBuyBtn');
+      if (!buyBtn) return;
+      const productId = buyBtn.dataset.productId;
+      const affiliateKey = buyBtn.dataset.affiliateKey;
+
+      if (!productId) return;
+
+      const { data: links, error } = await supabaseClient
+        .from('product_affiliate_links')
+        .select('*')
+        .eq('product_id', parseInt(productId));
+
+      if (error || !links) return;
+
+      let foundUrl = null;
+      for (const link of links) {
+        if (link.country_code === country) {
+          foundUrl = link.link_url;
+          break;
+        }
+      }
+      if (!foundUrl) {
+        for (const link of links) {
+          if (link.country_code === 'default') {
+            foundUrl = link.link_url;
+            break;
+          }
+        }
+      }
+      if (foundUrl) {
+        buyBtn.href = foundUrl;
+        buyBtn.classList.remove('disabled');
+        buyBtn.style.opacity = '1';
+        buyBtn.style.pointerEvents = 'auto';
+      }
     }
 
     // ============================================================
@@ -849,16 +1200,8 @@
 
         shopOffset += products.length;
 
-        // Increment views in background
-        for (const product of products) {
-          if (product.id) {
-            try {
-              await supabaseClient.rpc('increment_product_views', { product_id_param: product.id });
-            } catch (err) {
-              console.warn('View increment failed for product', product.id, ':', err.message);
-            }
-          }
-        }
+        // Increment views in background (for initial load, but we'll track via modal)
+        // No need to increment views on load – only on modal open.
 
       } catch (err) {
         console.error('Error loading products:', err);
@@ -903,7 +1246,6 @@
       affiliateLinks.forEach(link => {
         const key = link.product_id;
         if (!linkMap[key]) linkMap[key] = {};
-        // Prefer exact country match, fallback to 'default'
         if (link.country_code === country) {
           linkMap[key][link.affiliate_key] = link.link_url;
         } else if (link.country_code === 'default' && !linkMap[key][link.affiliate_key]) {
@@ -936,6 +1278,7 @@
     // ============================================================
     async function handleProductClick(e, productId, affiliateKey) {
       e.preventDefault();
+      e.stopPropagation();
       const link = e.currentTarget;
       const href = link.href;
 
