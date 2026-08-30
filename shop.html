@@ -21,7 +21,7 @@
 
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛍️</text></svg>" />
 
-  <!-- Impact.com tracking script (if needed) -->
+  <!-- Impact.com tracking script -->
   <script type="text/javascript">
     (function(i, m, p, a, c, t) {
       c.ire_o = p;
@@ -39,9 +39,6 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,600;14..32,800&display=swap" rel="stylesheet" />
 
   <style>
-    /* ============================================================
-       COLOR SCHEME (same as main site)
-       ============================================================ */
     :root {
       --yellow: #ffdb10;
       --yellow-dark: #e6c200;
@@ -89,7 +86,7 @@
     }
 
     /* ============================================================
-       HEADER (same as index.html but with "Back to Home" link)
+       HEADER
        ============================================================ */
     header {
       position: sticky;
@@ -169,7 +166,6 @@
       margin: 8px auto 0;
     }
 
-    /* Shop Categories Tabs */
     .shop-categories {
       display: flex;
       gap: 8px;
@@ -202,7 +198,6 @@
       color: var(--text);
     }
 
-    /* Product Grid */
     .product-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
@@ -224,7 +219,6 @@
       box-shadow: 0 12px 40px rgba(0, 0, 0, 0.08);
     }
 
-    /* Recommended Badge */
     .product-card.recommended {
       border: 3px solid #c9a84c;
       box-shadow: 0 0 0 4px #f5e6c8, 0 8px 30px rgba(201, 168, 76, 0.2);
@@ -348,7 +342,6 @@
       margin-left: auto;
     }
 
-    /* Load More */
     .load-more-wrapper {
       text-align: center;
       margin: 30px 0 10px;
@@ -377,7 +370,7 @@
     }
 
     /* ============================================================
-       FOOTER (same as index.html)
+       FOOTER
        ============================================================ */
     footer {
       background: #0d1c26;
@@ -429,9 +422,6 @@
       text-align: center;
     }
 
-    /* ============================================================
-       RESPONSIVE
-       ============================================================ */
     @media (max-width: 700px) {
       .product-grid {
         grid-template-columns: 1fr 1fr;
@@ -471,7 +461,7 @@
 <body>
 
   <!-- ============================================================
-       HEADER (with "Back to Home" link)
+       HEADER
   ============================================================ -->
   <header>
     <div class="container nav">
@@ -494,18 +484,14 @@
         <p>Curated travel gear we've tested and loved — handpicked just for you.</p>
       </div>
 
-      <!-- Category Tabs -->
       <div class="shop-categories" id="shopCategories">
         <button class="active" data-category="all" onclick="loadProducts('all')">All</button>
-        <!-- Other categories populated by JavaScript -->
       </div>
 
-      <!-- Product Grid -->
       <div class="product-grid" id="productGrid">
         <div class="loading-spinner">Loading products…</div>
       </div>
 
-      <!-- Load More -->
       <div class="load-more-wrapper" id="shopLoadMoreWrapper">
         <button class="load-more-btn" id="loadMoreBtn" onclick="loadMoreProducts()">Load More</button>
       </div>
@@ -513,7 +499,7 @@
   </main>
 
   <!-- ============================================================
-       FOOTER (same as index.html)
+       FOOTER
   ============================================================ -->
   <footer>
     <div class="container">
@@ -575,7 +561,7 @@
     let hasMoreProducts = true;
 
     // ============================================================
-    // COOKIE CONSENT (for visitorId and country caching)
+    // COOKIE CONSENT
     // ============================================================
     function hasConsent() {
       return localStorage.getItem('cookiesAccepted') === 'true';
@@ -720,7 +706,7 @@
     }
 
     // ============================================================
-    // LOAD PRODUCTS
+    // LOAD PRODUCTS (FIXED: no .catch chaining)
     // ============================================================
     async function loadProducts(categorySlug = 'all', append = false) {
       const grid = document.getElementById('productGrid');
@@ -743,13 +729,11 @@
         btn.textContent = '⏳ Loading…';
       }
 
-      // Update active category tab
       document.querySelectorAll('.shop-categories button').forEach(b => {
         b.classList.toggle('active', b.dataset.category === categorySlug);
       });
 
       try {
-        // Get category ID if not 'all'
         let categoryId = null;
         if (categorySlug !== 'all') {
           const { data: catData, error: catError } = await supabaseClient
@@ -761,7 +745,6 @@
           if (catData) categoryId = catData.id;
         }
 
-        // Query products
         let query = supabaseClient
           .from('products')
           .select('*', { count: 'exact' })
@@ -789,7 +772,6 @@
           hasMoreProducts = products.length === PRODUCT_LIMIT;
         }
 
-        // Fetch affiliate links for these products
         if (products && products.length > 0) {
           const productIds = products.map(p => p.id);
           const { data: affiliateLinks, error: linkError } = await supabaseClient
@@ -822,7 +804,6 @@
           }
         }
 
-        // Render products
         if (!append) {
           if (products.length === 0) {
             grid.innerHTML = `<p style="color: var(--muted); padding: 20px;">No products found in this category.</p>`;
@@ -850,13 +831,18 @@
 
         shopOffset += products.length;
 
-        // Increment views in background
-        products.forEach(product => {
+        // ============================================================
+        // FIXED: Increment views using try-catch with await
+        // ============================================================
+        for (const product of products) {
           if (product.id) {
-            supabaseClient.rpc('increment_product_views', { product_id_param: product.id })
-              .catch(err => console.warn('View increment failed:', err));
+            try {
+              await supabaseClient.rpc('increment_product_views', { product_id_param: product.id });
+            } catch (err) {
+              console.warn('View increment failed for product', product.id, ':', err.message);
+            }
           }
-        });
+        }
 
       } catch (err) {
         console.error('Error loading products:', err);
@@ -877,7 +863,7 @@
     }
 
     // ============================================================
-    // AFFILIATE LINK REWRITING (Country-specific)
+    // AFFILIATE LINK REWRITING
     // ============================================================
     async function rewriteProductLinks() {
       const country = await getCountryCode();
