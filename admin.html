@@ -12,7 +12,7 @@
   <meta http-equiv="X-Frame-Options" content="DENY" />
   <meta name="referrer" content="strict-origin-when-cross-origin" />
   <meta http-equiv="Content-Security-Policy" 
-        content="default-src 'self' https://*.supabase.co https://*.pexels.com https://*.googleapis.com https://*.gstatic.com https://unpkg.com https://cdn.jsdelivr.net https://www.pinterest.com https://api.ipify.org https://*.impactcdn.com https://utt.impactcdn.com; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://unpkg.com https://utt.impactcdn.com https://www.googletagmanager.com; style-src 'self' 'unsafe-inline' https://unpkg.com https://fonts.googleapis.com; img-src 'self' data: https://*.pexels.com https://images.pexels.com https://*.pinterest.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://*.supabase.co https://api.ipify.org https://ipapi.co https://ip-api.com https://ipinfo.io; frame-src 'self' https://www.pinterest.com;" />
+        content="default-src 'self' https://*.supabase.co https://*.pexels.com https://*.googleapis.com https://*.gstatic.com https://unpkg.com https://cdn.jsdelivr.net https://www.pinterest.com https://api.ipify.org https://*.impactcdn.com https://utt.impactcdn.com; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://unpkg.com https://utt.impactcdn.com https://www.googletagmanager.com; style-src 'self' 'unsafe-inline' https://unpkg.com https://fonts.googleapis.com; img-src 'self' data: https://*.pexels.com https://images.pexels.com https://*.pinterest.com https://*.tile.openstreetmap.org; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://*.supabase.co https://api.ipify.org https://ipapi.co https://ip-api.com https://ipinfo.io https://cdn.jsdelivr.net https://*.tile.openstreetmap.org; frame-src 'self' https://www.pinterest.com;" />
   <meta http-equiv="Permissions-Policy" 
         content="geolocation=(), microphone=(), camera=(), payment=(), usb=(), battery=(), accelerometer=(), gyroscope=(), magnetometer=(), ambient-light-sensor=(), vibrate=(), midi=(), clipboard-read=(), clipboard-write=(), screen-wake-lock=(), serial=(), hid=(), xr-spatial-tracking=()" />
 
@@ -218,25 +218,6 @@
     }
     .leaflet-popup-content {
       font-family: 'Inter', sans-serif;
-    }
-    .map-legend {
-      background: white;
-      padding: 8px 12px;
-      border-radius: 8px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-      font-size: 0.8rem;
-      line-height: 1.5;
-    }
-    .map-legend .legend-item {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-    .map-legend .legend-circle {
-      width: 16px;
-      height: 16px;
-      border-radius: 50%;
-      border: 1px solid #333;
     }
 
     /* ===== LOGIN ===== */
@@ -1187,7 +1168,7 @@
             <h3 class="section-title">🌍 Geographic Click Distribution</h3>
             <div id="clickMap"></div>
             <div style="text-align: right; font-size: 0.8rem; color: var(--muted); margin-top: -10px; margin-bottom: 20px;">
-              Circle size = click volume | Click on a circle for details
+              Pin markers show countries with clicks — click a pin for details
             </div>
 
             <div class="two-col">
@@ -1557,9 +1538,9 @@
           linkStats = linkStatsFinal;
         }
 
-        // Render map
+        // Render map (simplified markers)
         const countryStatsArray = Object.entries(countryStats).map(([country, count]) => ({ country, click_count: count }));
-        renderClickMap(countryStatsArray);
+        renderSimpleMap(countryStatsArray);
 
         // Render affiliate breakdown
         const sortedAffiliates = Object.entries(affiliateStats).sort((a,b) => b[1] - a[1]);
@@ -1708,9 +1689,9 @@
     }
 
     // ============================================================
-    // RENDER CLICK MAP
+    // RENDER SIMPLE MAP (with standard markers)
     // ============================================================
-    function renderClickMap(countryStats) {
+    function renderSimpleMap(countryStats) {
       const mapContainer = document.getElementById('clickMap');
       if (!mapContainer) return;
 
@@ -1752,56 +1733,34 @@
           minZoom: 1
         }).addTo(clickMap);
 
-        const maxClicks = Math.max(...validCountries.map(item => item.click_count), 1);
+        // Standard red pin icon
+        const redPin = L.icon({
+          iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+          shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+          iconSize: [25, 41],
+          iconAnchor: [12, 41],
+          popupAnchor: [1, -34],
+          shadowSize: [41, 41]
+        });
 
         validCountries.forEach(item => {
           const { lat, lng, name } = item.coords;
           const count = item.click_count;
-          const radius = Math.max(8, Math.min(50, 8 + Math.sqrt(count / maxClicks) * 42));
-          const hue = 40 - (count / maxClicks) * 20;
-          const lightness = 70 - (count / maxClicks) * 30;
-          const color = `hsl(${hue}, 100%, ${lightness}%)`;
-          const borderColor = `hsl(${hue}, 100%, ${Math.max(20, lightness - 20)}%)`;
-
-          L.circleMarker([lat, lng], {
-            radius: radius,
-            fillColor: color,
-            color: borderColor,
-            weight: 1.5,
-            opacity: 0.8,
-            fillOpacity: 0.85
-          })
-          .bindPopup(`
-            <div style="font-family: Inter, sans-serif; min-width: 120px;">
-              <strong>${name}</strong><br />
-              <span style="font-size: 1.1rem; font-weight: 700; color: var(--yellow-darker);">${count} click${count !== 1 ? 's' : ''}</span>
-            </div>
-          `)
-          .addTo(clickMap);
+          L.marker([lat, lng], { icon: redPin })
+            .bindPopup(`
+              <div style="font-family: Inter, sans-serif; min-width: 120px;">
+                <strong>${name}</strong><br />
+                <span style="font-size: 1.1rem; font-weight: 700; color: var(--yellow-darker);">${count} click${count !== 1 ? 's' : ''}</span>
+              </div>
+            `)
+            .addTo(clickMap);
         });
 
-        const legend = L.control({ position: 'bottomright' });
-        legend.onAdd = function() {
-          const div = L.DomUtil.create('div', 'map-legend');
-          const sizes = [
-            { label: 'Low', radius: 10 },
-            { label: 'Medium', radius: 20 },
-            { label: 'High', radius: 35 },
-            { label: 'Very High', radius: 50 }
-          ];
-          let html = '<div style="font-weight:700; margin-bottom:6px;">Click Volume</div>';
-          sizes.forEach(size => {
-            html += `
-              <div class="legend-item">
-                <span class="legend-circle" style="width:${size.radius}px; height:${size.radius}px; background:hsl(30, 100%, 55%); border-color:#333;"></span>
-                ${size.label}
-              </div>
-            `;
-          });
-          div.innerHTML = html;
-          return div;
-        };
-        legend.addTo(clickMap);
+        // Fit map to markers
+        const group = L.featureGroup(validCountries.map(item => 
+          L.marker([item.coords.lat, item.coords.lng])
+        ));
+        clickMap.fitBounds(group.getBounds().pad(0.2));
 
         setTimeout(() => { if (clickMap) clickMap.invalidateSize(); }, 200);
 
@@ -2697,21 +2656,7 @@
         return;
       }
 
-      // Build a modal or use a prompt-based approach
-      // For simplicity, we'll open a modal with a table of links and add/edit/delete buttons
-      // We'll use the existing productAffiliateModal
-
-      // Show a list in a simple alert for now (we'll use the modal approach)
-      // Actually, we'll implement a proper modal.
-      // We'll set the product ID in the hidden field and open the modal.
-      // The modal will display existing links in a table (we'll render dynamically).
-
-      // We'll implement the modal with a table for existing links.
-      // For this implementation, we'll open the productAffiliateModal and render links inside it.
-
-      // Let's create a quick UI inside the modal using a div.
-      // We'll fetch and display links when the modal opens.
-
+      // We'll open the productAffiliateModal and render links inside it
       document.getElementById('productAffiliateProductId').value = productId;
       document.getElementById('productAffiliateModalTitle').textContent = `Affiliate Links for "${product.name}"`;
       document.getElementById('editProductAffiliateId').value = '';
@@ -2720,25 +2665,17 @@
       document.getElementById('productAffiliateUrlInput').value = '';
       document.getElementById('productAffiliateModalSaveBtn').textContent = 'Add Link';
 
-      // Show existing links in a table inside the modal
-      // We'll add a container inside the modal for the links list
-      // Let's dynamically add a table above the form
-
       const modal = document.getElementById('productAffiliateModal');
       
-      // Check if a links table already exists in the modal
       let linksContainer = document.getElementById('productAffiliateLinksList');
       if (!linksContainer) {
-        // Create the container
         linksContainer = document.createElement('div');
         linksContainer.id = 'productAffiliateLinksList';
         linksContainer.style.marginBottom = '16px';
-        // Insert it before the form
         const form = document.getElementById('productAffiliateForm');
         form.parentNode.insertBefore(linksContainer, form);
       }
 
-      // Render the links table
       if (links && links.length > 0) {
         let html = `
           <div style="overflow-x:auto; margin-bottom:12px; border:1px solid var(--border); border-radius:8px; padding:8px;">
@@ -2781,7 +2718,6 @@
       document.getElementById('productAffiliateForm').reset();
       document.getElementById('editProductAffiliateId').value = '';
       document.getElementById('productAffiliateProductId').value = '';
-      // Remove the links list container to avoid duplicates
       const container = document.getElementById('productAffiliateLinksList');
       if (container) container.remove();
     }
@@ -2822,9 +2758,7 @@
           alert('Affiliate link created successfully!');
         }
         closeProductAffiliateModal();
-        // Refresh the product list and also the links view
         loadShopProducts();
-        // Re-open the links modal to show updated list
         manageProductAffiliateLinks(parseInt(product_id));
       } catch (err) {
         console.error('Error saving product affiliate link:', err);
@@ -2868,7 +2802,6 @@
           .eq('id', id);
         if (error) throw error;
         alert('Link deleted successfully.');
-        // Refresh the product list and the links view
         loadShopProducts();
         if (link) {
           manageProductAffiliateLinks(link.product_id);
