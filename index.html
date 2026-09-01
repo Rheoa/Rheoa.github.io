@@ -121,9 +121,7 @@
       padding: 0 24px;
     }
 
-    /* ============================================================
-       HEADER
-       ============================================================ */
+    /* ===== HEADER ===== */
     header {
       position: sticky;
       top: 0;
@@ -184,17 +182,13 @@
       padding: 4px 8px;
     }
 
-    /* ============================================================
-       MAIN CONTENT
-       ============================================================ */
+    /* ===== MAIN CONTENT ===== */
     #main-content {
       min-height: 60vh;
       padding: 40px 0 60px;
     }
 
-    /* ============================================================
-       HOME PAGE
-       ============================================================ */
+    /* ===== HOME PAGE ===== */
     .hero {
       text-align: center;
       padding: 20px 0 30px;
@@ -389,9 +383,7 @@
       border-bottom-color: var(--yellow-dark);
     }
 
-    /* ============================================================
-       ARTICLE DETAIL PAGE
-       ============================================================ */
+    /* ===== ARTICLE DETAIL PAGE ===== */
     .article-page {
       max-width: 820px;
       margin: 0 auto;
@@ -612,9 +604,7 @@
       pointer-events: none;
     }
 
-    /* ============================================================
-       PAGE: ABOUT / CONTACT
-       ============================================================ */
+    /* ===== PAGE: ABOUT / CONTACT ===== */
     .page-content {
       max-width: 720px;
       margin: 0 auto;
@@ -630,9 +620,7 @@
       margin-bottom: 16px;
     }
 
-    /* ============================================================
-       COOKIE BANNER
-       ============================================================ */
+    /* ===== COOKIE BANNER ===== */
     #cookie-banner {
       position: fixed;
       bottom: 0;
@@ -717,9 +705,7 @@
       }
     }
 
-    /* ============================================================
-       FOOTER
-       ============================================================ */
+    /* ===== FOOTER ===== */
     footer {
       background: #0d1c26;
       color: #b0c4d0;
@@ -770,9 +756,7 @@
       text-align: center;
     }
 
-    /* ============================================================
-       RESPONSIVE
-       ============================================================ */
+    /* ===== RESPONSIVE ===== */
     @media (max-width: 700px) {
       .menu-toggle {
         display: block;
@@ -841,9 +825,7 @@
       text-decoration: underline;
     }
 
-    /* ============================================================
-       MAP CONTAINER (Leaflet)
-    ============================================================ */
+    /* ===== MAP CONTAINER (Leaflet) ===== */
     .map-container {
       height: 500px;
       width: 100%;
@@ -866,9 +848,7 @@
       color: var(--yellow-darker);
     }
 
-    /* ============================================================
-       PAGINATION / LOAD MORE BUTTON
-    ============================================================ */
+    /* ===== PAGINATION / LOAD MORE BUTTON ===== */
     .load-more-wrapper {
       text-align: center;
       margin: 30px 0 10px;
@@ -1000,8 +980,8 @@
 
   <script>
     /* ============================================================
-       COOKIE CONSENT
-    ============================================================ */
+       COOKIE CONSENT – GDPR/ePrivacy compliant
+       ============================================================ */
     function hasConsent() {
       return localStorage.getItem('cookiesAccepted') === 'true';
     }
@@ -1009,15 +989,19 @@
     function acceptCookies() {
       localStorage.setItem('cookiesAccepted', 'true');
       document.getElementById('cookie-banner').classList.remove('show');
+      // Only now do we generate and store a persistent visitor ID
       if (!localStorage.getItem('visitorId')) {
         const vid = crypto.randomUUID ? crypto.randomUUID() : 'visitor-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
         localStorage.setItem('visitorId', vid);
       }
+      // Country and affiliate caches will be stored on‑demand when getCountryCode() is called
+      // because getCountryCode() checks hasConsent() before writing.
     }
 
     function declineCookies() {
       localStorage.setItem('cookiesAccepted', 'false');
       document.getElementById('cookie-banner').classList.remove('show');
+      // Remove all non‑essential data
       const keysToRemove = ['visitorId', 'userCountry', 'userCountryTimestamp', 'affiliate_links_', 'affiliate_links'];
       for (let key in localStorage) {
         if (key.startsWith('affiliate_links_') || key === 'visitorId' || key === 'userCountry' || key === 'userCountryTimestamp') {
@@ -1030,21 +1014,77 @@
       const consent = localStorage.getItem('cookiesAccepted');
       if (consent === null) {
         document.getElementById('cookie-banner').classList.add('show');
-      } else if (consent === 'true') {
-        // Already accepted, do nothing
-      } else {
-        const keysToRemove = ['visitorId', 'userCountry', 'userCountryTimestamp', 'affiliate_links_', 'affiliate_links'];
-        for (let key in localStorage) {
-          if (key.startsWith('affiliate_links_') || key === 'visitorId' || key === 'userCountry' || key === 'userCountryTimestamp') {
-            localStorage.removeItem(key);
-          }
-        }
+      } else if (consent === 'false') {
+        // Ensure no data remains if previously declined
+        declineCookies(); // this will clean up
       }
     }
 
     document.addEventListener('DOMContentLoaded', function() {
       checkCookieConsent();
     });
+
+    /* ============================================================
+       VISITOR ID – only stored if consent is given
+       ============================================================ */
+    function getVisitorId() {
+      if (!hasConsent()) {
+        // Return a temporary ID that is not stored
+        return 'temp-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+      }
+      let vid = localStorage.getItem('visitorId');
+      if (!vid) {
+        vid = crypto.randomUUID ? crypto.randomUUID() : 'visitor-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+        localStorage.setItem('visitorId', vid);
+      }
+      return vid;
+    }
+
+    /* ============================================================
+       COUNTRY CODE – cached only with consent
+       ============================================================ */
+    async function getCountryCode() {
+      if (hasConsent()) {
+        try {
+          const cached = localStorage.getItem('userCountry');
+          const cachedTime = localStorage.getItem('userCountryTimestamp');
+          if (cached && cachedTime) {
+            const age = Date.now() - parseInt(cachedTime, 10);
+            if (age < 3600000) return cached;
+          }
+        } catch (_) {}
+      }
+
+      const apis = [
+        { url: 'https://ipapi.co/json/', key: 'country_code' },
+        { url: 'https://ip-api.com/json/', key: 'countryCode' },
+        { url: 'https://ipinfo.io/json', key: 'country' },
+        { url: 'https://api.country.is/', key: 'country' }
+      ];
+
+      let country = 'default';
+      for (const api of apis) {
+        try {
+          const res = await fetch(api.url, { mode: 'cors', headers: { 'Accept': 'application/json' } });
+          const data = await res.json();
+          let c = data[api.key];
+          if (api.url.includes('country.is')) c = data.country;
+          if (c && typeof c === 'string' && c.length === 2) {
+            country = c.toUpperCase();
+            break;
+          }
+        } catch (e) { continue; }
+      }
+
+      // Only cache if consent is given
+      if (hasConsent()) {
+        try {
+          localStorage.setItem('userCountry', country);
+          localStorage.setItem('userCountryTimestamp', String(Date.now()));
+        } catch (_) {}
+      }
+      return country;
+    }
 
     /* ============================================================
        SUPABASE INIT (from config.js)
@@ -1353,73 +1393,13 @@
 
     /* ============================================================
        IP GEOLOCATION (with caching)
-    ============================================================ */
-    async function getCountryCode() {
-      if (hasConsent()) {
-        try {
-          const cached = localStorage.getItem('userCountry');
-          const cachedTime = localStorage.getItem('userCountryTimestamp');
-          if (cached && cachedTime) {
-            const age = Date.now() - parseInt(cachedTime, 10);
-            if (age < 3600000) return cached;
-          }
-        } catch (_) {}
-      }
-
-      const apis = [
-        { url: 'https://ipapi.co/json/', key: 'country_code' },
-        { url: 'https://ip-api.com/json/', key: 'countryCode' },
-        { url: 'https://ipinfo.io/json', key: 'country' },
-        { url: 'https://api.country.is/', key: 'country' }
-      ];
-
-      for (const api of apis) {
-        try {
-          const res = await fetch(api.url, { mode: 'cors', headers: { 'Accept': 'application/json' } });
-          const data = await res.json();
-          let country = data[api.key];
-          if (api.url.includes('country.is')) country = data.country;
-          if (country && typeof country === 'string' && country.length === 2) {
-            if (hasConsent()) {
-              try {
-                localStorage.setItem('userCountry', country);
-                localStorage.setItem('userCountryTimestamp', String(Date.now()));
-              } catch (_) {}
-            }
-            return country.toUpperCase();
-          }
-        } catch (e) { continue; }
-      }
-
-      try {
-        const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
-        if (tz.includes('Japan')) return 'JP';
-        if (tz.includes('Singapore')) return 'SG';
-        if (tz.includes('US')) return 'US';
-        if (tz.includes('Europe')) return 'DE';
-        if (tz.includes('India')) return 'IN';
-        if (tz.includes('Australia')) return 'AU';
-        if (tz.includes('UK')) return 'GB';
-      } catch (_) {}
-
-      return 'default';
-    }
+       ============================================================ */
+    // Note: getCountryCode() is defined above with consent‑gating
 
     /* ============================================================
        VISITOR ID (for unique clickers)
-    ============================================================ */
-    function getVisitorId() {
-      if (!hasConsent()) {
-        return 'temp-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
-      }
-
-      let vid = localStorage.getItem('visitorId');
-      if (!vid) {
-        vid = crypto.randomUUID ? crypto.randomUUID() : 'visitor-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
-        localStorage.setItem('visitorId', vid);
-      }
-      return vid;
-    }
+       ============================================================ */
+    // Note: getVisitorId() is defined above with consent‑gating
 
     /* ============================================================
        RENDER FUNCTIONS
@@ -1443,27 +1423,30 @@
     }
 
     /* ============================================================
-       LOAD CATEGORY COUNTS & PREVIEWS (OPTIMIZED)
+       LOAD CATEGORY COUNTS & PREVIEWS (OPTIMIZED) – now consent‑gated
     ============================================================ */
     async function loadCategoryCounts() {
+      // Only cache if consent is given
       const cacheKey = 'category_counts';
-      const cached = localStorage.getItem(cacheKey);
-      if (cached) {
-        try {
-          const parsed = JSON.parse(cached);
-          const age = Date.now() - parsed.timestamp;
-          if (age < 3600000) {
-            const counts = parsed.data;
-            categories.forEach(cat => {
-              const el = document.getElementById(`count-${cat.id}`);
-              if (el) {
-                const count = counts[cat.tag] || 0;
-                el.textContent = `${count} article${count !== 1 ? 's' : ''}`;
-              }
-            });
-            return;
-          }
-        } catch (_) {}
+      if (hasConsent()) {
+        const cached = localStorage.getItem(cacheKey);
+        if (cached) {
+          try {
+            const parsed = JSON.parse(cached);
+            const age = Date.now() - parsed.timestamp;
+            if (age < 3600000) {
+              const counts = parsed.data;
+              categories.forEach(cat => {
+                const el = document.getElementById(`count-${cat.id}`);
+                if (el) {
+                  const count = counts[cat.tag] || 0;
+                  el.textContent = `${count} article${count !== 1 ? 's' : ''}`;
+                }
+              });
+              return;
+            }
+          } catch (_) {}
+        }
       }
 
       try {
@@ -1489,12 +1472,14 @@
           }
         });
 
-        try {
-          localStorage.setItem(cacheKey, JSON.stringify({
-            data: counts,
-            timestamp: Date.now()
-          }));
-        } catch (_) {}
+        if (hasConsent()) {
+          try {
+            localStorage.setItem(cacheKey, JSON.stringify({
+              data: counts,
+              timestamp: Date.now()
+            }));
+          } catch (_) {}
+        }
 
       } catch (err) { console.error(err); }
     }
@@ -1735,7 +1720,7 @@
     }
 
     /* ============================================================
-       DYNAMIC LINK REWRITING (with click tracking and caching)
+       DYNAMIC LINK REWRITING (with click tracking and caching) – consent‑aware
     ============================================================ */
     async function rewriteDynamicLinks(articleId) {
       const country = await getCountryCode();
@@ -1743,6 +1728,7 @@
       let links = null;
       const cacheKey = `affiliate_links_${articleId}_${country}`;
       
+      // Only check cache if consent is given
       if (hasConsent()) {
         try {
           const cached = localStorage.getItem(cacheKey);
@@ -1774,6 +1760,7 @@
 
           links = data;
 
+          // Only cache if consent is given
           if (hasConsent()) {
             try {
               localStorage.setItem(cacheKey, JSON.stringify({
