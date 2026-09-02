@@ -216,26 +216,6 @@
       margin: 0 auto 24px;
     }
 
-    /* Search */
-    .search-wrapper {
-      max-width: 500px;
-      margin: 0 auto 20px;
-    }
-    .search-wrapper input {
-      width: 100%;
-      padding: 14px 20px;
-      border: 2px solid var(--border);
-      border-radius: 50px;
-      font-size: 1rem;
-      background: white;
-      transition: 0.2s;
-    }
-    .search-wrapper input:focus {
-      outline: none;
-      border-color: var(--yellow-dark);
-      box-shadow: 0 0 0 4px rgba(255, 219, 16, 0.2);
-    }
-
     /* Section Titles */
     .section-title {
       font-size: 1.8rem;
@@ -438,13 +418,13 @@
       display: inline-block;
       background: var(--yellow);
       color: var(--text);
-      padding: 8px 18px;
+      padding: 6px 14px;
       border-radius: 30px;
       font-weight: 700;
       text-decoration: none;
       border: 2px solid var(--yellow);
       transition: 0.2s;
-      font-size: 0.9rem;
+      font-size: 0.7rem;
     }
     .article-page .article-header .action-buttons .btn-save:hover {
       background: var(--yellow-dark);
@@ -454,34 +434,19 @@
       display: inline-block;
       background: transparent;
       color: var(--yellow-darker);
-      padding: 8px 18px;
+      padding: 6px 14px;
       border-radius: 30px;
       font-weight: 700;
       text-decoration: none;
       border: 2px solid var(--yellow);
       transition: 0.2s;
-      font-size: 0.9rem;
+      font-size: 0.7rem;
     }
     .article-page .article-header .action-buttons .btn-follow:hover {
       background: var(--yellow-light);
     }
 
-    /* Affiliate pill in header */
-    .affiliate-pill {
-      display: inline-block;
-      background: var(--yellow-light);
-      color: var(--yellow-darker);
-      font-size: 0.7rem;
-      font-weight: 700;
-      padding: 4px 14px;
-      border-radius: 30px;
-      border: 1px solid var(--yellow);
-      letter-spacing: 0.02em;
-      white-space: nowrap;
-      line-height: 1.6;
-    }
-
-    /* ===== AFFILIATE NOTICE (new) ===== */
+    /* ===== AFFILIATE NOTICE ===== */
     .affiliate-notice {
       background: var(--yellow-light);
       border-left: 4px solid var(--yellow);
@@ -734,16 +699,27 @@
       gap: 48px;
       flex-wrap: wrap;
     }
+    .footer-links .footer-column {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
     .footer-links h4 {
       color: white;
       margin-bottom: 8px;
     }
     .footer-links ul {
       list-style: none;
+      margin: 0;
+      padding: 0;
     }
     .footer-links li {
       margin: 4px 0;
       font-size: 0.9rem;
+    }
+    .footer-links a {
+      color: #b0c4d0;
+      text-decoration: none;
     }
     .footer-links a:hover {
       color: white;
@@ -785,6 +761,10 @@
       }
       .footer-inner {
         flex-direction: column;
+      }
+      .footer-links {
+        flex-direction: column;
+        gap: 20px;
       }
       .article-content .btn-group {
         flex-direction: column;
@@ -883,6 +863,26 @@
       0% { transform: rotate(0deg); }
       100% { transform: rotate(360deg); }
     }
+
+    /* ===== SEARCH WRAPPER (moved) ===== */
+    .search-wrapper {
+      max-width: 500px;
+      margin: 0 auto 20px;
+    }
+    .search-wrapper input {
+      width: 100%;
+      padding: 14px 20px;
+      border: 2px solid var(--border);
+      border-radius: 50px;
+      font-size: 1rem;
+      background: white;
+      transition: 0.2s;
+    }
+    .search-wrapper input:focus {
+      outline: none;
+      border-color: var(--yellow-dark);
+      box-shadow: 0 0 0 4px rgba(255, 219, 16, 0.2);
+    }
   </style>
 </head>
 
@@ -947,16 +947,20 @@
         <div class="footer-links">
           <div>
             <h4>Explore</h4>
-            <ul>
-              <li><a href="#" onclick="navigateTo('home'); return false;">Home</a></li>
-              <li><a href="shop.html">Shop</a></li>
-              <li><a href="#" onclick="navigateTo('about'); return false;">About</a></li>
-              <li><a href="#" onclick="navigateTo('contact'); return false;">Contact</a></li>
-              <li><a href="privacy.html" target="_blank">Privacy</a></li>
-              <li><a href="terms.html" target="_blank">Terms</a></li>
-              <li><a href="affiliate-disclosure.html" target="_blank">Affiliate</a></li>
-              <li><a href="cookie-policy.html" target="_blank">Cookies</a></li>
-            </ul>
+            <div style="display: flex; gap: 40px; flex-wrap: wrap;">
+              <ul>
+                <li><a href="#" onclick="navigateTo('home'); return false;">Home</a></li>
+                <li><a href="shop.html">Shop</a></li>
+                <li><a href="#" onclick="navigateTo('about'); return false;">About</a></li>
+                <li><a href="#" onclick="navigateTo('contact'); return false;">Contact</a></li>
+              </ul>
+              <ul>
+                <li><a href="privacy.html" target="_blank">Privacy</a></li>
+                <li><a href="terms.html" target="_blank">Terms</a></li>
+                <li><a href="affiliate-disclosure.html" target="_blank">Affiliate</a></li>
+                <li><a href="cookie-policy.html" target="_blank">Cookies</a></li>
+              </ul>
+            </div>
           </div>
         </div>
       </div>
@@ -989,19 +993,15 @@
     function acceptCookies() {
       localStorage.setItem('cookiesAccepted', 'true');
       document.getElementById('cookie-banner').classList.remove('show');
-      // Only now do we generate and store a persistent visitor ID
       if (!localStorage.getItem('visitorId')) {
         const vid = crypto.randomUUID ? crypto.randomUUID() : 'visitor-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
         localStorage.setItem('visitorId', vid);
       }
-      // Country and affiliate caches will be stored on‑demand when getCountryCode() is called
-      // because getCountryCode() checks hasConsent() before writing.
     }
 
     function declineCookies() {
       localStorage.setItem('cookiesAccepted', 'false');
       document.getElementById('cookie-banner').classList.remove('show');
-      // Remove all non‑essential data
       const keysToRemove = ['visitorId', 'userCountry', 'userCountryTimestamp', 'affiliate_links_', 'affiliate_links'];
       for (let key in localStorage) {
         if (key.startsWith('affiliate_links_') || key === 'visitorId' || key === 'userCountry' || key === 'userCountryTimestamp') {
@@ -1015,8 +1015,7 @@
       if (consent === null) {
         document.getElementById('cookie-banner').classList.add('show');
       } else if (consent === 'false') {
-        // Ensure no data remains if previously declined
-        declineCookies(); // this will clean up
+        declineCookies();
       }
     }
 
@@ -1029,7 +1028,6 @@
        ============================================================ */
     function getVisitorId() {
       if (!hasConsent()) {
-        // Return a temporary ID that is not stored
         return 'temp-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
       }
       let vid = localStorage.getItem('visitorId');
@@ -1076,7 +1074,6 @@
         } catch (e) { continue; }
       }
 
-      // Only cache if consent is given
       if (hasConsent()) {
         try {
           localStorage.setItem('userCountry', country);
@@ -1134,9 +1131,6 @@
             <div class="hero">
               <h1>Discover the <span>world</span> differently.</h1>
               <p>Amazing places, hidden destinations, and fascinating facts — all in one place.</p>
-              <div class="search-wrapper">
-                <input type="text" id="searchInput" placeholder="Search articles… (e.g., 'island')" oninput="filterArticles()" />
-              </div>
             </div>
 
             <h2 class="section-title">Explore by Category <small>20 boards to inspire you</small></h2>
@@ -1157,6 +1151,11 @@
             <h2 class="section-title">Featured Articles <small>handpicked for you</small></h2>
             <div class="card-grid" id="featuredGrid">
               <div class="loading-spinner">Loading featured articles…</div>
+            </div>
+
+            <!-- SEARCH BAR (moved here) -->
+            <div class="search-wrapper">
+              <input type="text" id="searchInput" placeholder="Search articles… (e.g., 'island')" oninput="filterArticles()" />
             </div>
 
             <h2 class="section-title">Latest from Our Boards <small>fresh discoveries</small></h2>
@@ -1392,16 +1391,6 @@
     }
 
     /* ============================================================
-       IP GEOLOCATION (with caching)
-       ============================================================ */
-    // Note: getCountryCode() is defined above with consent‑gating
-
-    /* ============================================================
-       VISITOR ID (for unique clickers)
-       ============================================================ */
-    // Note: getVisitorId() is defined above with consent‑gating
-
-    /* ============================================================
        RENDER FUNCTIONS
     ============================================================ */
     function createCardHTML(article) {
@@ -1423,10 +1412,9 @@
     }
 
     /* ============================================================
-       LOAD CATEGORY COUNTS & PREVIEWS (OPTIMIZED) – now consent‑gated
+       LOAD CATEGORY COUNTS & PREVIEWS (OPTIMIZED) – consent‑gated
     ============================================================ */
     async function loadCategoryCounts() {
-      // Only cache if consent is given
       const cacheKey = 'category_counts';
       if (hasConsent()) {
         const cached = localStorage.getItem(cacheKey);
@@ -1728,7 +1716,6 @@
       let links = null;
       const cacheKey = `affiliate_links_${articleId}_${country}`;
       
-      // Only check cache if consent is given
       if (hasConsent()) {
         try {
           const cached = localStorage.getItem(cacheKey);
@@ -1760,7 +1747,6 @@
 
           links = data;
 
-          // Only cache if consent is given
           if (hasConsent()) {
             try {
               localStorage.setItem(cacheKey, JSON.stringify({
@@ -1962,7 +1948,6 @@
             <div class="action-buttons">
               <a href="#" class="btn-save" onclick="event.preventDefault(); window.open('https://www.pinterest.com/pin/create/button/?url='+encodeURIComponent(window.location.href)+'&media=&description='+encodeURIComponent(document.title), '_blank', 'width=600,height=400');">📌 Save this discovery</a>
               <a href="https://www.pinterest.com/Rheoa_/" target="_blank" rel="noopener" class="btn-follow">Follow Rheoa on Pinterest →</a>
-              <span class="affiliate-pill">🛒 May contain affiliate links</span>
             </div>
           </div>
           <!-- AFFILIATE DISCLOSURE (moved higher, below header) -->
