@@ -150,7 +150,7 @@
       margin: 8px auto 0;
     }
 
-    /* Affiliate notice (replaces pill) */
+    /* Affiliate notice */
     .affiliate-notice-shop {
       background: var(--yellow-light);
       border-left: 4px solid var(--yellow);
@@ -358,10 +358,24 @@
       gap: 4px;
     }
 
-    /* Load More */
-    .load-more-wrapper {
-      text-align: center;
+    /* Load More & Back to Home row */
+    .action-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
       margin: 30px 0 10px;
+    }
+    .action-row .back-home {
+      margin: 0;
+    }
+    .action-row .load-more-wrapper {
+      margin: 0;
+    }
+
+    .load-more-wrapper {
+      text-align: right;
     }
     .load-more-btn {
       background: var(--yellow);
@@ -386,10 +400,8 @@
       transform: none;
     }
 
-    /* Back to Home button */
     .back-home {
       display: inline-block;
-      margin-top: 30px;
       padding: 10px 24px;
       background: var(--yellow);
       color: var(--text);
@@ -601,6 +613,16 @@
         flex-direction: column;
         gap: 16px;
       }
+      .action-row {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .action-row .back-home {
+        text-align: center;
+      }
+      .action-row .load-more-wrapper {
+        text-align: center;
+      }
     }
     @media (max-width: 480px) {
       .product-grid {
@@ -649,7 +671,7 @@
       <div class="shop-hero">
         <h1>🌍 Travel Shop</h1>
         <p>Curated travel gear we've tested and loved — handpicked just for you.</p>
-        <!-- Full disclosure notice (replaces pill) -->
+        <!-- Full disclosure notice -->
         <div class="affiliate-notice-shop">
           <strong>🛒 Affiliate Disclosure:</strong> This article contains affiliate links. If you purchase through these links, I earn a small commission at no extra cost to you.
         </div>
@@ -666,14 +688,12 @@
         <div class="loading-spinner">Loading products…</div>
       </div>
 
-      <!-- Load More -->
-      <div class="load-more-wrapper" id="shopLoadMoreWrapper">
-        <button class="load-more-btn" id="loadMoreBtn" onclick="loadMoreProducts()">Load More</button>
-      </div>
-
-      <!-- Back to Home (moved from header to bottom) -->
-      <div style="text-align: center;">
+      <!-- Action Row: Back to Home (left) and Load More (right) -->
+      <div class="action-row">
         <a href="index.html" class="back-home">← Back to Home</a>
+        <div class="load-more-wrapper" id="shopLoadMoreWrapper">
+          <button class="load-more-btn" id="loadMoreBtn" onclick="loadMoreProducts()">Load More</button>
+        </div>
       </div>
     </div>
   </main>
