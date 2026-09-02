@@ -92,7 +92,7 @@
     }
 
     /* ============================================================
-       HEADER (same as index.html but with "Back to Home" link)
+       HEADER (with logo only — Back to Home moved to bottom)
        ============================================================ */
     header {
       position: sticky;
@@ -120,28 +120,6 @@
     }
     .logo span {
       color: var(--text);
-    }
-
-    .nav-links {
-      display: flex;
-      gap: 28px;
-      font-weight: 600;
-      font-size: 0.95rem;
-    }
-
-    .nav-links a {
-      padding: 4px 0;
-      border-bottom: 3px solid transparent;
-      transition: 0.2s;
-    }
-
-    .nav-links a:hover {
-      border-bottom-color: var(--yellow);
-      color: var(--yellow-darker);
-    }
-
-    .nav-links a.active {
-      border-bottom-color: var(--yellow-dark);
     }
 
     /* ============================================================
@@ -172,30 +150,19 @@
       margin: 8px auto 0;
     }
 
-    .affiliate-pill-shop {
-      display: inline-block;
+    /* Affiliate notice (replaces pill) */
+    .affiliate-notice-shop {
       background: var(--yellow-light);
-      color: var(--yellow-darker);
-      font-size: 0.7rem;
-      font-weight: 700;
-      padding: 4px 14px;
-      border-radius: 30px;
-      border: 1px solid var(--yellow);
-      letter-spacing: 0.02em;
-      margin-top: 8px;
-    }
-
-    .affiliate-disclosure-shop {
-      margin-top: 40px;
-      padding: 16px 20px;
-      background: var(--yellow-light);
-      border: 1px solid var(--yellow);
-      border-radius: var(--radius);
-      font-size: 0.85rem;
+      border-left: 4px solid var(--yellow);
+      padding: 10px 16px;
+      border-radius: 8px;
+      margin: 16px auto 0;
+      font-size: 0.9rem;
       color: var(--muted);
-      text-align: center;
+      max-width: 700px;
+      text-align: left;
     }
-    .affiliate-disclosure-shop strong {
+    .affiliate-notice-shop strong {
       color: var(--text);
     }
 
@@ -267,7 +234,7 @@
 
     .recommended-badge {
       position: absolute;
-      top: -10px;
+      top: 4px;
       right: 12px;
       background: linear-gradient(135deg, #c9a84c, #f5d97a);
       color: #3d2b1a;
@@ -419,6 +386,23 @@
       transform: none;
     }
 
+    /* Back to Home button */
+    .back-home {
+      display: inline-block;
+      margin-top: 30px;
+      padding: 10px 24px;
+      background: var(--yellow);
+      color: var(--text);
+      font-weight: 700;
+      border-radius: 30px;
+      transition: 0.2s;
+      text-decoration: none;
+      text-align: center;
+    }
+    .back-home:hover {
+      background: var(--yellow-dark);
+    }
+
     /* ============================================================
        PRODUCT MODAL
        ============================================================ */
@@ -490,8 +474,9 @@
     .modal-image img {
       width: 100%;
       height: 100%;
-      object-fit: cover;
+      object-fit: contain;
       max-height: 350px;
+      background: #fafafa;
     }
     .modal-rating {
       color: #f5a623;
@@ -532,7 +517,7 @@
     }
 
     /* ============================================================
-       FOOTER (same as index.html)
+       FOOTER (split 4x2)
        ============================================================ */
     footer {
       background: #0d1c26;
@@ -568,10 +553,16 @@
     }
     .footer-links ul {
       list-style: none;
+      margin: 0;
+      padding: 0;
     }
     .footer-links li {
       margin: 4px 0;
       font-size: 0.9rem;
+    }
+    .footer-links a {
+      color: #b0c4d0;
+      text-decoration: none;
     }
     .footer-links a:hover {
       color: white;
@@ -601,6 +592,14 @@
       }
       .modal-header h2 {
         font-size: 1.3rem;
+      }
+      .footer-links {
+        flex-direction: column;
+        gap: 20px;
+      }
+      .footer-links > div > div {
+        flex-direction: column;
+        gap: 16px;
       }
     }
     @media (max-width: 480px) {
@@ -632,16 +631,13 @@
 <body>
 
   <!-- ============================================================
-       HEADER (with "Back to Home" link)
+       HEADER (with logo only — Back to Home moved to bottom)
   ============================================================ -->
   <header>
     <div class="container nav">
       <a href="index.html" class="logo">
         WORLD<span>DISCOVERY</span>
       </a>
-      <nav class="nav-links" id="navLinks">
-        <a href="index.html">← Back to Home</a>
-      </nav>
     </div>
   </header>
 
@@ -653,7 +649,10 @@
       <div class="shop-hero">
         <h1>🌍 Travel Shop</h1>
         <p>Curated travel gear we've tested and loved — handpicked just for you.</p>
-        <span class="affiliate-pill-shop">🛒 Contains affiliate links</span>
+        <!-- Full disclosure notice (replaces pill) -->
+        <div class="affiliate-notice-shop">
+          <strong>🛒 Affiliate Disclosure:</strong> This article contains affiliate links. If you purchase through these links, I earn a small commission at no extra cost to you.
+        </div>
       </div>
 
       <!-- Category Tabs -->
@@ -672,15 +671,15 @@
         <button class="load-more-btn" id="loadMoreBtn" onclick="loadMoreProducts()">Load More</button>
       </div>
 
-      <!-- Affiliate Disclosure -->
-      <div class="affiliate-disclosure-shop">
-        <strong>Affiliate disclosure:</strong> Some links on this page may be affiliate links. If you make a purchase through one of these links, Rheoa may earn a commission at no additional cost to you.
+      <!-- Back to Home (moved from header to bottom) -->
+      <div style="text-align: center;">
+        <a href="index.html" class="back-home">← Back to Home</a>
       </div>
     </div>
   </main>
 
   <!-- ============================================================
-       PRODUCT DETAIL MODAL (affiliate pill removed)
+       PRODUCT DETAIL MODAL
   ============================================================ -->
   <div class="modal-overlay" id="productModal">
     <div class="modal">
@@ -704,7 +703,7 @@
   </div>
 
   <!-- ============================================================
-       FOOTER (same as index.html)
+       FOOTER (split 4x2)
   ============================================================ -->
   <footer>
     <div class="container">
@@ -716,16 +715,20 @@
         <div class="footer-links">
           <div>
             <h4>Explore</h4>
-            <ul>
-              <li><a href="index.html">Home</a></li>
-              <li><a href="shop.html">Shop</a></li>
-              <li><a href="about.html">About</a></li>
-              <li><a href="contact.html">Contact</a></li>
-              <li><a href="privacy.html" target="_blank">Privacy</a></li>
-              <li><a href="terms.html" target="_blank">Terms</a></li>
-              <li><a href="affiliate-disclosure.html" target="_blank">Affiliate</a></li>
-              <li><a href="cookie-policy.html" target="_blank">Cookies</a></li>
-            </ul>
+            <div style="display: flex; gap: 40px; flex-wrap: wrap;">
+              <ul>
+                <li><a href="index.html">Home</a></li>
+                <li><a href="shop.html">Shop</a></li>
+                <li><a href="index.html#about">About</a></li>
+                <li><a href="index.html#contact">Contact</a></li>
+              </ul>
+              <ul>
+                <li><a href="privacy.html" target="_blank">Privacy</a></li>
+                <li><a href="terms.html" target="_blank">Terms</a></li>
+                <li><a href="affiliate-disclosure.html" target="_blank">Affiliate</a></li>
+                <li><a href="cookie-policy.html" target="_blank">Cookies</a></li>
+              </ul>
+            </div>
           </div>
         </div>
       </div>
@@ -889,7 +892,7 @@
     }
 
     // ============================================================
-    // PRODUCT MODAL FUNCTIONS (FIXED VIEW INCREMENT)
+    // PRODUCT MODAL FUNCTIONS
     // ============================================================
     let currentModalProductId = null;
 
