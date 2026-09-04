@@ -30,7 +30,7 @@
   <meta http-equiv="X-Frame-Options" content="DENY" />
   <meta name="referrer" content="strict-origin-when-cross-origin" />
   <meta http-equiv="Content-Security-Policy" 
-        content="default-src 'self' https://*.supabase.co https://*.pexels.com https://*.googleapis.com https://*.gstatic.com https://unpkg.com https://cdn.jsdelivr.net https://www.pinterest.com https://api.ipify.org https://*.impactcdn.com https://utt.impactcdn.com; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://unpkg.com https://utt.impactcdn.com https://www.googletagmanager.com; style-src 'self' 'unsafe-inline' https://unpkg.com https://fonts.googleapis.com; img-src 'self' data: https://*.pexels.com https://images.pexels.com https://*.pinterest.com https://*.tile.openstreetmap.org https://*.basemaps.cartocdn.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://*.supabase.co https://api.ipify.org https://ipapi.co https://ip-api.com https://ipinfo.io https://cdn.jsdelivr.net https://*.tile.openstreetmap.org; frame-src 'self' https://www.pinterest.com;" />
+        content="default-src 'self' https://*.supabase.co https://*.pexels.com https://*.googleapis.com https://*.gstatic.com https://unpkg.com https://cdn.jsdelivr.net https://www.pinterest.com https://api.ipify.org https://*.impactcdn.com https://utt.impactcdn.com; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://unpkg.com https://utt.impactcdn.com https://www.googletagmanager.com; style-src 'self' 'unsafe-inline' https://unpkg.com https://fonts.googleapis.com; img-src 'self' data: https://*.pexels.com https://images.pexels.com https://*.pinterest.com https://*.tile.openstreetmap.org; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://*.supabase.co https://api.ipify.org https://ipapi.co https://ip-api.com https://ipinfo.io https://cdn.jsdelivr.net https://*.tile.openstreetmap.org; frame-src 'self' https://www.pinterest.com;" />
   <meta http-equiv="Permissions-Policy" 
         content="geolocation=(), microphone=(), camera=(), payment=(), usb=(), battery=(), accelerometer=(), gyroscope=(), magnetometer=(), ambient-light-sensor=(), vibrate=(), midi=(), clipboard-read=(), clipboard-write=(), screen-wake-lock=(), serial=(), hid=(), xr-spatial-tracking=()" />
 
@@ -1832,7 +1832,7 @@
     }
 
     /* ============================================================
-       RENDER MAP FROM EMBEDDED DATA
+       RENDER MAP FROM EMBEDDED DATA (OpenStreetMap + circle markers)
     ============================================================ */
     function renderMapFromData(container, places) {
       if (window._currentMap) {
@@ -1856,11 +1856,13 @@
 
       const map = L.map(container).setView([centerLat, centerLng], 4.5);
 
-      L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>, &copy; CartoDB',
+      // === OpenStreetMap tiles (free, no API key) ===
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
         maxZoom: 19
       }).addTo(map);
 
+      // === Simple circle markers (coloured dots) ===
       places.forEach(place => {
         const popupContent = `
           <div style="max-width:280px;">
@@ -1870,13 +1872,20 @@
             <img src="${place.image}" alt="${place.name}" style="width:100%; border-radius:8px; margin-top:6px;" />
           </div>
         `;
-        const marker = L.marker([parseFloat(place.lat), parseFloat(place.lng)])
-          .bindPopup(popupContent, { maxWidth: 300 })
-          .addTo(map);
+        L.circleMarker([parseFloat(place.lat), parseFloat(place.lng)], {
+          radius: 10,
+          fillColor: '#b39b00',
+          color: '#b39b00',
+          weight: 2,
+          opacity: 0.9,
+          fillOpacity: 0.9
+        })
+        .bindPopup(popupContent, { maxWidth: 300 })
+        .addTo(map);
       });
 
       const group = L.featureGroup(
-        places.map(p => L.marker([parseFloat(p.lat), parseFloat(p.lng)]))
+        places.map(p => L.circleMarker([parseFloat(p.lat), parseFloat(p.lng)], { radius: 10 }))
       );
       if (places.length > 1) {
         map.fitBounds(group.getBounds().pad(0.2));
