@@ -406,6 +406,17 @@
     .article-page .article-header .meta .view-count::before {
       content: "👁️ ";
     }
+    /* ===== NEW: Last Updated ===== */
+    .article-page .article-header .meta .last-updated {
+      font-size: 0.8rem;
+      color: var(--muted);
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .article-page .article-header .meta .last-updated::before {
+      content: "📅 ";
+    }
 
     .article-page .article-header .action-buttons {
       display: flex;
@@ -1832,7 +1843,7 @@
     }
 
     /* ============================================================
-       RENDER MAP FROM EMBEDDED DATA (OpenStreetMap + circle markers)
+       RENDER MAP FROM EMBEDDED DATA
     ============================================================ */
     function renderMapFromData(container, places) {
       if (window._currentMap) {
@@ -1856,13 +1867,11 @@
 
       const map = L.map(container).setView([centerLat, centerLng], 4.5);
 
-      // === OpenStreetMap tiles (free, no API key) ===
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+      L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>, &copy; CartoDB',
         maxZoom: 19
       }).addTo(map);
 
-      // === Simple circle markers (coloured dots) ===
       places.forEach(place => {
         const popupContent = `
           <div style="max-width:280px;">
@@ -1872,20 +1881,13 @@
             <img src="${place.image}" alt="${place.name}" style="width:100%; border-radius:8px; margin-top:6px;" />
           </div>
         `;
-        L.circleMarker([parseFloat(place.lat), parseFloat(place.lng)], {
-          radius: 10,
-          fillColor: '#b39b00',
-          color: '#b39b00',
-          weight: 2,
-          opacity: 0.9,
-          fillOpacity: 0.9
-        })
-        .bindPopup(popupContent, { maxWidth: 300 })
-        .addTo(map);
+        const marker = L.marker([parseFloat(place.lat), parseFloat(place.lng)])
+          .bindPopup(popupContent, { maxWidth: 300 })
+          .addTo(map);
       });
 
       const group = L.featureGroup(
-        places.map(p => L.circleMarker([parseFloat(p.lat), parseFloat(p.lng)], { radius: 10 }))
+        places.map(p => L.marker([parseFloat(p.lat), parseFloat(p.lng)]))
       );
       if (places.length > 1) {
         map.fitBounds(group.getBounds().pad(0.2));
@@ -1901,7 +1903,7 @@
     }
 
     /* ============================================================
-       LOAD SINGLE ARTICLE (with affiliate notice)
+       LOAD SINGLE ARTICLE (with affiliate notice + Last Updated)
     ============================================================ */
     async function loadArticle(slug) {
       const container = document.getElementById('articleContent');
@@ -1915,7 +1917,7 @@
       try {
         const { data: article, error } = await supabaseClient
           .from('articles')
-          .select('id, title, description, image_url, tag, slug, created_at, content, featured, views')
+          .select('id, title, description, image_url, tag, slug, created_at, content, featured, views, updated_at')
           .eq('slug', slug)
           .single();
 
@@ -1948,6 +1950,18 @@
           catSpan.textContent = category ? category.name : article.tag || 'Travel';
         }
 
+        // Format the last updated date
+        let lastUpdatedHtml = '';
+        if (article.updated_at) {
+          const updatedDate = new Date(article.updated_at);
+          const formattedDate = updatedDate.toLocaleDateString('en-GB', {
+            day: 'numeric',
+            month: 'short',
+            year: 'numeric'
+          });
+          lastUpdatedHtml = `<span class="last-updated">${formattedDate}</span>`;
+        }
+
         let html = `
           <div class="article-header">
             <h1>${article.title}</h1>
@@ -1955,6 +1969,7 @@
               <span class="tag">${article.tag || 'Travel'}</span>
               ${article.featured ? ' ⭐ Featured' : ''}
               <span class="view-count">${article.views || 0} views</span>
+              ${lastUpdatedHtml}
             </div>
             <div class="action-buttons">
               <a href="#" class="btn-save" onclick="event.preventDefault(); window.open('https://www.pinterest.com/pin/create/button/?url='+encodeURIComponent(window.location.href)+'&media=&description='+encodeURIComponent(document.title), '_blank', 'width=600,height=400');">📌 Save this discovery</a>
@@ -1996,7 +2011,7 @@
             "name": "Rheoa"
           },
           "datePublished": article.created_at ? article.created_at.split("T")[0] : new Date().toISOString().split("T")[0],
-          "dateModified": article.created_at ? article.created_at.split("T")[0] : new Date().toISOString().split("T")[0],
+          "dateModified": article.updated_at ? article.updated_at.split("T")[0] : new Date().toISOString().split("T")[0],
           "publisher": {
             "@type": "Organization",
             "name": "World Discovery"
