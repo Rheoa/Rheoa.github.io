@@ -17,7 +17,7 @@
     <priority>0.9</priority>
   </url>
 
-  <!-- Articles -->
+  <!-- Africa -->
   <url>
     <loc>https://rheoa.github.io/#article-10-places-in-africa-to-discover</loc>
     <lastmod>2026-08-29</lastmod>
@@ -36,6 +36,8 @@
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
+
+  <!-- Asia -->
   <url>
     <loc>https://rheoa.github.io/#article-10-incredible-places-to-visit-in-asia</loc>
     <lastmod>2026-08-29</lastmod>
@@ -60,12 +62,16 @@
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
+
+  <!-- Australia & Oceania -->
   <url>
-    <loc>https://rheoa.github.io/#article-10-places-to-explore-in-australia-&-oceania</loc>
+    <loc>https://rheoa.github.io/#article-10-places-to-explore-in-australia-&amp;-oceania</loc>
     <lastmod>2026-08-29</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
+
+  <!-- Europe -->
   <url>
     <loc>https://rheoa.github.io/#article-20-european-places-for-your-bucket-list</loc>
     <lastmod>2026-08-29</lastmod>
@@ -84,6 +90,8 @@
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
+
+  <!-- North America -->
   <url>
     <loc>https://rheoa.github.io/#article-10-places-in-north-america-you-should-see</loc>
     <lastmod>2026-08-29</lastmod>
@@ -96,12 +104,16 @@
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
+
+  <!-- South America -->
   <url>
     <loc>https://rheoa.github.io/#article-beautiful-places-in-south-america</loc>
     <lastmod>2026-08-29</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
+
+  <!-- India -->
   <url>
     <loc>https://rheoa.github.io/#article-10-incredible-places-in-india</loc>
     <lastmod>2026-08-29</lastmod>
@@ -120,6 +132,8 @@
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
+
+  <!-- Dream Destinations & Bucket List -->
   <url>
     <loc>https://rheoa.github.io/#article-15-dream-destinations-around-the-world</loc>
     <lastmod>2026-08-29</lastmod>
@@ -138,6 +152,8 @@
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
+
+  <!-- Hidden Gems & Secret Places -->
   <url>
     <loc>https://rheoa.github.io/#article-12-hidden-gems-most-tourists-miss</loc>
     <lastmod>2026-08-29</lastmod>
@@ -162,6 +178,8 @@
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
+
+  <!-- Unreal / Strange Places -->
   <url>
     <loc>https://rheoa.github.io/#article-places-like-another-planet</loc>
     <lastmod>2026-08-29</lastmod>
@@ -186,6 +204,8 @@
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
+
+  <!-- Discoveries & Country Facts -->
   <url>
     <loc>https://rheoa.github.io/#article-20-discoveries-around-the-world</loc>
     <lastmod>2026-08-29</lastmod>
