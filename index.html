@@ -1843,7 +1843,7 @@
     }
 
     /* ============================================================
-       RENDER MAP FROM EMBEDDED DATA
+       RENDER MAP FROM EMBEDDED DATA (UPDATED: OpenStreetMap + Circle Markers)
     ============================================================ */
     function renderMapFromData(container, places) {
       if (window._currentMap) {
@@ -1867,8 +1867,9 @@
 
       const map = L.map(container).setView([centerLat, centerLng], 4.5);
 
-      L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>, &copy; CartoDB',
+      // OpenStreetMap tiles (free, no API key, CSP-allowed)
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
         maxZoom: 19
       }).addTo(map);
 
@@ -1881,13 +1882,20 @@
             <img src="${place.image}" alt="${place.name}" style="width:100%; border-radius:8px; margin-top:6px;" />
           </div>
         `;
-        const marker = L.marker([parseFloat(place.lat), parseFloat(place.lng)])
-          .bindPopup(popupContent, { maxWidth: 300 })
-          .addTo(map);
+        L.circleMarker([parseFloat(place.lat), parseFloat(place.lng)], {
+          radius: 10,
+          fillColor: '#b39b00',
+          color: '#b39b00',
+          weight: 2,
+          opacity: 0.9,
+          fillOpacity: 0.9
+        })
+        .bindPopup(popupContent, { maxWidth: 300 })
+        .addTo(map);
       });
 
       const group = L.featureGroup(
-        places.map(p => L.marker([parseFloat(p.lat), parseFloat(p.lng)]))
+        places.map(p => L.circleMarker([parseFloat(p.lat), parseFloat(p.lng)], { radius: 10 }))
       );
       if (places.length > 1) {
         map.fitBounds(group.getBounds().pad(0.2));
@@ -1952,15 +1960,15 @@
 
         // Format the last updated date
         let lastUpdatedHtml = '';
-if (article.updated_at) {
-  const updatedDate = new Date(article.updated_at);
-  const formattedDate = `Updated ${updatedDate.toLocaleDateString('en-US', {
-    month: 'long',
-    day: 'numeric',
-    year: 'numeric'
-  })}`;
-  lastUpdatedHtml = `<span class="last-updated">${formattedDate}</span>`;
-}
+        if (article.updated_at) {
+          const updatedDate = new Date(article.updated_at);
+          const formattedDate = `Updated ${updatedDate.toLocaleDateString('en-US', {
+            month: 'long',
+            day: 'numeric',
+            year: 'numeric'
+          })}`;
+          lastUpdatedHtml = `<span class="last-updated">${formattedDate}</span>';
+        }
 
         let html = `
           <div class="article-header">
