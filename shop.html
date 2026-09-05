@@ -92,7 +92,7 @@
     }
 
     /* ============================================================
-       HEADER (with logo only — Back to Home moved to bottom)
+       HEADER (with navigation links like index.html)
        ============================================================ */
     header {
       position: sticky;
@@ -117,9 +117,40 @@
       font-size: 1.4rem;
       font-weight: 800;
       color: var(--yellow-darker);
+      text-decoration: none;
     }
     .logo span {
       color: var(--text);
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 28px;
+      font-weight: 600;
+      font-size: 0.95rem;
+    }
+
+    .nav-links a {
+      padding: 4px 0;
+      border-bottom: 3px solid transparent;
+      transition: 0.2s;
+      text-decoration: none;
+      color: var(--text);
+    }
+
+    .nav-links a:hover,
+    .nav-links a.active {
+      border-bottom-color: var(--yellow);
+      color: var(--yellow-darker);
+    }
+
+    .menu-toggle {
+      display: none;
+      font-size: 1.6rem;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 4px 8px;
     }
 
     /* ============================================================
@@ -150,7 +181,7 @@
       margin: 8px auto 0;
     }
 
-    /* Affiliate notice */
+    /* Affiliate notice – full width, matching categories below */
     .affiliate-notice-shop {
       background: var(--yellow-light);
       border-left: 4px solid var(--yellow);
@@ -159,8 +190,8 @@
       margin: 16px auto 0;
       font-size: 0.9rem;
       color: var(--muted);
-      max-width: 700px;
       text-align: left;
+      width: 100%;
     }
     .affiliate-notice-shop strong {
       color: var(--text);
@@ -222,7 +253,7 @@
       box-shadow: 0 12px 40px rgba(0, 0, 0, 0.08);
     }
 
-    /* Recommended Badge */
+    /* Recommended Badge – now using site yellow */
     .product-card.recommended {
       border: 3px solid #c9a84c;
       box-shadow: 0 0 0 4px #f5e6c8, 0 8px 30px rgba(201, 168, 76, 0.2);
@@ -236,16 +267,16 @@
       position: absolute;
       top: 4px;
       right: 12px;
-      background: linear-gradient(135deg, #c9a84c, #f5d97a);
-      color: #3d2b1a;
+      background: var(--yellow);
+      color: var(--text);
       font-weight: 800;
       font-size: 0.7rem;
       padding: 4px 14px;
       border-radius: 30px;
       letter-spacing: 0.06em;
-      box-shadow: 0 4px 12px rgba(201, 168, 76, 0.3);
+      box-shadow: 0 4px 12px rgba(255, 219, 16, 0.3);
       z-index: 5;
-      border: 1px solid #a8893a;
+      border: 1px solid var(--yellow-dark);
     }
 
     .product-image {
@@ -529,7 +560,7 @@
     }
 
     /* ============================================================
-       FOOTER (split 4x2)
+       FOOTER
        ============================================================ */
     footer {
       background: #0d1c26;
@@ -591,6 +622,25 @@
        RESPONSIVE
        ============================================================ */
     @media (max-width: 700px) {
+      .menu-toggle {
+        display: block;
+      }
+      .nav-links {
+        display: none;
+        flex-direction: column;
+        position: absolute;
+        top: var(--nav-height);
+        left: 0;
+        right: 0;
+        background: white;
+        padding: 24px;
+        border-bottom: 2px solid var(--yellow);
+        gap: 16px;
+        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.06);
+      }
+      .nav-links.open {
+        display: flex;
+      }
       .product-grid {
         grid-template-columns: 1fr 1fr;
       }
@@ -653,13 +703,24 @@
 <body>
 
   <!-- ============================================================
-       HEADER (with logo only — Back to Home moved to bottom)
+       HEADER (with navigation links like index.html)
   ============================================================ -->
   <header>
     <div class="container nav">
       <a href="index.html" class="logo">
         WORLD<span>DISCOVERY</span>
       </a>
+
+      <nav class="nav-links" id="navLinks">
+        <a href="index.html">Home</a>
+        <a href="shop.html" class="active">Shop</a>
+        <a href="index.html#about">About</a>
+        <a href="index.html#contact">Contact</a>
+      </nav>
+
+      <button class="menu-toggle" onclick="document.getElementById('navLinks').classList.toggle('open')" aria-label="Toggle menu">
+        ☰
+      </button>
     </div>
   </header>
 
@@ -671,7 +732,7 @@
       <div class="shop-hero">
         <h1>🌍 Travel Shop</h1>
         <p>Curated travel gear we've tested and loved — handpicked just for you.</p>
-        <!-- Full disclosure notice -->
+        <!-- Full disclosure notice – full width -->
         <div class="affiliate-notice-shop">
           <strong>🛒 Affiliate Disclosure:</strong> This article contains affiliate links. If you purchase through these links, I earn a small commission at no extra cost to you.
         </div>
@@ -717,7 +778,7 @@
         <span>🛒 <span id="modalProductPurchased">0</span> purchased</span>
       </div>
       <div class="modal-actions">
-        <a href="#" class="btn-buy dynamic-link-product" id="modalProductBuyBtn" target="_blank" rel="noopener">Buy Now →</a>
+        <a href="#" class="btn-buy dynamic-link-product" id="modalProductBuyBtn" target="_blank" rel="noopener">See More</a>
       </div>
     </div>
   </div>
@@ -900,7 +961,7 @@
               <a href="${affiliateUrl}" class="btn-buy dynamic-link-product" 
                  data-affiliate-key="${affiliateKey}" 
                  data-product-id="${product.id}"
-                 onclick="event.stopPropagation(); handleProductClick(event, ${product.id}, '${affiliateKey}')">Buy Now →</a>
+                 onclick="event.stopPropagation(); handleProductClick(event, ${product.id}, '${affiliateKey}')">See More</a>
               <div class="product-stats">
                 <span>👁️ ${views}</span>
                 <span>🛒 ${purchased}</span>
