@@ -1843,7 +1843,7 @@
     }
 
     /* ============================================================
-       RENDER MAP FROM EMBEDDED DATA (UPDATED: OpenStreetMap + Circle Markers)
+       RENDER MAP FROM EMBEDDED DATA (OpenStreetMap + Circle Markers)
     ============================================================ */
     function renderMapFromData(container, places) {
       if (window._currentMap) {
@@ -1867,7 +1867,7 @@
 
       const map = L.map(container).setView([centerLat, centerLng], 4.5);
 
-      // OpenStreetMap tiles (free, no API key, CSP-allowed)
+      // OpenStreetMap tiles (free, no API key)
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
         maxZoom: 19
@@ -1967,7 +1967,7 @@
             day: 'numeric',
             year: 'numeric'
           })}`;
-          lastUpdatedHtml = `<span class="last-updated">${formattedDate}</span>';
+          lastUpdatedHtml = `<span class="last-updated">${formattedDate}</span>`;
         }
 
         let html = `
