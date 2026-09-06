@@ -195,6 +195,7 @@
     .badge-draft { background: #fff3e0; color: #e65100; }
     .badge-published { background: #e8f5e9; color: #2e7d32; }
     .badge-archived { background: #f5f5f5; color: #616161; }
+    .badge-deleted { background: #ffebee; color: #c62828; }
 
     /* ===== CHARTS ===== */
     .chart-container {
@@ -324,6 +325,20 @@
       font-family: inherit;
     }
     .btn-success:hover { background: #c8e6c9; }
+
+    .btn-restore {
+      background: #fff3e0;
+      color: #e65100;
+      border: none;
+      padding: 6px 14px;
+      border-radius: 30px;
+      font-weight: 700;
+      font-size: 0.8rem;
+      cursor: pointer;
+      transition: 0.2s;
+      font-family: inherit;
+    }
+    .btn-restore:hover { background: #ffe0b2; }
 
     .refresh-btn {
       background: var(--yellow);
@@ -1209,12 +1224,13 @@
                     <th>Tag</th>
                     <th>Featured</th>
                     <th>Views</th>
+                    <th>Status</th>
                     <th>Created</th>
                     <th style="text-align:center;">Actions</th>
                   </tr>
                 </thead>
                 <tbody id="articlesTableBody">
-                  <tr><td colspan="7" style="text-align:center;">Loading articles…</td></tr>
+                  <tr><td colspan="8" style="text-align:center;">Loading articles…</td></tr>
                 </tbody>
               </table>
             </div>
@@ -1953,23 +1969,23 @@
     }
 
     // ============================================================
-    // ARTICLES LIST (FULL)
+    // ARTICLES LIST (FULL) – includes deleted_at
     // ============================================================
     async function loadArticlesList() {
       const tbody = document.getElementById('articlesTableBody');
       if (!tbody) return;
-      tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">Loading articles…</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;">Loading articles…</td></tr>';
 
       try {
         const { data: articles, error } = await supabaseClient
           .from('articles')
-          .select('id, title, tag, featured, views, created_at, slug')
+          .select('id, title, tag, featured, views, created_at, slug, deleted_at')
           .order('created_at', { ascending: false });
 
         if (error) throw error;
 
         if (!articles || articles.length === 0) {
-          tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">No articles found. Create your first article!</td></tr>';
+          tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;">No articles found. Create your first article!</td></tr>';
           return;
         }
 
@@ -1977,17 +1993,24 @@
         articles.forEach(article => {
           const created = article.created_at ? new Date(article.created_at).toLocaleDateString() : '—';
           const tagName = CATEGORIES.find(c => c.tag === article.tag)?.name || article.tag || '—';
+          const isDeleted = article.deleted_at !== null;
+          const statusBadge = isDeleted ? '<span class="badge badge-deleted">🗑️ Deleted</span>' : '<span class="badge badge-yes">Active</span>';
           rows += `
-            <tr>
+            <tr style="${isDeleted ? 'opacity: 0.6;' : ''}">
               <td>${article.id}</td>
               <td><a href="../#article-${article.slug}" target="_blank" style="color:var(--yellow-darker); font-weight:600;">${article.title}</a></td>
               <td>${tagName}</td>
               <td><span class="badge ${article.featured ? 'badge-yes' : 'badge-no'}">${article.featured ? 'Yes' : 'No'}</span></td>
               <td>${article.views || 0}</td>
+              <td>${statusBadge}</td>
               <td>${created}</td>
               <td style="text-align:center; white-space:nowrap;">
-                <button class="btn-edit btn-sm" onclick="editArticle(${article.id})">✏️ Edit</button>
-                <button class="btn-danger btn-sm" onclick="deleteArticle(${article.id})">🗑️ Delete</button>
+                ${!isDeleted ? `
+                  <button class="btn-edit btn-sm" onclick="editArticle(${article.id})">✏️ Edit</button>
+                  <button class="btn-danger btn-sm" onclick="deleteArticle(${article.id})">🗑️ Delete</button>
+                ` : `
+                  <button class="btn-restore btn-sm" onclick="restoreArticle(${article.id})">♻️ Restore</button>
+                `}
               </td>
             </tr>
           `;
@@ -1996,7 +2019,42 @@
 
       } catch (err) {
         console.error('Error loading articles:', err);
-        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; color:var(--muted);">⚠️ Could not load articles.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; color:var(--muted);">⚠️ Could not load articles.</td></tr>';
+      }
+    }
+
+    // ============================================================
+    // SOFT DELETE & RESTORE – ARTICLES
+    // ============================================================
+    async function deleteArticle(id) {
+      if (!confirm('Are you sure you want to delete this article? It can be restored later.')) return;
+      try {
+        const { error } = await supabaseClient
+          .from('articles')
+          .update({ deleted_at: new Date().toISOString() })
+          .eq('id', id);
+        if (error) throw error;
+        alert('✅ Article deleted successfully (can be restored).');
+        loadArticlesList();
+      } catch (err) {
+        console.error('Error deleting article:', err);
+        alert('❌ Error deleting article: ' + err.message);
+      }
+    }
+
+    async function restoreArticle(id) {
+      if (!confirm('Restore this article? It will reappear on the public site.')) return;
+      try {
+        const { error } = await supabaseClient
+          .from('articles')
+          .update({ deleted_at: null })
+          .eq('id', id);
+        if (error) throw error;
+        alert('✅ Article restored successfully.');
+        loadArticlesList();
+      } catch (err) {
+        console.error('Error restoring article:', err);
+        alert('❌ Error restoring article: ' + err.message);
       }
     }
 
@@ -2087,22 +2145,6 @@
       } catch (err) {
         console.error('Error saving article:', err);
         alert('Error saving article: ' + err.message);
-      }
-    }
-
-    async function deleteArticle(id) {
-      if (!confirm('Are you sure you want to delete this article? This action cannot be undone.')) return;
-      try {
-        const { error } = await supabaseClient
-          .from('articles')
-          .delete()
-          .eq('id', id);
-        if (error) throw error;
-        alert('Article deleted successfully.');
-        loadArticlesList();
-      } catch (err) {
-        console.error('Error deleting article:', err);
-        alert('Error deleting article: ' + err.message);
       }
     }
 
@@ -2450,7 +2492,7 @@
       }
     }
 
-    // ---------- Products ----------
+    // ---------- Products (with soft delete) ----------
     async function loadShopProducts() {
       const tbody = document.getElementById('productsTableBody');
       if (!tbody) return;
@@ -2491,19 +2533,25 @@
             'archived': '<span class="badge badge-archived">Archived</span>'
           }[product.status] || product.status;
           const recBadge = product.is_recommended ? '<span class="badge badge-yes">⭐</span>' : '<span class="badge badge-no">—</span>';
+          const isDeleted = product.deleted_at !== null;
+          const deletedBadge = isDeleted ? '<span class="badge badge-deleted">🗑️ Deleted</span>' : '';
           rows += `
-            <tr>
+            <tr style="${isDeleted ? 'opacity: 0.6;' : ''}">
               <td>${product.id}</td>
               <td><strong>${product.name}</strong></td>
               <td>${catName}</td>
-              <td>${statusBadge}</td>
+              <td>${statusBadge} ${deletedBadge}</td>
               <td>${recBadge}</td>
               <td>${product.rating || '—'}</td>
               <td>${product.views || 0}</td>
               <td style="text-align:center; white-space:nowrap;">
-                <button class="btn-edit btn-sm" onclick="editProduct(${product.id})">✏️ Edit</button>
-                <button class="btn-edit btn-sm" onclick="manageProductAffiliateLinks(${product.id})">🔗 Links</button>
-                <button class="btn-danger btn-sm" onclick="deleteProduct(${product.id})">🗑️ Delete</button>
+                ${!isDeleted ? `
+                  <button class="btn-edit btn-sm" onclick="editProduct(${product.id})">✏️ Edit</button>
+                  <button class="btn-edit btn-sm" onclick="manageProductAffiliateLinks(${product.id})">🔗 Links</button>
+                  <button class="btn-danger btn-sm" onclick="deleteProduct(${product.id})">🗑️ Delete</button>
+                ` : `
+                  <button class="btn-restore btn-sm" onclick="restoreProduct(${product.id})">♻️ Restore</button>
+                `}
               </td>
             </tr>
           `;
@@ -2616,19 +2664,36 @@
       }
     }
 
+    // SOFT DELETE & RESTORE – PRODUCTS
     async function deleteProduct(id) {
-      if (!confirm('Are you sure you want to delete this product? This will also delete its affiliate links.')) return;
+      if (!confirm('Are you sure you want to delete this product? It can be restored later.')) return;
       try {
         const { error } = await supabaseClient
           .from('products')
-          .delete()
+          .update({ deleted_at: new Date().toISOString() })
           .eq('id', id);
         if (error) throw error;
-        alert('Product deleted successfully.');
+        alert('✅ Product deleted successfully (can be restored).');
         loadShopProducts();
       } catch (err) {
         console.error('Error deleting product:', err);
-        alert('Error deleting product: ' + err.message);
+        alert('❌ Error deleting product: ' + err.message);
+      }
+    }
+
+    async function restoreProduct(id) {
+      if (!confirm('Restore this product? It will reappear on the public site.')) return;
+      try {
+        const { error } = await supabaseClient
+          .from('products')
+          .update({ deleted_at: null })
+          .eq('id', id);
+        if (error) throw error;
+        alert('✅ Product restored successfully.');
+        loadShopProducts();
+      } catch (err) {
+        console.error('Error restoring product:', err);
+        alert('❌ Error restoring product: ' + err.message);
       }
     }
 
