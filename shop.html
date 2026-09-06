@@ -26,20 +26,9 @@
        ============================================================ -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,600;14..32,800&display=swap" rel="stylesheet" />
 
-  <!-- Impact.com tracking script -->
-  <script type="text/javascript">
-    (function(i, m, p, a, c, t) {
-      c.ire_o = p;
-      c[p] = c[p] || function() { (c[p].a = c[p].a || []).push(arguments) };
-      t = a.createElement(m);
-      var z = a.getElementsByTagName(m)[0];
-      t.async = 1;
-      t.src = i;
-      z.parentNode.insertBefore(t, z)
-    })('https://utt.impactcdn.com/P-A5400232-c6f1-4649-879c-8f5a5bf1f9ea1.js', 'script', 'impactStat', document, window);
-    impactStat('transformLinks');
-    impactStat('trackImpression');
-  </script>
+  <!-- ============================================================
+       IMPACT.COM SCRIPT REMOVED – now loaded conditionally via JavaScript
+       ============================================================ -->
 
   <style>
     /* ============================================================
@@ -841,6 +830,82 @@
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     // ============================================================
+    // COOKIE CONSENT – GDPR/ePrivacy compliant
+    // ============================================================
+    function hasConsent() {
+      return localStorage.getItem('cookiesAccepted') === 'true';
+    }
+
+    function acceptCookies() {
+      localStorage.setItem('cookiesAccepted', 'true');
+      document.getElementById('cookie-banner').classList.remove('show');
+      if (!localStorage.getItem('visitorId')) {
+        const vid = crypto.randomUUID ? crypto.randomUUID() : 'visitor-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+        localStorage.setItem('visitorId', vid);
+      }
+      // 🔥 Load Impact.com tracking now that we have consent
+      loadImpactScript();
+    }
+
+    function declineCookies() {
+      localStorage.setItem('cookiesAccepted', 'false');
+      document.getElementById('cookie-banner').classList.remove('show');
+      const keysToRemove = ['visitorId', 'userCountry', 'userCountryTimestamp', 'affiliate_links_', 'affiliate_links'];
+      for (let key in localStorage) {
+        if (key.startsWith('affiliate_links_') || key === 'visitorId' || key === 'userCountry' || key === 'userCountryTimestamp') {
+          localStorage.removeItem(key);
+        }
+      }
+    }
+
+    // ============================================================
+    // IMPACT.COM – Load only with consent
+    // ============================================================
+    let impactLoaded = false;
+
+    function loadImpactScript() {
+      if (impactLoaded) return;
+      if (!hasConsent()) {
+        console.log('Impact.com script blocked – no consent.');
+        return;
+      }
+
+      impactLoaded = true;
+      
+      // Create and inject the script
+      const script = document.createElement('script');
+      script.type = 'text/javascript';
+      script.async = true;
+      script.src = 'https://utt.impactcdn.com/P-A5400232-c6f1-4649-879c-8f5a5bf1f9ea1.js';
+      
+      script.onload = function() {
+        // Once the script loads, initialize tracking
+        if (window.impactStat) {
+          impactStat('transformLinks');
+          impactStat('trackImpression');
+          console.log('✅ Impact.com tracking initialized.');
+        } else {
+          console.warn('⚠️ impactStat not available after script load.');
+        }
+      };
+      
+      script.onerror = function() {
+        console.error('❌ Failed to load Impact.com script.');
+      };
+      
+      document.head.appendChild(script);
+    }
+
+    function checkCookieConsent() {
+      const consent = localStorage.getItem('cookiesAccepted');
+      if (consent === null) {
+        document.getElementById('cookie-banner').classList.add('show');
+      } else if (consent === 'false') {
+        declineCookies();
+      }
+    }
+
+    // ============================================================
     // PAGINATION STATE
     // ============================================================
     const PRODUCT_LIMIT = 8;
@@ -853,10 +918,6 @@
     // ============================================================
     // COOKIE CONSENT (for visitorId and country caching)
     // ============================================================
-    function hasConsent() {
-      return localStorage.getItem('cookiesAccepted') === 'true';
-    }
-
     function getVisitorId() {
       if (!hasConsent()) {
         return 'temp-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
@@ -1422,6 +1483,13 @@
     // INIT
     // ============================================================
     document.addEventListener('DOMContentLoaded', function() {
+      checkCookieConsent();
+
+      // 🔥 If consent already exists, load Impact.com tracking immediately
+      if (hasConsent()) {
+        loadImpactScript();
+      }
+
       loadCategories();
       loadProducts('all', false);
     });
