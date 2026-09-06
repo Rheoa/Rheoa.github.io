@@ -4,22 +4,22 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <title>World Discovery — Explore Amazing Places</title>
+  <title>Rheoa — Explore Amazing Places</title>
 
   <!-- Dynamic Meta Tags - Updated by JavaScript -->
   <meta name="description" content="Discover amazing places, hidden destinations, and fascinating travel facts." id="meta-description" />
   
   <!-- Open Graph / Facebook -->
   <meta property="og:type" content="website" id="og-type" />
-  <meta property="og:title" content="World Discovery — Explore Amazing Places" id="og-title" />
+  <meta property="og:title" content="Rheoa — Explore Amazing Places" id="og-title" />
   <meta property="og:description" content="Discover amazing places, hidden destinations, and fascinating travel facts." id="og-description" />
   <meta property="og:image" content="https://images.pexels.com/photos/2613110/pexels-photo-2613110.jpeg?auto=compress&cs=tinysrgb&w=1200" id="og-image" />
-  <meta property="og:url" content="https://worlddiscovery.com" id="og-url" />
-  <meta property="og:site_name" content="World Discovery" />
+  <meta property="og:url" content="https://rheoa.github.io" id="og-url" />
+  <meta property="og:site_name" content="Rheoa" />
   
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image" id="twitter-card" />
-  <meta name="twitter:title" content="World Discovery — Explore Amazing Places" id="twitter-title" />
+  <meta name="twitter:title" content="Rheoa — Explore Amazing Places" id="twitter-title" />
   <meta name="twitter:description" content="Discover amazing places, hidden destinations, and fascinating travel facts." id="twitter-description" />
   <meta name="twitter:image" content="https://images.pexels.com/photos/2613110/pexels-photo-2613110.jpeg?auto=compress&cs=tinysrgb&w=1200" id="twitter-image" />
 
@@ -30,14 +30,15 @@
   <meta http-equiv="X-Frame-Options" content="DENY" />
   <meta name="referrer" content="strict-origin-when-cross-origin" />
   <meta http-equiv="Content-Security-Policy" 
-        content="default-src 'self' https://*.supabase.co https://*.pexels.com https://*.googleapis.com https://*.gstatic.com https://unpkg.com https://cdn.jsdelivr.net https://www.pinterest.com https://api.ipify.org https://*.impactcdn.com https://utt.impactcdn.com; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://unpkg.com https://utt.impactcdn.com https://www.googletagmanager.com; style-src 'self' 'unsafe-inline' https://unpkg.com https://fonts.googleapis.com; img-src 'self' data: https://*.pexels.com https://images.pexels.com https://*.pinterest.com https://*.tile.openstreetmap.org; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://*.supabase.co https://api.ipify.org https://ipapi.co https://ip-api.com https://ipinfo.io https://cdn.jsdelivr.net https://unpkg.com https://*.tile.openstreetmap.org https://*.pxf.io https://*.impct.site https://*.impactcdn.com; frame-src 'self' https://www.pinterest.com;" />
+        content="default-src 'self' https://*.supabase.co https://*.pexels.com https://*.googleapis.com https://*.gstatic.com https://unpkg.com https://cdn.jsdelivr.net https://www.pinterest.com https://api.ipify.org https://*.impactcdn.com https://utt.impactcdn.com; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://unpkg.com https://utt.impactcdn.com https://www.googletagmanager.com; style-src 'self' 'unsafe-inline' https://unpkg.com https://fonts.googleapis.com; img-src 'self' data: https://*.pexels.com https://images.pexels.com https://*.pinterest.com https://*.tile.openstreetmap.org https://i.ibb.co; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://*.supabase.co https://api.ipify.org https://ipapi.co https://ip-api.com https://ipinfo.io https://cdn.jsdelivr.net https://unpkg.com https://*.tile.openstreetmap.org https://*.pxf.io https://*.impct.site https://*.impactcdn.com; frame-src 'self' https://www.pinterest.com;" />
   <meta http-equiv="Permissions-Policy" 
         content="geolocation=(), microphone=(), camera=(), payment=(), usb=(), battery=(), accelerometer=(), gyroscope=(), magnetometer=(), ambient-light-sensor=(), vibrate=(), midi=(), clipboard-read=(), clipboard-write=(), screen-wake-lock=(), serial=(), hid=(), xr-spatial-tracking=()" />
 
   <!-- Google Search Console Verification -->
   <meta name="google-site-verification" content="7unpVZHBGdonyB06vWx9YIigUSi83ReKycHSDRWH2ws" />
 
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌍</text></svg>" />
+  <!-- Favicon – using the new logo -->
+  <link rel="icon" href="https://i.ibb.co/tTTsKVb2/Screenshot-2026-08-10-071510.png" type="image/png" />
 
   <!-- ============================================================
        GOOGLE FONTS DISCLOSURE NOTICE:
@@ -131,10 +132,22 @@
     }
 
     .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
       font-size: 1.4rem;
       font-weight: 800;
       color: var(--yellow-darker);
+      text-decoration: none;
     }
+
+    .logo img {
+      height: 36px;
+      width: auto;
+      border-radius: 6px;
+      object-fit: contain;
+    }
+
     .logo span {
       color: var(--text);
     }
@@ -685,6 +698,17 @@
     }
     .footer-brand .logo {
       color: var(--yellow);
+      font-size: 1.4rem;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .footer-brand .logo img {
+      height: 32px;
+      width: auto;
+      border-radius: 6px;
+      object-fit: contain;
     }
     .footer-brand .logo span {
       color: white;
@@ -768,6 +792,9 @@
       }
       .article-content .btn-group {
         flex-direction: column;
+      }
+      .logo img {
+        height: 28px;
       }
     }
 
@@ -894,7 +921,8 @@
   <header>
     <div class="container nav">
       <a href="#" class="logo" onclick="navigateTo('home'); return false;">
-        WORLD<span>DISCOVERY</span>
+        <img src="https://i.ibb.co/tTTsKVb2/Screenshot-2026-08-10-071510.png" alt="Rheoa Logo" />
+       rheoa
       </a>
 
       <nav class="nav-links" id="navLinks">
@@ -941,7 +969,10 @@
     <div class="container">
       <div class="footer-inner">
         <div class="footer-brand">
-          <div class="logo">WORLD<span>DISCOVERY</span></div>
+          <div class="logo">
+            <img src="https://i.ibb.co/tTTsKVb2/Screenshot-2026-08-10-071510.png" alt="Rheoa Logo" />
+            rheoa
+          </div>
           <p>Explore amazing places, hidden gems, and fascinating travel stories from around the globe.</p>
         </div>
         <div class="footer-links">
@@ -965,7 +996,7 @@
         </div>
       </div>
       <div class="copyright">
-        &copy; 2026 World Discovery. Explore something new.
+        &copy; 2026 Rheoa. Explore something new.
       </div>
     </div>
   </footer>
@@ -1236,10 +1267,10 @@
       about: `
           <div class="container page-content">
             <h2>About Us</h2>
-            <p>World Discovery began with something simple: a genuine love for travel, a sense of wonder about our planet, and an endless curiosity about the places and stories that make our world so fascinating.</p>
+            <p>Rheoa began with something simple: a genuine love for travel, a sense of wonder about our planet, and an endless curiosity about the places and stories that make our world so fascinating.</p>
             <p>From hidden gems and surreal landscapes to remarkable destinations and little-known facts, we’re here to bring you discoveries that spark curiosity and make you want to see a little more of the world.</p>
             <p>Our mission is simple — to inspire you to explore, dream, and discover, whether you're travelling across the globe or exploring from the comfort of your armchair. Every piece of content is carefully researched and created with curiosity, passion, and a genuine appreciation for the incredible world around us.</p>
-            <p>We may occasionally include subtle affiliate links to products, experiences, or services that we believe could be useful to our readers. We keep these recommendations relevant and understated rather than filling the site with intrusive, in-your-face advertising. We believe discovering something new should feel enjoyable, not like being sold to — so keeping World Discovery clean, welcoming, and engaging will always be important to us.</p>
+            <p>We may occasionally include subtle affiliate links to products, experiences, or services that we believe could be useful to our readers. We keep these recommendations relevant and understated rather than filling the site with intrusive, in-your-face advertising. We believe discovering something new should feel enjoyable, not like being sold to — so keeping Rheoa clean, welcoming, and engaging will always be important to us.</p>
             <p>📧<strong>rheoa@limbomail.com</strong></p>
           </div>
         `,
@@ -1278,7 +1309,7 @@
        SEO META TAG HELPERS
     ============================================================ */
     function updateMetaTags(title, description, image, url, type) {
-      document.title = title || 'World Discovery — Explore Amazing Places';
+      document.title = title || 'Rheoa — Explore Amazing Places';
       
       const metaDesc = document.getElementById('meta-description');
       if (metaDesc) metaDesc.content = description || 'Discover amazing places, hidden destinations, and fascinating travel facts.';
@@ -1310,7 +1341,7 @@
 
     function resetMetaTags() {
       updateMetaTags(
-        'World Discovery — Explore Amazing Places',
+        'Rheoa — Explore Amazing Places',
         'Discover amazing places, hidden destinations, and fascinating travel facts.',
         'https://images.pexels.com/photos/2613110/pexels-photo-2613110.jpeg?auto=compress&cs=tinysrgb&w=1200',
         window.location.href,
@@ -1401,7 +1432,7 @@
       document.getElementById('navLinks').classList.remove('open');
       
       updateMetaTags(
-        `${category.name} — World Discovery`,
+        `${category.name} — Rheoa`,
         `Explore ${category.name} articles, travel guides, and destination inspiration.`,
         'https://images.pexels.com/photos/2613110/pexels-photo-2613110.jpeg?auto=compress&cs=tinysrgb&w=1200',
         window.location.href,
@@ -2020,13 +2051,13 @@
 
         container.innerHTML = html;
 
-        const articleTitle = article.title || 'World Discovery';
+        const articleTitle = article.title || 'Rheoa';
         const articleDesc = article.description || 'Discover amazing places and hidden destinations.';
         const articleImage = article.image_url || 'https://images.pexels.com/photos/2613110/pexels-photo-2613110.jpeg?auto=compress&cs=tinysrgb&w=1200';
         const articleUrl = window.location.href;
         
         updateMetaTags(
-          `${articleTitle} — World Discovery`,
+          `${articleTitle} — Rheoa`,
           articleDesc,
           articleImage,
           articleUrl,
@@ -2047,7 +2078,7 @@
           "dateModified": article.updated_at ? article.updated_at.split("T")[0] : new Date().toISOString().split("T")[0],
           "publisher": {
             "@type": "Organization",
-            "name": "World Discovery"
+            "name": "Rheoa"
           },
           "mainEntityOfPage": {
             "@type": "WebPage",
