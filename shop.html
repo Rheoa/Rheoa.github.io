@@ -12,7 +12,7 @@
   <meta http-equiv="X-Frame-Options" content="DENY" />
   <meta name="referrer" content="strict-origin-when-cross-origin" />
   <meta http-equiv="Content-Security-Policy" 
-        content="default-src 'self' https://*.supabase.co https://*.pexels.com https://*.googleapis.com https://*.gstatic.com https://unpkg.com https://cdn.jsdelivr.net https://www.pinterest.com https://api.ipify.org https://*.impactcdn.com https://utt.impactcdn.com; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://unpkg.com https://utt.impactcdn.com https://www.googletagmanager.com; style-src 'self' 'unsafe-inline' https://unpkg.com https://fonts.googleapis.com; img-src 'self' data: https://*.pexels.com https://images.pexels.com https://*.pinterest.com https://*.tile.openstreetmap.org https://i.ibb.co; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://*.supabase.co https://api.ipify.org https://ipapi.co https://ip-api.com https://ipinfo.io https://cdn.jsdelivr.net https://*.tile.openstreetmap.org; frame-src 'self' https://www.pinterest.com;" />
+        content="default-src 'self' https://*.supabase.co https://*.pexels.com https://*.googleapis.com https://*.gstatic.com https://unpkg.com https://cdn.jsdelivr.net https://www.pinterest.com https://api.ipify.org https://*.impactcdn.com https://utt.impactcdn.com; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://unpkg.com https://utt.impactcdn.com https://www.googletagmanager.com; style-src 'self' 'unsafe-inline' https://unpkg.com https://fonts.googleapis.com; img-src 'self' data: https://*.pexels.com https://images.pexels.com https://*.pinterest.com https://*.tile.openstreetmap.org https://i.ibb.co; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://*.supabase.co https://api.ipify.org https://ipapi.co https://ip-api.com https://ipinfo.io https://cdn.jsdelivr.net https://unpkg.com https://*.tile.openstreetmap.org https://*.pxf.io https://*.impct.site https://*.impactcdn.com; frame-src 'self' https://www.pinterest.com;" />
 
   <!-- Google Search Console Verification -->
   <meta name="google-site-verification" content="7unpVZHBGdonyB06vWx9YIigUSi83ReKycHSDRWH2ws" />
@@ -1233,7 +1233,7 @@
     }
 
     // ============================================================
-    // LOAD PRODUCTS
+    // LOAD PRODUCTS (with NaN fix)
     // ============================================================
     async function loadProducts(categorySlug = 'all', append = false) {
       const grid = document.getElementById('productGrid');
@@ -1363,8 +1363,6 @@
 
         shopOffset += products.length;
 
-        // No view increment on load – only on modal open.
-
       } catch (err) {
         console.error('Error loading products:', err);
         grid.innerHTML = `<p style="color: var(--muted); padding: 20px;">⚠️ Could not load products. ${err.message}</p>`;
@@ -1384,7 +1382,7 @@
     }
 
     // ============================================================
-    // AFFILIATE LINK REWRITING (Country-specific)
+    // AFFILIATE LINK REWRITING (Country-specific – WITH NaN FIX)
     // ============================================================
     async function rewriteProductLinks() {
       const country = await getCountryCode();
@@ -1392,12 +1390,18 @@
 
       if (links.length === 0) return;
 
-      const productIds = [...new Set(Array.from(links).map(el => el.dataset.productId))];
+      // FIX: Sanitize product IDs to remove NaN
+      const productIds = [...new Set(Array.from(links)
+          .map(el => parseInt(el.dataset.productId))
+          .filter(id => !isNaN(id) && id > 0)
+      )];
+
+      if (productIds.length === 0) return;
 
       const { data: affiliateLinks, error } = await supabaseClient
         .from('product_affiliate_links')
         .select('*')
-        .in('product_id', productIds.map(Number));
+        .in('product_id', productIds);
 
       if (error || !affiliateLinks) {
         console.warn('Could not fetch product affiliate links.');
@@ -1416,7 +1420,7 @@
       });
 
       links.forEach(el => {
-        const productId = el.dataset.productId;
+        const productId = parseInt(el.dataset.productId);
         const affiliateKey = el.dataset.affiliateKey;
         if (linkMap[productId] && linkMap[productId][affiliateKey]) {
           el.href = linkMap[productId][affiliateKey];
@@ -1436,7 +1440,7 @@
     }
 
     // ============================================================
-    // PRODUCT CLICK HANDLER
+    // PRODUCT CLICK HANDLER (with productId validation)
     // ============================================================
     async function handleProductClick(e, productId, affiliateKey) {
       e.preventDefault();
@@ -1445,6 +1449,14 @@
       const href = link.href;
 
       if (href === '#' || link.classList.contains('disabled')) {
+        return;
+      }
+
+      // Validate productId
+      const validProductId = parseInt(productId);
+      if (isNaN(validProductId) || validProductId <= 0) {
+        console.warn('Invalid product ID, skipping click log.');
+        window.open(href, '_blank');
         return;
       }
 
@@ -1464,7 +1476,7 @@
         await supabaseClient
           .from('click_logs')
           .insert({
-            product_id: productId,
+            product_id: validProductId,
             affiliate_key: affiliateKey,
             link_url: href,
             country_code: country,
