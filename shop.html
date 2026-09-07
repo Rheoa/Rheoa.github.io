@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Travel Shop — World Discovery</title>
+  <title>Travel Shop — Rheoa</title>
 
   <!-- ============================================================
        SECURITY HEADERS (Meta Tags)
@@ -17,7 +17,9 @@
   <!-- Google Search Console Verification -->
   <meta name="google-site-verification" content="7unpVZHBGdonyB06vWx9YIigUSi83ReKycHSDRWH2ws" />
 
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛍️</text></svg>" />
+  <!-- Favicon – using the SVG favicon with circular logo -->
+  <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+  <link rel="alternate icon" href="https://i.ibb.co/tTTsKVb2/Screenshot-2026-08-10-071510.png" type="image/png" />
 
   <!-- ============================================================
        GOOGLE FONTS DISCLOSURE NOTICE:
@@ -103,11 +105,23 @@
     }
 
     .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
       font-size: 1.4rem;
       font-weight: 800;
       color: var(--yellow-darker);
       text-decoration: none;
     }
+
+    .logo img {
+      height: 40px;
+      width: 40px;
+      border-radius: 50%;
+      object-fit: cover;
+      object-position: center;
+    }
+
     .logo span {
       color: var(--text);
     }
@@ -565,6 +579,18 @@
     }
     .footer-brand .logo {
       color: var(--yellow);
+      font-size: 1.4rem;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .footer-brand .logo img {
+      height: 36px;
+      width: 36px;
+      border-radius: 50%;
+      object-fit: cover;
+      object-position: center;
     }
     .footer-brand .logo span {
       color: white;
@@ -662,6 +688,10 @@
       .action-row .load-more-wrapper {
         text-align: center;
       }
+      .logo img {
+        height: 32px;
+        width: 32px;
+      }
     }
     @media (max-width: 480px) {
       .product-grid {
@@ -697,7 +727,8 @@
   <header>
     <div class="container nav">
       <a href="index.html" class="logo">
-        WORLD<span>DISCOVERY</span>
+        <img src="https://i.ibb.co/tTTsKVb2/Screenshot-2026-08-10-071510.png" alt="Rheoa Logo" />
+        rheoa
       </a>
 
       <nav class="nav-links" id="navLinks">
@@ -779,7 +810,10 @@
     <div class="container">
       <div class="footer-inner">
         <div class="footer-brand">
-          <div class="logo">WORLD<span>DISCOVERY</span></div>
+          <div class="logo">
+            <img src="https://i.ibb.co/tTTsKVb2/Screenshot-2026-08-10-071510.png" alt="Rheoa Logo" />
+            rheoa
+          </div>
           <p>Explore amazing places, hidden gems, and fascinating travel stories from around the globe.</p>
         </div>
         <div class="footer-links">
@@ -803,7 +837,7 @@
         </div>
       </div>
       <div class="copyright">
-        &copy; 2026 World Discovery. Explore something new.
+        &copy; 2026 Rheoa. Explore something new.
       </div>
     </div>
   </footer>
