@@ -3,8 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Privacy Policy — World Discovery</title>
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔒</text></svg>" />
+  <title>Privacy Policy — Rheoa</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+  <link rel="alternate icon" href="https://i.ibb.co/tTTsKVb2/Screenshot-2026-08-10-071510.png" type="image/png" />
 
   <!-- ============================================================
        GOOGLE FONTS DISCLOSURE NOTICE:
@@ -71,12 +72,22 @@
     }
 
     .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
       font-size: 1.4rem;
       font-weight: 800;
       color: var(--yellow-darker);
       text-decoration: none;
     }
-    .logo span { color: var(--text); }
+
+    .logo img {
+      height: 42px;
+      width: 42px;
+      border-radius: 50%;
+      object-fit: cover;
+      object-position: center;
+    }
 
     .nav-links {
       display: flex;
@@ -93,6 +104,9 @@
     .nav-links a:hover {
       border-bottom-color: var(--yellow);
       color: var(--yellow-darker);
+    }
+    .nav-links a.active {
+      border-bottom-color: var(--yellow);
     }
 
     .menu-toggle {
@@ -237,11 +251,24 @@
       gap: 30px;
     }
     .footer-brand .logo {
-      color: var(--yellow);
+      display: flex;
+      align-items: center;
+      gap: 10px;
       font-size: 1.4rem;
       font-weight: 800;
+      color: var(--yellow);
+      text-decoration: none;
     }
-    .footer-brand .logo span { color: white; }
+    .footer-brand .logo img {
+      height: 42px;
+      width: 42px;
+      border-radius: 50%;
+      object-fit: cover;
+      object-position: center;
+    }
+    .footer-brand .logo span {
+      color: white;
+    }
     .footer-brand p {
       max-width: 340px;
       margin-top: 8px;
@@ -290,6 +317,14 @@
       .footer-inner {
         flex-direction: column;
       }
+      .logo img {
+        height: 36px;
+        width: 36px;
+      }
+      .footer-brand .logo img {
+        height: 36px;
+        width: 36px;
+      }
     }
 
     @media print {
@@ -307,11 +342,12 @@
   <header>
     <div class="container nav">
       <a href="index.html" class="logo">
-        WORLD<span>DISCOVERY</span>
+        <img src="https://i.ibb.co/tTTsKVb2/Screenshot-2026-08-10-071510.png" alt="Rheoa Logo" />
+        rheoa
       </a>
       <nav class="nav-links" id="navLinks">
         <a href="index.html">Home</a>
-        <a href="privacy.html" style="border-bottom-color:var(--yellow);">Privacy</a>
+        <a href="privacy.html" class="active">Privacy</a>
         <a href="terms.html">Terms</a>
         <a href="affiliate-disclosure.html">Affiliate</a>
         <a href="cookie-policy.html">Cookies</a>
@@ -334,7 +370,7 @@
           <strong>Last Updated:</strong> 1 September 2026
         </div>
         <p style="color:var(--muted); margin-top:6px;">
-          Your privacy matters to us. This policy explains how World Discovery collects, uses, and protects your personal data.
+          Your privacy matters to us. This policy explains how Rheoa collects, uses, and protects your personal data.
         </p>
       </div>
 
@@ -359,14 +395,14 @@
       <!-- ===== SECTION 1 ===== -->
       <section class="policy-section" id="section-1">
         <h2>1. Information We Collect</h2>
-        <p>We collect limited information to operate and improve World Discovery. Depending on how you interact with our site, we may collect:</p>
+        <p>We collect limited information to operate and improve Rheoa. Depending on how you interact with our site, we may collect:</p>
 
         <h3>1.1 Automatically Collected</h3>
         <ul>
           <li><strong>IP Address</strong> — Used for geolocation (country detection) and fraud prevention.</li>
           <li><strong>Browser &amp; Device Information</strong> — Browser type, version, operating system, and screen size.</li>
           <li><strong>Visitor ID</strong> — A unique identifier stored in your browser's localStorage to distinguish unique visitors for analytics.</li>
-          <li><strong>Referral Source</strong> — The website that referred you to World Discovery.</li>
+          <li><strong>Referral Source</strong> — The website that referred you to Rheoa.</li>
           <li><strong>Affiliate Clicks</strong> — Which affiliate links you click, when, and which article or product they appeared in.</li>
         </ul>
 
@@ -404,7 +440,7 @@
       <!-- ===== SECTION 3 ===== -->
       <section class="policy-section" id="section-3">
         <h2>3. Cookies &amp; Local Storage</h2>
-        <p>World Discovery uses browser localStorage (not traditional cookies) to store certain data for functionality and performance.</p>
+        <p>Rheoa uses browser localStorage (not traditional cookies) to store certain data for functionality and performance.</p>
 
         <h3>What We Store Locally</h3>
         <ul>
@@ -518,7 +554,7 @@
         </ul>
 
         <h3>If you are in India (DPDP Act, 2023)</h3>
-        <p>As a Data Fiduciary operating from India, World Discovery complies with the Digital Personal Data Protection (DPDP) Act, 2023. We collect and process personal data only for the purposes specified in this policy, with your consent, and for legitimate business interests. You have the right to:</p>
+        <p>As a Data Fiduciary operating from India, Rheoa complies with the Digital Personal Data Protection (DPDP) Act, 2023. We collect and process personal data only for the purposes specified in this policy, with your consent, and for legitimate business interests. You have the right to:</p>
         <ul>
           <li>Access and rectify your personal data</li>
           <li>Withdraw consent at any time</li>
@@ -528,7 +564,7 @@
         <p>Our Grievance Officer can be reached at <a href="mailto:grievance.rheoa@limbomail.com">grievance.rheoa@limbomail.com</a>.</p>
 
         <h3>Other Regions</h3>
-        <p>If you are located in Canada (PIPEDA), Brazil (LGPD), Australia (Privacy Act), or other jurisdictions with similar data protection laws, World Discovery applies the same privacy protections described in this policy to all users globally. We honor your rights to access, correct, and delete your personal data regardless of your location.</p>
+        <p>If you are located in Canada (PIPEDA), Brazil (LGPD), Australia (Privacy Act), or other jurisdictions with similar data protection laws, Rheoa applies the same privacy protections described in this policy to all users globally. We honor your rights to access, correct, and delete your personal data regardless of your location.</p>
 
         <div class="highlight-box">
           <p><strong>📧 To exercise your rights, contact us at:</strong> <a href="mailto:rheoa@limbomail.com">rheoa@limbomail.com</a></p>
@@ -539,20 +575,20 @@
       <!-- ===== SECTION 8 ===== -->
       <section class="policy-section" id="section-8">
         <h2>8. Children's Privacy</h2>
-        <p>World Discovery is not directed at children under 13. We do not knowingly collect personal information from children. If you believe we have collected data from a child, please contact us and we will delete it promptly.</p>
+        <p>Rheoa is not directed at children under 13. We do not knowingly collect personal information from children. If you believe we have collected data from a child, please contact us and we will delete it promptly.</p>
         <p>For users in the EU, the minimum age for consent is 16 (or lower in certain countries). We do not target users under the age of consent.</p>
       </section>
 
       <!-- ===== SECTION 9 ===== -->
       <section class="policy-section" id="section-9">
         <h2>9. International Data Transfers</h2>
-        <p>World Discovery is operated from India. Our service providers (Supabase, Impact.com, Google, Amazon) may store data in data centers located in various countries. By using our site, you consent to the transfer of your data to countries outside your jurisdiction, including the United States, the European Union, and India.</p>
+        <p>Rheoa is operated from India. Our service providers (Supabase, Impact.com, Google, Amazon) may store data in data centers located in various countries. By using our site, you consent to the transfer of your data to countries outside your jurisdiction, including the United States, the European Union, and India.</p>
         <p>We rely on standard contractual clauses and other lawful mechanisms to ensure your data is adequately protected during international transfers.</p>
 
         <h3>EU/UK Representative</h3>
-        <p>World Discovery is currently a discovery and content platform and does not directly sell, book, or provide the products, travel experiences, or services featured through our affiliate links.</p>
+        <p>Rheoa is currently a discovery and content platform and does not directly sell, book, or provide the products, travel experiences, or services featured through our affiliate links.</p>
         <p>Where you choose to follow an affiliate link, any purchase, booking, payment, fulfilment, cancellation, refund, or customer service relationship is handled directly by the relevant third-party provider, subject to that provider’s own terms, policies, and applicable legal requirements.</p>
-        <p>World Discovery does not currently maintain local representatives in the EU or other regions for the provision of such third-party services.</p>
+        <p>Rheoa does not currently maintain local representatives in the EU or other regions for the provision of such third-party services.</p>
         
         <p>You may contact our representative regarding data protection concerns at <a href="mailto:rheoa@limbomail.com">rheoa@limbomail.com</a>.</p>
       </section>
@@ -574,7 +610,7 @@
         <p>If you have any questions, concerns, or requests regarding your privacy or this policy, please reach out:</p>
         <ul>
           <li><strong>📧 Email:</strong> <a href="mailto:rheoa@limbomail.com">rheoa@limbomail.com</a></li>
-          <li><strong>📬 Address:</strong> World Discovery, USA / India</li>
+          <li><strong>📬 Address:</strong> Rheoa, USA / India</li>
           <li><strong>🏢 Grievance Officer (India):</strong> <a href="mailto:grievance.rheoa@limbomail.com">grievance.rheoa@limbomail.com</a></li>
         </ul>
         <p>We aim to respond to all inquiries within 5 business days.</p>
@@ -593,7 +629,10 @@
     <div class="container">
       <div class="footer-inner">
         <div class="footer-brand">
-          <div class="logo">WORLD<span>DISCOVERY</span></div>
+          <div class="logo">
+            <img src="https://i.ibb.co/tTTsKVb2/Screenshot-2026-08-10-071510.png" alt="Rheoa Logo" />
+            rheoa
+          </div>
           <p>Explore amazing places, hidden gems, and fascinating travel stories from around the globe.</p>
         </div>
         <div class="footer-links">
@@ -610,7 +649,7 @@
         </div>
       </div>
       <div class="copyright">
-        &copy; 2026 World Discovery. Explore something new.
+        &copy; 2026 Rheoa. Explore something new.
       </div>
     </div>
   </footer>
