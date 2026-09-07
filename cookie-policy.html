@@ -3,8 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Cookie Policy — World Discovery</title>
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🍪</text></svg>" />
+  <title>Cookie Policy — Rheoa</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+  <link rel="alternate icon" href="https://i.ibb.co/tTTsKVb2/Screenshot-2026-08-10-071510.png" type="image/png" />
 
   <!-- ============================================================
        GOOGLE FONTS DISCLOSURE NOTICE:
@@ -71,12 +72,22 @@
     }
 
     .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
       font-size: 1.4rem;
       font-weight: 800;
       color: var(--yellow-darker);
       text-decoration: none;
     }
-    .logo span { color: var(--text); }
+
+    .logo img {
+      height: 42px;
+      width: 42px;
+      border-radius: 50%;
+      object-fit: cover;
+      object-position: center;
+    }
 
     .nav-links {
       display: flex;
@@ -294,11 +305,24 @@
       gap: 30px;
     }
     .footer-brand .logo {
-      color: var(--yellow);
+      display: flex;
+      align-items: center;
+      gap: 10px;
       font-size: 1.4rem;
       font-weight: 800;
+      color: var(--yellow);
+      text-decoration: none;
     }
-    .footer-brand .logo span { color: white; }
+    .footer-brand .logo img {
+      height: 42px;
+      width: 42px;
+      border-radius: 50%;
+      object-fit: cover;
+      object-position: center;
+    }
+    .footer-brand .logo span {
+      color: white;
+    }
     .footer-brand p {
       max-width: 340px;
       margin-top: 8px;
@@ -347,6 +371,14 @@
       .footer-inner {
         flex-direction: column;
       }
+      .logo img {
+        height: 36px;
+        width: 36px;
+      }
+      .footer-brand .logo img {
+        height: 36px;
+        width: 36px;
+      }
     }
 
     @media print {
@@ -364,7 +396,8 @@
   <header>
     <div class="container nav">
       <a href="index.html" class="logo">
-        WORLD<span>DISCOVERY</span>
+        <img src="https://i.ibb.co/tTTsKVb2/Screenshot-2026-08-10-071510.png" alt="Rheoa Logo" />
+        RHEOA
       </a>
       <nav class="nav-links" id="navLinks">
         <a href="index.html">Home</a>
@@ -414,7 +447,7 @@
       <section class="cookie-section" id="section-1">
         <h2>1. What Are Cookies &amp; Local Storage?</h2>
         <p><strong>Cookies</strong> are small text files stored on your device by websites you visit. They help websites remember your preferences, analyze usage, and improve your experience.</p>
-        <p><strong>Local Storage</strong> is similar but stores data directly in your browser. Unlike cookies, local storage data is not sent to the server with every request. World Discovery primarily uses <strong>localStorage</strong> rather than traditional cookies.</p>
+        <p><strong>Local Storage</strong> is similar but stores data directly in your browser. Unlike cookies, local storage data is not sent to the server with every request. Rheoa primarily uses <strong>localStorage</strong> rather than traditional cookies.</p>
         <div class="highlight-box">
           <p><strong>📌 Key Difference:</strong> localStorage stays in your browser and is not automatically sent to our servers. This means we store less data on our side.</p>
         </div>
@@ -536,7 +569,7 @@
         <p>You have full control over your data stored locally. Here's how you can manage it:</p>
 
         <h3>5.1 Accept or Decline</h3>
-        <p>When you first visit World Discovery, you'll see a cookie banner. You can choose to:</p>
+        <p>When you first visit Rheoa, you'll see a cookie banner. You can choose to:</p>
         <ul>
           <li><strong>Accept</strong> — Allows us to store functional and performance data.</li>
           <li><strong>Decline</strong> — Only essential data (consent preference) will be stored.</li>
@@ -586,7 +619,7 @@
         <p>If you have any questions, concerns, or requests regarding this Cookie Policy, please reach out:</p>
         <ul>
           <li><strong>📧 Email:</strong> <a href="mailto:rheoa@limbomail.com">rheoa@limbomail.com</a></li>
-          <li><strong>📬 Address:</strong> World Discovery, USA / India</li>
+          <li><strong>📬 Address:</strong> Rheoa, USA / India</li>
         </ul>
         <p>We aim to respond to all inquiries within 5 business days.</p>
       </section>
@@ -604,7 +637,10 @@
     <div class="container">
       <div class="footer-inner">
         <div class="footer-brand">
-          <div class="logo">WORLD<span>DISCOVERY</span></div>
+          <div class="logo">
+            <img src="https://i.ibb.co/tTTsKVb2/Screenshot-2026-08-10-071510.png" alt="Rheoa Logo" />
+            RHEOA
+          </div>
           <p>Explore amazing places, hidden gems, and fascinating travel stories from around the globe.</p>
         </div>
         <div class="footer-links">
@@ -621,7 +657,7 @@
         </div>
       </div>
       <div class="copyright">
-        &copy; 2026 World Discovery. Explore something new.
+        &copy; 2026 Rheoa. Explore something new.
       </div>
     </div>
   </footer>
