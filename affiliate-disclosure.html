@@ -3,8 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Affiliate Disclosure — World Discovery</title>
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💸</text></svg>" />
+  <title>Affiliate Disclosure — Rheoa</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+  <link rel="alternate icon" href="https://i.ibb.co/tTTsKVb2/Screenshot-2026-08-10-071510.png" type="image/png" />
 
   <!-- ============================================================
        GOOGLE FONTS DISCLOSURE NOTICE:
@@ -71,12 +72,22 @@
     }
 
     .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
       font-size: 1.4rem;
       font-weight: 800;
       color: var(--yellow-darker);
       text-decoration: none;
     }
-    .logo span { color: var(--text); }
+
+    .logo img {
+      height: 42px;
+      width: 42px;
+      border-radius: 50%;
+      object-fit: cover;
+      object-position: center;
+    }
 
     .nav-links {
       display: flex;
@@ -268,11 +279,24 @@
       gap: 30px;
     }
     .footer-brand .logo {
-      color: var(--yellow);
+      display: flex;
+      align-items: center;
+      gap: 10px;
       font-size: 1.4rem;
       font-weight: 800;
+      color: var(--yellow);
+      text-decoration: none;
     }
-    .footer-brand .logo span { color: white; }
+    .footer-brand .logo img {
+      height: 42px;
+      width: 42px;
+      border-radius: 50%;
+      object-fit: cover;
+      object-position: center;
+    }
+    .footer-brand .logo span {
+      color: white;
+    }
     .footer-brand p {
       max-width: 340px;
       margin-top: 8px;
@@ -324,6 +348,14 @@
       .footer-inner {
         flex-direction: column;
       }
+      .logo img {
+        height: 36px;
+        width: 36px;
+      }
+      .footer-brand .logo img {
+        height: 36px;
+        width: 36px;
+      }
     }
 
     @media print {
@@ -341,7 +373,8 @@
   <header>
     <div class="container nav">
       <a href="index.html" class="logo">
-        WORLD<span>DISCOVERY</span>
+        <img src="https://i.ibb.co/tTTsKVb2/Screenshot-2026-08-10-071510.png" alt="Rheoa Logo" />
+        RHEOA
       </a>
       <nav class="nav-links" id="navLinks">
         <a href="index.html">Home</a>
@@ -390,7 +423,7 @@
       <!-- ===== SECTION 1 ===== -->
       <section class="disclosure-section" id="section-1">
         <h2>1. What Are Affiliate Links?</h2>
-        <p>Affiliate links are special URLs that track when a user clicks through from one website to another. When you click an affiliate link on World Discovery and make a purchase or booking, we may earn a <strong>small commission</strong> at <strong>no additional cost to you</strong>.</p>
+        <p>Affiliate links are special URLs that track when a user clicks through from one website to another. When you click an affiliate link on Rheoa and make a purchase or booking, we may earn a <strong>small commission</strong> at <strong>no additional cost to you</strong>.</p>
         <p>This is how we support the site and continue to create free, high-quality travel content.</p>
         <div class="highlight-box">
           <p><strong>📌 The Short Version:</strong> We may earn a commission if you buy something through our links. It doesn't cost you extra.</p>
@@ -417,7 +450,7 @@
           </div>
           <div class="partner-card">
             <div class="partner-name">🧳 Italist</div>
-            <div class="partner-desc">Apparel & Travel accesories</div>
+            <div class="partner-desc">Apparel & Travel accessories</div>
           </div>
           <div class="partner-card">
             <div class="partner-name">📚 Other Partners</div>
@@ -431,7 +464,7 @@
       <!-- ===== SECTION 3 ===== -->
       <section class="disclosure-section" id="section-3">
         <h2>3. How Affiliate Links Work</h2>
-        <p>When you click an affiliate link on World Discovery, here's what happens:</p>
+        <p>When you click an affiliate link on Rheoa, here's what happens:</p>
         <ol style="margin: 8px 0 16px 24px; color: var(--muted);">
           <li>You click a link with an affiliate identifier (e.g., <code>amazon_tour</code>, <code>pelago_tour</code>, or <code>kkday_tour</code>).</li>
           <li>Our system dynamically rewrites the link based on your country to ensure the best regional offer.</li>
@@ -446,7 +479,6 @@
         <h2>4. How to Identify Affiliate Links</h2>
         <p>We make it easy to spot affiliate links:</p>
         <ul>
-         
           <li><strong>📄 Disclosure:</strong> Each article/shop includes a full disclosure at the top.</li>
           <li><strong>🔗 Data Attribute:</strong> All affiliate links use the <code>data-affiliate-key</code> attribute for tracking.</li>
         </ul>
@@ -514,7 +546,10 @@
     <div class="container">
       <div class="footer-inner">
         <div class="footer-brand">
-          <div class="logo">WORLD<span>DISCOVERY</span></div>
+          <div class="logo">
+            <img src="https://i.ibb.co/tTTsKVb2/Screenshot-2026-08-10-071510.png" alt="Rheoa Logo" />
+            RHEOA
+          </div>
           <p>Explore amazing places, hidden gems, and fascinating travel stories from around the globe.</p>
         </div>
         <div class="footer-links">
@@ -531,7 +566,7 @@
         </div>
       </div>
       <div class="copyright">
-        &copy; 2026 World Discovery. Explore something new.
+        &copy; 2026 Rheoa. Explore something new.
       </div>
     </div>
   </footer>
