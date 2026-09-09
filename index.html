@@ -1284,6 +1284,8 @@
     let currentPage = 'home';
     let currentCategoryId = null;
     let map = null;
+    // 🔥 Flag to prevent duplicate RPC calls in loadArticle
+    let isLoadingArticle = false;
 
     // ============================================================
     // PAGINATION STATE
@@ -1964,14 +1966,24 @@
     }
 
     /* ============================================================
-       LOAD SINGLE ARTICLE (with affiliate notice + Last Updated)
+       LOAD SINGLE ARTICLE (with affiliate notice + Last Updated) – FIXED
     ============================================================ */
     async function loadArticle(slug) {
+      // 🔥 FIX: Prevent duplicate calls
+      if (isLoadingArticle) {
+        console.log('⏳ Article already loading, skipping duplicate call.');
+        return;
+      }
+      isLoadingArticle = true;
+
       const container = document.getElementById('articleContent');
       const titleSpan = document.getElementById('articleTitle');
       const catSpan = document.getElementById('articleCategory');
 
-      if (!container) return;
+      if (!container) {
+        isLoadingArticle = false;
+        return;
+      }
 
       container.innerHTML = '<div class="loading-spinner">Loading article…</div>';
 
@@ -1992,6 +2004,7 @@
             </div>
           `;
           resetMetaTags();
+          isLoadingArticle = false;
           return;
         }
 
@@ -2112,6 +2125,9 @@
         console.error('Error loading article:', err);
         container.innerHTML = `<p style="color: var(--muted); padding: 20px;">⚠️ Could not load the article.</p>`;
         resetMetaTags();
+      } finally {
+        // 🔥 Reset the flag so future loads can proceed
+        isLoadingArticle = false;
       }
     }
 
