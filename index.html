@@ -1284,8 +1284,8 @@
     let currentPage = 'home';
     let currentCategoryId = null;
     let map = null;
-    // 🔥 Flag to prevent duplicate RPC calls in loadArticle
-    let isLoadingArticle = false;
+    // 🔥 Proper Fix: Track the slug currently being loaded to prevent duplicate router calls
+    let currentLoadingSlug = null;
 
     // ============================================================
     // PAGINATION STATE
@@ -1439,9 +1439,17 @@
       );
     }
 
+    // ============================================================
+    // 🔥 FIXED: navigateToArticle – prevents duplicate calls at the router level
+    // ============================================================
     function navigateToArticle(slug) {
-      window.location.hash = `article-${slug}`;
+      // If we are already on the article page and loading the same slug, block duplicate call
+      if (currentPage === 'article' && currentLoadingSlug === slug) {
+        return;
+      }
 
+      currentLoadingSlug = slug;
+      window.location.hash = `article-${slug}`;
       currentPage = 'article';
       const main = document.getElementById('main-content');
       main.innerHTML = pages.article;
@@ -1966,22 +1974,15 @@
     }
 
     /* ============================================================
-       LOAD SINGLE ARTICLE (with affiliate notice + Last Updated) – FIXED
+       LOAD SINGLE ARTICLE – with proper loading slug cleanup
     ============================================================ */
     async function loadArticle(slug) {
-      // 🔥 FIX: Prevent duplicate calls
-      if (isLoadingArticle) {
-        console.log('⏳ Article already loading, skipping duplicate call.');
-        return;
-      }
-      isLoadingArticle = true;
-
       const container = document.getElementById('articleContent');
       const titleSpan = document.getElementById('articleTitle');
       const catSpan = document.getElementById('articleCategory');
 
       if (!container) {
-        isLoadingArticle = false;
+        currentLoadingSlug = null;
         return;
       }
 
@@ -2004,10 +2005,11 @@
             </div>
           `;
           resetMetaTags();
-          isLoadingArticle = false;
+          currentLoadingSlug = null;
           return;
         }
 
+        // 👁️ View count increment – now only called once per navigation
         const { data: viewData, error: viewError } = await supabaseClient
           .rpc('increment_views', { article_id_param: article.id });
 
@@ -2126,8 +2128,8 @@
         container.innerHTML = `<p style="color: var(--muted); padding: 20px;">⚠️ Could not load the article.</p>`;
         resetMetaTags();
       } finally {
-        // 🔥 Reset the flag so future loads can proceed
-        isLoadingArticle = false;
+        // 🔥 Always clear the loading slug so future clicks work
+        currentLoadingSlug = null;
       }
     }
 
